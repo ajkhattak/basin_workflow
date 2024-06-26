@@ -28,31 +28,30 @@
 #          c) Specify DEM input file (Default points to S3 endpoint; see driver.R)
 #          d) Set output directory path (output_dir)
 ################################################################################
-# Point r_path to the directory of R scripts downloaded from the repository
-r_path = "~/Core/SimulationsData/preprocessing/hydrofabric/smp_basin_workflow/basin_workflow/giuh_twi"
-
+# Point r_dir to the directory of R scripts downloaded from the repository
+r_dir = "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/giuh_twi"
 # (a)
-source(paste0(r_path, "/install_load_libs.R"))
+source(paste0(r_dir, "/install_load_libs.R"))
 # (b)
-source(glue("{r_path}/custom_functions.R"))
+source(glue("{r_dir}/custom_functions.R"))
 # (c)
 #dem_infile = "/vsicurl/https://lynker-spatial.s3.amazonaws.com/gridded-resources/dem.vrt"
 
 # (d) Point root_outpath to the directory where geopackage and other related files will be stored
-outpath_dir = "/Users/ahmadjan/Core/SimulationsData/preprocessing/CAMELS_2024/"
+output_dir = "/Users/ahmadjan/Core/SimulationsData/preprocessing/test"
 setwd(output_dir)
 wbt_wd(getwd())
-
+ 
 # create directory to stored catchment geopackage in case of errors or missing data
 failed_dir = "failed_cats"
 dir.create(failed_dir, recursive = TRUE, showWarnings = FALSE)
 
 
 ################################ OPTION #########################################
-# STEP #2:Currently, the script works with a single gage ID, a list of gage ID, or already download
-# geopackages (see Examples 1 and 2 below). 
+# STEP #2:Currently, the script works with a single gage ID, a list of gage IDs, or already download
+# geopackage(s) (see Examples 1 and 2 below). 
 # Once an option is selection, go to the corresponding Example and make sure to adjust the file/directories 
-# to your local setting
+# to your local settings
 
 ###############################################################################
 # Example 1: User-provided gage IDs; turn using_gage_IDs ON
@@ -118,4 +117,11 @@ print(cats_failed)
 #  dplyr::filter(divide_id %in% divides) |> 
 #  dplyr::collect()
 
+getwd()
+fid = glue('USGS-01047000')
+outfile <- glue('data/gage_01047000.gpkg')
+cat ("run_main:", fid, outfile, "\n")
 
+hfsubsetR::get_subset(nldi_feature = list(featureSource="nwissite", featureID=fid),
+                      outfile = outfile, hf_version = '2.1.1', type = 'nextgen',
+                      overwrite = TRUE)

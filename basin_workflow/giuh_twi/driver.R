@@ -158,7 +158,16 @@ run_given_gage_IDs <- function(gage_ids, output_dir) {
     if (failed) {
       cat ("Cat failed:", id, "\n")
       cats_failed <- append(cats_failed, id)
-      file.rename(cat_dir, glue("{output_dir}/{failed_dir}/{id}"))
+      
+      cat_failed_dir = glue("{output_dir}/{failed_dir}/{id}")
+      
+      if (file.exists(cat_failed_dir) ) {
+        #file.remove(cat_failed_dir, recursive = TRUE, showWarnings = FALSE)
+        unlink(cat_failed_dir, recursive = TRUE)
+      }
+      
+      file.rename(cat_dir, cat_failed_dir)
+      
       next
     }
     else {

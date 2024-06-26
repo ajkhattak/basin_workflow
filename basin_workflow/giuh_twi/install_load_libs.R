@@ -1,5 +1,5 @@
 ######################### INSTALL REQUIRED PACKAGES ############################
-# STEP #1: The packages need to run the script
+# STEP #1: The packages need to run the workflow
 ################################################################################
 
 if (Sys.info()['sysname'] == "Windows") {
@@ -41,6 +41,7 @@ if(!requireNamespace("whitebox", quietly=TRUE)) {
   install.packages("whitebox")
   whitebox::install_whitebox()
 }
+if(!requireNamespace("Metrics", quietly=TRUE)) install.packages("Metrics")
 
 if(!requireNamespace("dplyr", quietly=TRUE)) install.packages("dplyr")
 if(!requireNamespace("glue", quietly=TRUE)) install.packages("glue")
@@ -49,11 +50,12 @@ if(!requireNamespace("jsonlite", quietly=TRUE)) install.packages("jsonlite")
 if(!requireNamespace("ggplot2", quietly=TRUE)) install.packages("ggplot2")
 
 
-
-
-
 # install arrow package from source, if any conflicts/errors happen due to arrow package
-#Sys.setenv(LIBARROW_BINARY = TRUE); install.packages('arrow', type = "source")
+if(!requireNamespace("arrow", quietly=TRUE)) {
+  Sys.setenv("NOT_CRAN" = "true")
+  Sys.setenv(LIBARROW_BINARY = TRUE); install.packages('arrow', type = "source") 
+}
+
 
 library(hydrofabric)
 suppressPackageStartupMessages(library(hydrofabric))
@@ -70,4 +72,5 @@ suppressPackageStartupMessages(library(raster))
 library(jsonlite)
 library(ggplot2)
 library(Metrics)
+library(arrow)
 

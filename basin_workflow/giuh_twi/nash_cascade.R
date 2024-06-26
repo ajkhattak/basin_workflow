@@ -11,10 +11,14 @@ Nash_Cascade_Runoff <- function(rain_mm, nsubsteps, time_h, factor, N) {
   n <- N   
   k <- 100  # this is fixed and determine the ksub, which is calibrated by using `factor`
   
+  # Note that substepping is used for the stability of the algorithm. K has units 1/hour that means
+  # K is valid for a timestep of one hour. Large values of K (> 1) applied for timestep of 1 hour
+  # can cause the reservoir storage to become negative ( Q = K * S) -- drain more than what's available.
+  # This necessitates sub time-steps. 
   ksub = (k+1.0)^(1.0/nsubsteps)-1.0  #modify k per hour to k per substep.  (substep time constant)
   ksub = ksub * factor
-  dt = 1.0   #  hour
-  dtsub = dt/nsubsteps      # hour
+  dt = 1.0                #  hour
+  dtsub = dt/nsubsteps    # hour
   S <- rep(0,n)
   
   total_sub_ts = as.integer(time_h+1.0e-06)/dtsub; # total subtimesteps
@@ -145,8 +149,8 @@ get_nash_params <- function(giuh_dat_values, calib_n_k = FALSE) {
           break
         } else {
           runoff_old <- runoff_temp_ts
-          ksub_old <-  ksub_temp
-          error_old <- error
+          ksub_old   <-  ksub_temp
+          error_old  <- error
           volend_old <- volend_temp
           volout_old <- volout_temp
         }

@@ -22,12 +22,16 @@ giuh_function <- function(div_infile, dem_output_dir, vel_channel = 1, vel_overl
   writeRaster(rasterized_river, glue("{dem_output_dir}/giuh_river.tif"), overwrite = TRUE)
   
   #x <- ifel(sca <= gully_threshold, vel_gully, vel_overland) #original script
+  # Generate a raster x [meter/sec] with velocities (overland, gully, and channel) field 
   x <- ifel(sca > gully_threshold, vel_gully, vel_overland)
   x <- ifel(rasterized_river > 0, vel_channel, x)
   
   sec_to_min = 60  # 60 minutes (1 hour) is the time discretization for giuh
-  # This x matrix represents the time (in minutes) it takes to travel 1 meter. 
-  # Speed = distance[meters]/Time[minutes]. X is 1/Speed 
+  # Convert the raster x [meter/sec] to min/meter
+  # the below x matrix [min/meter] represents the time (in minutes) it takes to travel 1 meter
+  # X[m/sec] -> X[m/sec] * 60 sec/1 min -> X[m/min] * 60 -> X * sec_to_min [m/min]
+  # X = 1/X [min/m]
+  # Speed = Distance[meters]/Time[minutes]. X = Time/Distance = 1/Speed 
   x <- 1.0/(x*sec_to_min) 
   names(x)  = "travel_time"
   
@@ -37,6 +41,7 @@ giuh_function <- function(div_infile, dem_output_dir, vel_channel = 1, vel_overl
   wbt_d8_pointer(dem = glue("{dem_output_dir}/dem_corr.tif"), output = glue("{dem_output_dir}/dem_d8.tif"))
   
   # Using S = V * T => T = S/V; divide distance (flowpath_length) by weights (1/V)
+  # Get giuh_minutes raster by computing flowpath length * weights = meter * X = meter * min/meter = min
   wbt_downslope_flowpath_length(d8_pntr = glue("{dem_output_dir}/dem_d8.tif"),
                                 output  = glue("{dem_output_dir}/giuh_minute.tif"),
                                 weights = glue("{dem_output_dir}/giuh_travel_time.tif"))
@@ -76,49 +81,14 @@ giuh_function <- function(div_infile, dem_output_dir, vel_channel = 1, vel_overl
               overwrite=TRUE)  
   
   # channel cumulative distribution of area with distance
-  #giuh_dist <- execute_zonal(data = downslope_giuh_cat_outlet,
-  #                           geom = div,
-  #                           ID = "divide_id",
-  #                           fun = zonal::distribution,
-  #                           breaks = seq(0.0, 600, by=60),
-  #                           constrain = TRUE)
-  
   giuh_dist <- execute_zonal(data = downslope_giuh_cat_outlet,
                              geom = div,
                              ID = "divide_id",
-                             fun = dist2,
+                             fun = zonal::distribution,
                              breaks = seq(0.0, 600, by=60),
                              constrain = TRUE)
   
   return(giuh_dist)
-}
-
-dist2 <- function(value, coverage_fraction, breaks = 10, constrain = FALSE) {
-  if (length(value) <= 0 | all(is.nan(value))) {
-    return("[]")
-  }
-  
-  x1 = value * coverage_fraction
-  x1 = x1[!is.na(x1)]
-  
-  if (constrain | length(breaks) > 1) {
-    breaks_tmp = c(breaks[1],breaks[2])
-    #message(paste0("BREAKS PRIOR: ", paste(breaks, collapse = ", ")))
-    breaks = breaks[breaks <= max(x1, na.rm = TRUE)]
-    if (length(breaks) == 1) {
-      breaks = breaks_tmp
-    }
-    #message(paste0("BREAKS AFTER: ", paste(breaks, collapse = ", ")))
-  }
-  
-  
-  tmp = as.data.frame(table(cut(x1, breaks = breaks)))
-  
-  tmp$v = as.numeric(gsub("]", "", sub('.*,\\s*', '', tmp$Var1)))
-  
-  tmp$frequency = tmp$Freq / sum(tmp$Freq)
-  
-  as.character(toJSON(tmp[,c("v", "frequency")]))
 }
 
 
