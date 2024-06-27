@@ -31,6 +31,11 @@
 # Point r_dir to the directory of R scripts downloaded from the repository
 r_dir = "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/giuh_twi"
 # (a)
+reinstall_hydrofabric <- FALSE # setting it to TRUE will update/overwrite the existing hydrofabric
+reinstall_arrow <- FALSE       # old arrow package or arrow installed without S3 support can cause issues, 
+                               # typical error msg "Error: NotImplemented: Got S3 URI but Arrow compiled without S3 support"
+                               # setting it to TRUE to install arrow package with S3 support 
+                               # (see install_load_libs.R for more instructions)
 source(paste0(r_dir, "/install_load_libs.R"))
 # (b)
 source(glue("{r_dir}/custom_functions.R"))

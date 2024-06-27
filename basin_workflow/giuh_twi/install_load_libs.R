@@ -17,10 +17,10 @@ library(curl)
 library(usethis)
 library(devtools)
 
-if(!requireNamespace("hydrofabric3D", quietly=TRUE))
+if(!requireNamespace("hydrofabric3D", quietly=TRUE) || reinstall_hydrofabric)
   devtools::install_github("mikejohnson51/hydrofabric3D")
 
-if(!requireNamespace("hydrofabric", quietly=TRUE)) {
+if(!requireNamespace("hydrofabric", quietly=TRUE) || reinstall_hydrofabric) {
   #devtools::install_github("noaa-owp/hydrofabric", ref = 'b07c109', force = TRUE)
   devtools::install_github("noaa-owp/hydrofabric", force = TRUE)
 }
@@ -35,25 +35,43 @@ if(!requireNamespace("AOI", quietly=TRUE))
   devtools::install_github("mikejohnson51/AOI")
 
 
-if(!requireNamespace("sf", quietly=TRUE)) install.packages("sf")
-if(!requireNamespace("terra", quietly=TRUE)) install.packages("terra")
+if(!requireNamespace("sf", quietly=TRUE)) 
+  install.packages("sf")
+
+if(!requireNamespace("terra", quietly=TRUE)) 
+  install.packages("terra")
+
 if(!requireNamespace("whitebox", quietly=TRUE)) {
   install.packages("whitebox")
   whitebox::install_whitebox()
 }
-if(!requireNamespace("Metrics", quietly=TRUE)) install.packages("Metrics")
 
-if(!requireNamespace("dplyr", quietly=TRUE)) install.packages("dplyr")
-if(!requireNamespace("glue", quietly=TRUE)) install.packages("glue")
-if(!requireNamespace("raster", quietly=TRUE)) install.packages("raster")
-if(!requireNamespace("jsonlite", quietly=TRUE)) install.packages("jsonlite")
-if(!requireNamespace("ggplot2", quietly=TRUE)) install.packages("ggplot2")
+if(!requireNamespace("Metrics", quietly=TRUE)) 
+  install.packages("Metrics")
+
+if(!requireNamespace("dplyr", quietly=TRUE)) 
+  install.packages("dplyr")
+
+if(!requireNamespace("glue", quietly=TRUE)) 
+  install.packages("glue")
+
+if(!requireNamespace("raster", quietly=TRUE)) 
+  install.packages("raster")
+
+if(!requireNamespace("jsonlite", quietly=TRUE)) 
+  install.packages("jsonlite")
+
+if(!requireNamespace("ggplot2", quietly=TRUE)) 
+  install.packages("ggplot2")
 
 
 # install arrow package from source, if any conflicts/errors happen due to arrow package
-if(!requireNamespace("arrow", quietly=TRUE)) {
+if(!requireNamespace("arrow", quietly=TRUE) || reinstall_arrow) {
   Sys.setenv("NOT_CRAN" = "true")
-  Sys.setenv(LIBARROW_BINARY = TRUE); install.packages('arrow', type = "source") 
+  Sys.setenv(LIBARROW_BINARY = TRUE)
+  install.packages('arrow', type = "source") 
+  # if ran into arrow installation issues, once can try the following too.
+  #install.packages("arrow", repos = https://apache.r-universe.dev) 
 }
 
 
@@ -62,7 +80,6 @@ suppressPackageStartupMessages(library(hydrofabric))
 library(climateR)
 library(zonal)
 library(whitebox)
-
 library(sf)
 library(terra)
 library(dplyr)
