@@ -48,29 +48,43 @@ fun_crop_upper <- function(values, coverage_fraction) {
 
 
 # Add model attribtes to the geopackage
-add_model_attributes <- function(div_path) {
-  # Read all divide_id for the given hydrofabric subset
-  divides <- sf::read_sf(div_path, query = "SELECT divide_id FROM divides")$divide_id
+add_model_attributes <- function(div_path, hf_version = 'v2.1.1') {
   
-  # Get all the CFE/NOAH-OWP attributes for the given catchments/divides
-  vpu = unique(pull(read_sf(div_path, "network")))
-  #vpu = read_sf(outfile, "network") %>% pull(vpu) %>% unique()
+  base = 's3://lynker-spatial/hydrofabric/v2.1.1/nextgen/conus'
   
-  # full conus model param file is here: s3://lynker-spatial/v20/conus_model_attributes.parquet
-  #print (glue("VPU+: {vpu}"))
+  # net has divide_id, id, and vupid that are used for filtering below
+  net = as_sqlite(outfile, "network") 
   
-  hf_version = 'v20.1' 
+  # Courtesy of Mike Johnson
+  model_attr <- arrow::open_dataset(glue('{base}_model-attributes')) |>
+    inner_join(collect(distinct(dplyr::select(db, divide_id, vpuid)))) |> 
+    dplyr::collect() 
   
-  model_attr <- arrow::read_parquet(glue('s3://lynker-spatial/hydrofabric/{hf_version}/model_attributes/nextgen_{vpu}.parquet')) |>
-    dplyr::filter(divide_id %in% divides) |> 
+  flowpath_attr <- arrow::open_dataset(glue('{base}_flowpath-attributes')) |>
+    inner_join(collect(distinct(dplyr::select(db, id, vpuid)))) |> 
     dplyr::collect()
-
+  
   #cat ("m_attr: ", nrow(model_attr))
   stopifnot(nrow(model_attr) > 0)
+  stopifnot(nrow(flowpath_attr) > 0)
   
   # Write the attributes to a new table in the hydrofabric subset GPKG
   sf::st_write(model_attr, div_path, layer = "model_attributes", append = FALSE)
   
+  sf::st_write(flowpath_attr, div_path, layer = "flowpath_attributes", append = FALSE)
+  
   return(model_attr)
   
+  #### Method 2 - could be done this way too
+  #net = as_sqlite(outfile, "network") |> 
+  #  select('id', 'divide_id', 'vpuid') |> 
+  #  collect()
+  
+  #model_attr <- open_dataset(glue('s3://lynker-spatial/hydrofabric/{hf_version}/nextgen/conus_model-attributes')) |>
+  #  filter(vpuid %in% unique(net$vpuid), divide_id %in% unique(net$divide_id)) |> 
+  #  collect() 
+  
+  #flowpath_attr <- open_dataset(glue('s3://lynker-spatial/hydrofabric/{hf_version}/nextgen/conus_flowpath-attributes')) |>
+  #  filter(vpuid %in% unique(net$vpuid), divide_id %in% unique(net$id)) |> 
+  #  collect()
 }

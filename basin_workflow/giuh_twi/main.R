@@ -28,6 +28,8 @@
 #          c) Specify DEM input file (Default points to S3 endpoint; see driver.R)
 #          d) Set output directory path (output_dir)
 ################################################################################
+
+
 # Point r_dir to the directory of R scripts downloaded from the repository
 r_dir = "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/giuh_twi"
 # (a)
@@ -37,8 +39,10 @@ reinstall_arrow <- FALSE       # old arrow package or arrow installed without S3
                                # setting it to TRUE to install arrow package with S3 support 
                                # (see install_load_libs.R for more instructions)
 source(paste0(r_dir, "/install_load_libs.R"))
+
 # (b)
 source(glue("{r_dir}/custom_functions.R"))
+
 # (c)
 #dem_infile = "/vsicurl/https://lynker-spatial.s3.amazonaws.com/gridded-resources/dem.vrt"
 
@@ -122,11 +126,3 @@ print(cats_failed)
 #  dplyr::filter(divide_id %in% divides) |> 
 #  dplyr::collect()
 
-getwd()
-fid = glue('USGS-01047000')
-outfile <- glue('data/gage_01047000.gpkg')
-cat ("run_main:", fid, outfile, "\n")
-
-hfsubsetR::get_subset(nldi_feature = list(featureSource="nwissite", featureID=fid),
-                      outfile = outfile, hf_version = '2.1.1', type = 'nextgen',
-                      overwrite = TRUE)

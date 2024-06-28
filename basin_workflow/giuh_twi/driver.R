@@ -3,18 +3,15 @@
 ################################################################################
 
 run_driver <- function(gage_id = NULL, is_gpkg_provided = FALSE, 
-                       dem_infile = "/vsicurl/https://lynker-spatial.s3.amazonaws.com/gridded-resources/dem.vrt", 
+                       dem_infile = 's3://lynker-spatial/gridded-resources/dem.vrt', 
                        dem_output_dir,
                        loc_gpkg_file = "",
                        twi_pre_computed_option = FALSE) {
   
   outfile <- " "
   if(!is_gpkg_provided) {
-    #gage_id = '01033000' # A hydrolocation URI
-    #hl = glue('Gages-{gage_id}')
     fid = glue('USGS-{gage_id}')
     outfile <- glue('data/gage_{gage_id}.gpkg')
-    #cat ("run_main:", fid, outfile, "\n")
     
     hfsubsetR::get_subset(nldi_feature = list(featureSource="nwissite", featureID=fid),
                           outfile = outfile, hf_version = '2.1.1', type = 'nextgen',
