@@ -17,7 +17,6 @@
 #   STEP #6: Compute GIUH (inside driver.R)
 #   STEP #7: Compute Nash cascade parameters (N and K) for surface runoff (inside driver.R)
 #   STEP #8: Append GIUH, TWI, width function, and Nash cascade parameters to model_attributes layer (inside driver.R)
-###############################################################################
 
 
 ################################ SETUP #########################################
@@ -27,10 +26,9 @@
 #          b) Load custom .R files/functions such as giuh.R that computes GIUH
 #          c) Specify DEM input file (Default points to S3 endpoint; see driver.R)
 #          d) Set output directory path (output_dir)
-################################################################################
 
 
-# Point r_dir to the directory of R scripts downloaded from the repository
+# Point r_dir to the basin_workflow repository directory
 r_dir = "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/giuh_twi"
 # (a)
 reinstall_hydrofabric <- FALSE # setting it to TRUE will update/overwrite the existing hydrofabric
@@ -56,26 +54,23 @@ failed_dir = "failed_cats"
 dir.create(failed_dir, recursive = TRUE, showWarnings = FALSE)
 
 
-################################ OPTION #########################################
+################################ OPTIONS #######################################
 # STEP #2:Currently, the script works with a single gage ID, a list of gage IDs, or already download
 # geopackage(s) (see Examples 1 and 2 below). 
 # Once an option is selection, go to the corresponding Example and make sure to adjust the file/directories 
 # to your local settings
 
-###############################################################################
 # Example 1: User-provided gage IDs; turn using_gage_IDs ON
 option_using_gage_IDs <- TRUE
-################################################################################
 # Example 2: User-provided geopackages; turn using_gpkgs ON
 option_using_gpkgs    <- FALSE
 
 
 
 if (option_using_gage_IDs == TRUE) {
-  ################################################################################
+  ################################ EXAMPLE 1 ###################################
   # For this example either provide a gage ID or a file to read gage IDs from
   # Modify this part according your settings
-  ################################################################################
   
   IDs_from_file <- FALSE
   gage_id <- '01047000'
@@ -97,10 +92,10 @@ if (option_using_gage_IDs == TRUE) {
   
   
 } else if (option_using_gpkgs == TRUE) {
-  ################################################################################
+  ################################ EXAMPLE 2 ###################################
   # For this example set gpkg_i_dir to the directory containing geopackage(s)
   # Modify this part according your settings
-  ################################################################################
+
 
   gpkgs_i_dir = glue("{output_dir}/camels_basins_all")   # input
   gage_files = list.files(gpkgs_i_dir, full.names = FALSE, pattern = "Gage_")
@@ -112,17 +107,4 @@ if (option_using_gage_IDs == TRUE) {
 
 print(cats_failed)
 
-###############################################################################
-# DONE
-###############################################################################
-
-
-#model_attr <- arrow::read_parquet(glue('s3://lynker-spatial/hydrofabric/v20.1/model_attributes/nextgen_01.parquet'))
-#dplyr::as_tibble(model_attr)
-
-# Check if the IDs exist in the HF conus network
-#conus_net <- arrow::read_parquet(glue("{root_outpath}/model_attributes.parquet")) 
-#|> 
-#  dplyr::filter(divide_id %in% divides) |> 
-#  dplyr::collect()
-
+################################### DONE #######################################
