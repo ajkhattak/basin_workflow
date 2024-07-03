@@ -43,10 +43,11 @@ def main():
 
     try:
         parser = argparse.ArgumentParser()
-        parser.add_argument("-gpkg", dest="gpkg_file",     type=str, required=True,  help="the gpkg file")
-        parser.add_argument("-f",    dest="forcing_dir",   type=str, required=True,  help="the forcing files directory")
-        parser.add_argument("-o",    dest="output_dir",    type=str, required=True,  help="the output files directory")
-        parser.add_argument("-ngen", dest="ngen_dir",      type=str, required=True,  help="the ngen directory")
+        parser.add_argument("-gpkg", dest="gpkg_file",     type=str, required=True,  help="gpkg file")
+        parser.add_argument("-f",    dest="forcing_dir",   type=str, required=True,  help="forcing files directory")
+        parser.add_argument("-o",    dest="config_dir",    type=str, required=True,  help="config files directory")
+        parser.add_argument("-ngen", dest="ngen_dir",      type=str, required=True,  help="ngen base directory")
+        parser.add_argument("-json", dest="json_dir",      type=str, required=True,  help="realization files directory")
         parser.add_argument("-p",    dest="precip_partitioning_scheme", type=str,
                             required=True, help="option for precip partitioning scheme")
         parser.add_argument("-r",    dest="surface_runoff_scheme", type=str, required=True,
@@ -68,9 +69,9 @@ def main():
     if (not os.path.exists(args.forcing_dir)):
         sys.exit('The forcing directory (%s) does not exist!'%args.forcing_dir)
 
-    # check if output dir (to which output will be written to) exists, if not throw an error, user must create one 
-    if (not os.path.exists(args.output_dir)):
-        sys.exit("output dir does not exist, create one!")
+    # check if config dir (to which config files will be written to) exists, if not throw an error, user must create one 
+    if (not os.path.exists(args.config_dir)):
+        sys.exit("config dir does not exist, create one!")
 
     # not all model coupling options are support yet, throw an error if un-supported options are provided
     if (args.models_option in ["C","L","B"]):
@@ -101,7 +102,7 @@ def main():
     path_crf_gen_files = os.path.join(path_crf,"configuration.py")
 
     generate_config_files = f'python {path_crf_gen_files} -gpkg {args.gpkg_file} -ngen {args.ngen_dir} \
-                              -f {args.forcing_dir} -o {args.output_dir} -m {coupled_models} \
+                              -f {args.forcing_dir} -o {args.config_dir} -m {coupled_models} \
                               -p {args.precip_partitioning_scheme} -r {args.surface_runoff_scheme} \
                               -troute {args.troute} \
                               -t \'{args.time}\' '
@@ -129,9 +130,9 @@ def main():
     path_crf_real_file = os.path.join(path_crf,"realization.py")
 
     generate_realization_file = f'python {path_crf_real_file} -ngen {args.ngen_dir} -f {args.forcing_dir} \
-                                  -i {args.output_dir} -m {coupled_models} -p {args.precip_partitioning_scheme} \
+                                  -i {args.config_dir} -m {coupled_models} -p {args.precip_partitioning_scheme} \
                                   -b {baseline_case} -r {args.surface_runoff_scheme} -t \'{args.time}\' \
-                                  -netcdf {args.netcdf} -troute {args.troute}'
+                                  -netcdf {args.netcdf} -troute {args.troute} -json {args.json_dir}'
 
     print ("Running (from driver.py): \n ", generate_realization_file)
 
@@ -150,7 +151,7 @@ def main():
         
         path_crf_baseline_file = os.path.join(path_crf,"baseline.py")
         
-        convert_to_baseline = f'python {path_crf_baseline_file} -i {infile} -idir {args.output_dir} -o {outfile} -m {coupled_models}'
+        convert_to_baseline = f'python {path_crf_baseline_file} -i {infile} -idir {args.config_dir} -o {outfile} -m {coupled_models}'
 
         print (colors.BLUE)
         print ("Generating baseline realization file ...")

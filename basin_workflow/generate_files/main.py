@@ -24,7 +24,7 @@ import geopandas as gpd
 # root_dir     : geopackage(s) directory
 # forcing_dir  : lumped forcings directory (pre-downloaed forcing data for each catchment (.csv or .nc))
 # ngen_dir     : nextgen directory path
-# output_dir   : output directory path (all config files will be stored here)
+# config_dir   : config directory path (all config files will be stored here)
 
 ### Specify the following model options
 # simulation_time            : simulation start/end times (example is given below)
@@ -39,10 +39,10 @@ import geopandas as gpd
 #      the partitioned .json is also stored in the data directory
 ################################################ ###################################
 
-root_dir     = "/home/ahmad.jan/core/projects/ngen_evaluation_camels/basins516"
-workflow_dir = "/home/ahmad.jan/codes/basin_workflow/basin_workflow/generate_files"
-forcing_dir  = "/local/For_Ahmad/CAMELS_Basins_NextGen_Forcings/"
-ngen_dir     = "/home/ahmad.jan/codes/ngen/ngen"
+root_dir     = "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/basins516_model_attr"
+workflow_dir = "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/generate_files"
+forcing_dir  = "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/forcings"
+ngen_dir     = "/Users/ahmadjan/codes/ngen/ngen"
 
 # simulation time format YYYYMMDDHHMM (YYYY, MM, DD, HH, MM)
 simulation_time            = '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2015-10-01 00:00:00"}' 
@@ -65,10 +65,29 @@ assert (os.path.exists(ngen_dir))
 gpkg_dirs = glob.glob(root_dir + "/*/", recursive = True)
 
 if (is_netcdf_forcing):
-    forcing_files = glob.glob(forcing_dir + "*.nc", recursive = True)
+    forcing_files = glob.glob(os.path.join(forcing_dir, "*.nc"), recursive = True)
 else:
     forcing_files = forcing_dir
 
+assert (len(forcing_files) > 0)
+
+
+def create_clean_dirs(config_dir = "configs", json_dir = "json"):
+
+    if (os.path.isdir(config_dir) and clean_all):
+        shutil.rmtree(config_dir)
+        os.mkdir(config_dir)
+    elif (not os.path.isdir(config_dir)):
+        os.mkdir(config_dir)
+
+    if (os.path.isdir(json_dir)):
+        shutil.rmtree(json_dir)
+        os.mkdir(json_dir)
+    else:
+        os.mkdir(json_dir)
+
+    if (os.path.isdir("dem")):
+        shutil.rmtree("dem")
 
 #################################################################################
 ############################### MAIN LOOP #######################################
@@ -78,22 +97,17 @@ for dir in gpkg_dirs:
     os.chdir(dir)
     
     print ("cwd: ", os.getcwd())
-    gpkg_name     = os.path.basename(glob.glob(dir + "/data/*.gpkg")[0])  # <---- modify this line according to your settings
-    gpkg_dir      = f"data/{gpkg_name}"                                   # <---- modify this line according to your settings
+    gpkg_name     = os.path.basename(glob.glob(dir + "/data/*.gpkg")[0])  # <---- modify this line according to local settings
+    gpkg_dir      = f"data/{gpkg_name}"                                   # <---- modify this line according to local settings
     
     print("=========================================")
     print ("Running : ", gpkg_dir)
-    
-    output_dir    = "inputs" + model_option
 
-    if (os.path.isdir(output_dir) and clean_all):
-        shutil.rmtree(output_dir)
-        os.mkdir(output_dir)
-    elif (not os.path.isdir(output_dir)):
-        os.mkdir(output_dir)
+    # config_dir and json_dir are simply names of the directories (not paths) and are created under the cwdir
+    config_dir = "configs" #+ model_option
+    json_dir   = "json"
 
-    if (os.path.isdir("dem")):
-        shutil.rmtree("dem")
+    create_clean_dirs(config_dir, json_dir)
 
     # find forcing data for the geopackage
     if(is_netcdf_forcing):
@@ -102,14 +116,17 @@ for dir in gpkg_dirs:
         if(len(forcing_file) == 1):
             forcing_dir = forcing_file[0]
         else:
+            print ("Forcing file .nc does not exist for this gpkg, continuing to the next gpkg")
+            break
             continue
+
     assert (os.path.exists(forcing_dir))
     
     workflow_driver = os.path.join(workflow_dir,"driver.py")
 
     driver = f'python {workflow_driver} -gpkg {gpkg_dir} -ngen {ngen_dir} -f {forcing_dir} \
-    -o {output_dir} -m {model_option} -p {precip_partitioning_scheme} -r {surface_runoff_scheme} -t \'{simulation_time}\' \
-    -netcdf {is_netcdf_forcing} -troute {is_routing}'
+    -o {config_dir} -m {model_option} -p {precip_partitioning_scheme} -r {surface_runoff_scheme} -t \'{simulation_time}\' \
+    -netcdf {is_netcdf_forcing} -troute {is_routing} -json {json_dir}'
 
     result = subprocess.call(driver,shell=True)
 
@@ -130,7 +147,8 @@ for dir in gpkg_dirs:
                 nproc = 16
             else:
                 nproc = 20
-            fpar = os.path.join("data", gpkg_name[:-5].split(".")[0] + f"-par{nproc}.json")     # -5 is to remove .gpkg from the string
+            #fpar = os.path.join("data", gpkg_name[:-5].split(".")[0] + f"-par{nproc}.json")     # -5 is to remove .gpkg from the string
+            fpar = os.path.join(json_dir, gpkg_name[:-5].split(".")[0] + f"-par{nproc}.json")     # -5 is to remove .gpkg from the string
             partition=f"{ngen_dir}/cmake_build/partitionGenerator {gpkg_dir} {gpkg_dir} {fpar} {nproc} \"\" \"\" "
             result = subprocess.call(partition,shell=True)
             

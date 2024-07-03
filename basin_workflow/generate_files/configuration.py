@@ -254,7 +254,7 @@ def write_nom_input_files(catids, nom_dir, forcing_dir, gpkg_file, simulation_ti
         # combine all sub-blocks
         nom_params = timing + params + location + forcing + model_opt + struct + init_val
 
-        fname_nom = cat_name+'_config_nom.input'
+        fname_nom = 'nom_config_'+cat_name+'.input'
         nom_file = os.path.join(nom_dir, fname_nom)
         with open(nom_file, "w") as f:
             f.writelines('\n'.join(nom_params))
@@ -348,7 +348,7 @@ def write_cfe_input_files(catids, precip_partitioning_scheme, surface_runoff_sch
             cfe_params.append("sft_coupled=true")
             cfe_params.append("ice_content_threshold="+str(ice_content_threshold))
 
-        fname_cfe = cat_name + '_config_cfe.txt'
+        fname_cfe = 'cfe_config_' + cat_name + '.txt'
         cfe_file = os.path.join(cfe_dir, fname_cfe)
         with open(cfe_file, "w") as f:
             f.writelines('\n'.join(cfe_params))
@@ -502,8 +502,8 @@ def write_sft_input_files(catids, precip_partitioning_scheme, surface_runoff_sch
                       f'soil_z={soil_z}[m]',
                       f'soil_temperature={MAAT}[K]'
                       ]
-         
-        fname_sft = cat_name + '_config_sft.txt'
+
+        fname_sft = 'sft_config_' + cat_name + '.txt'
         sft_file = os.path.join(sft_dir, fname_sft)
         with open(sft_file, "w") as f:
             f.writelines('\n'.join(sft_params))
@@ -543,7 +543,7 @@ def write_smp_input_files(catids, gdf_soil, smp_dir, coupled_models):
             # for exmaple, 'soil_depth_layers=0.4,1.75,2.0'
             # SMCMAX is also an array for hetero. soils
 
-        fname_smp = cat_name + '_config_smp.txt'
+        fname_smp = 'smp_config_' + cat_name + '.txt'
         smp_file = os.path.join(smp_dir, fname_smp)
         with open(smp_file, "w") as f:
             f.writelines('\n'.join(smp_params))
@@ -607,7 +607,7 @@ def write_lasam_input_files(catids, soil_param_file, gdf_soil, lasam_dir, couple
         giuh_ordinates = ",".join(str(x) for x in np.array(giuh_cat["frequency"]))
         lasam_params[giuh_loc_id] += giuh_ordinates
         
-        fname_lasam = cat_name + '_config_lasam.txt'
+        fname_lasam = 'lasam_config_' + cat_name + '.txt'
         lasam_file = os.path.join(lasam_dir, fname_lasam)
         with open(lasam_file, "w") as f:
             f.writelines('\n'.join(lasam_params))

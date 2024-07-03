@@ -23,10 +23,10 @@ import shutil
 
 #############################################################################
 # module for potential evapotranspiration block in the nextgen realization file 
-# @param input_dir : input directory of the PET config files
+# @param config_dir : input directory of the PET config files
 # @param model_exe : path to PET executable
 #############################################################################
-def get_pet_block(model_exe, input_dir):
+def get_pet_block(model_exe, config_dir):
     
     block = {
 	"name": "bmi_c",
@@ -34,7 +34,7 @@ def get_pet_block(model_exe, input_dir):
             "model_type_name": "bmi_c_pet",
             "library_file": model_exe,
             "forcing_file": "",
-            "init_config": os.path.join(input_dir, 'pet/{{id}}_config_pet.txt'), 
+            "init_config": os.path.join(config_dir, 'pet/{{id}}_config_pet.txt'), 
             "allow_exceed_end_time": "true",
             "main_output_variable": "water_potential_evaporation_flux",
             "registration_function":"register_bmi_pet",
@@ -46,10 +46,10 @@ def get_pet_block(model_exe, input_dir):
 
 #############################################################################
 # module for NOAH-OWP-Modular (NOM) block in the nextgen realization file 
-# @param input_dir : input directory of the NOM config files
+# @param config_dir : input directory of the NOM config files
 # @param model_exe : path to NOM executable
 #############################################################################
-def get_noah_owp_modular_block(model_exe, input_dir):
+def get_noah_owp_modular_block(model_exe, config_dir):
     block = {
         "name": "bmi_fortran", 
         "params": {
@@ -57,7 +57,7 @@ def get_noah_owp_modular_block(model_exe, input_dir):
             "model_type_name": "NoahOWP", 
             "main_output_variable": "QINSUR",
             "library_file": model_exe,
-            "init_config": os.path.join(input_dir, 'nom/{{id}}_config_nom.input'),
+            "init_config": os.path.join(config_dir, 'nom/{{id}}_config_nom.input'),
             "allow_exceed_end_time": True,
             "fixed_time_step": False,
             "uses_forcing_file": False,
@@ -78,11 +78,11 @@ def get_noah_owp_modular_block(model_exe, input_dir):
 
 #############################################################################
 # module for CFE block in the nextgen realization file 
-# @param input_dir : input directory of the CFE config files
+# @param config_dir : input directory of the CFE config files
 # @param model_exe : path to CFE executable
 # @param cfe_standalone : if true, additional parameters are mapped from the SLoTH BMI
 #############################################################################
-def get_cfe_block(model_exe, input_dir, cfe_standalone):
+def get_cfe_block(model_exe, config_dir, cfe_standalone):
     
     block = {
         "name": "bmi_c",
@@ -91,7 +91,7 @@ def get_cfe_block(model_exe, input_dir, cfe_standalone):
             "model_type_name": "CFE", 
             "main_output_variable": "Q_OUT",
             "library_file": model_exe,
-            "init_config": os.path.join(input_dir, 'cfe/{{id}}_config_cfe.txt'), 
+            "init_config": os.path.join(config_dir, 'cfe/{{id}}_config_cfe.txt'), 
             "allow_exceed_end_time": True,
             "fixed_time_step": False,
             "uses_forcing_file": False,
@@ -117,10 +117,10 @@ def get_cfe_block(model_exe, input_dir, cfe_standalone):
 
 #############################################################################
 # module for topmodel block in the nextgen realization file 
-# @param input_dir : input directory of the PET config files
+# @param config_dir : input directory of the PET config files
 # @param model_exe : path to PET executable
 #############################################################################
-def get_topmodel_block(model_exe, input_dir):
+def get_topmodel_block(model_exe, config_dir):
     block = {
         "name": "bmi_c",
         "params": {
@@ -128,7 +128,7 @@ def get_topmodel_block(model_exe, input_dir):
             "model_type_name": "TOPMODEL", 
             "main_output_variable": "Qout",
             "library_file": model_exe,
-            "init_config": os.path.join(input_dir, 'topmodel/topmod_{{id}}.run'),
+            "init_config": os.path.join(config_dir, 'topmodel/topmod_{{id}}.run'),
             "allow_exceed_end_time": True,
             "fixed_time_step": False,
             "uses_forcing_file": False,
@@ -144,9 +144,9 @@ def get_topmodel_block(model_exe, input_dir):
 
 #############################################################################
 # module for Soil Freeze-thaw (SFT) block in the nextgen realization file 
-# @param input_dir : input directory of the SFT config files
+# @param config_dir : input directory of the SFT config files
 #############################################################################
-def get_sft_block(model_exe, input_dir):
+def get_sft_block(model_exe, config_dir):
     block = {
         "name": "bmi_c++",
         "params": {
@@ -154,7 +154,7 @@ def get_sft_block(model_exe, input_dir):
             "model_type_name": "SFT", 
             "main_output_variable": "num_cells",
             "library_file": model_exe,
-            "init_config": os.path.join(input_dir, 'sft/{{id}}_config_sft.txt'),
+            "init_config": os.path.join(config_dir, 'sft/{{id}}_config_sft.txt'),
             "allow_exceed_end_time": True, 
             "uses_forcing_file": False,
             "variables_names_map": {
@@ -167,10 +167,10 @@ def get_sft_block(model_exe, input_dir):
 
 #############################################################################
 # module for Soil Moisture Profiles (SMP) block in the nextgen realization file 
-# @param input_dir : input directory of the SMP config files
+# @param config_dir : input directory of the SMP config files
 # @param model_exe : path to SMP executable
 #############################################################################
-def get_smp_block(model_exe, input_dir, coupled_models):
+def get_smp_block(model_exe, config_dir, coupled_models):
     block = {
         "name": "bmi_c++",
         "params": {
@@ -178,7 +178,7 @@ def get_smp_block(model_exe, input_dir, coupled_models):
             "model_type_name": "SMP", 
             "main_output_variable": "soil_water_table",
             "library_file": model_exe,
-            "init_config": os.path.join(input_dir, 'smp/{{id}}_config_smp.txt'),
+            "init_config": os.path.join(config_dir, 'smp/{{id}}_config_smp.txt'),
             "allow_exceed_end_time": True,
             "uses_forcing_file": False,
             "variables_names_map": {
@@ -215,10 +215,10 @@ def get_smp_block(model_exe, input_dir, coupled_models):
 
 #############################################################################
 # module for Lumped Arid/semi-arid model (LASAM) block in the nextgen realization file 
-# @param input_dir : input directory of the LASAM config files
+# @param config_dir : input directory of the LASAM config files
 # @param model_exe : path to LASAM executable
 #############################################################################
-def get_lasam_block(model_exe, input_dir):
+def get_lasam_block(model_exe, config_dir):
     block = {
         "name": "bmi_c++",
         "params": {
@@ -226,7 +226,7 @@ def get_lasam_block(model_exe, input_dir):
             "model_type_name": "LASAM",
             "main_output_variable": "precipitation_rate",
             "library_file": model_exe,
-            "init_config": os.path.join(input_dir, 'lasam/{{id}}_config_lasam.txt'),
+            "init_config": os.path.join(config_dir, 'lasam/{{id}}_config_lasam.txt'),
             "allow_exceed_end_time": True,
             "uses_forcing_file": False,
             "variables_names_map": {
@@ -300,16 +300,16 @@ def get_sloth_block(model_exe, coupled_models):
 #############################################################################
 # module for JinjaBMI block and unit conversion in the nextgen realization file (for baseline simulations)
 # @param model_exe : path to SLoTH executable
-# @param input_dir : input directory of the LASAM config files
+# @param config_dir : input directory of the LASAM config files
 #############################################################################
-def get_jinjabmi_unit_conversion_block(model_exe, input_dir):
+def get_jinjabmi_unit_conversion_block(model_exe, config_dir):
     
     block_jinjabmi = {
         "name": "bmi_python",
         "params": {
             "model_type_name": "jinjabmi",
             "python_type": "jinjabmi.Jinja",
-            "init_config": os.path.join(input_dir, "jinjabmi/baseline_support.yml"),
+            "init_config": os.path.join(config_dir, "jinjabmi/baseline_support.yml"),
             "allow_exceed_end_time": True,
             "main_output_variable": "actual_ET_input",
             "uses_forcing_file": False,
@@ -350,14 +350,14 @@ def get_jinjabmi_unit_conversion_block(model_exe, input_dir):
 # module that calls all module blocks and assembles/writes full realization block/file
 # @param ngen_dir        : path to nextgen directory
 # @param forcing_dir : forcing data directory containing data for each catchment
-# @param input_dir        : input directory (config files of all models exist here under subdirectories)
+# @param config_dir        : input directory (config files of all models exist here under subdirectories)
 # @param realization file : name of the output realization file
 # @param coupled_models : models coupling option (pre-defined names; see main.py)
 # @param runoff_scheme  : surface runoff schemes - Options = Schaake or Xinanjiang (For CFE and SFT)
 # @param simulation_time  : dictionary containing simulation start/end time
 # @param baseline_casae   : boolean (if true, baseline scenario realization file is requested)
 #############################################################################
-def write_realization_file(ngen_dir, forcing_dir, input_dir, realization_file,
+def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
                            coupled_models, runoff_scheme, precip_partitioning_scheme,
                            simulation_time, baseline_case, is_netcdf_forcing,
                            is_troute):
@@ -404,7 +404,7 @@ def write_realization_file(ngen_dir, forcing_dir, input_dir, realization_file,
     nom_block = dict()
     if ("nom" in coupled_models):
         assert(lib_files['noah-owp-modular'] != "")
-        nom_block = get_noah_owp_modular_block(lib_files['noah-owp-modular'], input_dir)
+        nom_block = get_noah_owp_modular_block(lib_files['noah-owp-modular'], config_dir)
     
 
     # cfe
@@ -412,13 +412,13 @@ def write_realization_file(ngen_dir, forcing_dir, input_dir, realization_file,
     cfe_standalone= False
     if ("cfe" in coupled_models):
         assert (lib_files['cfe'] != "")
-        cfe_block = get_cfe_block(lib_files['cfe'], input_dir, cfe_standalone=False)
+        cfe_block = get_cfe_block(lib_files['cfe'], config_dir, cfe_standalone=False)
     
     # topmodel
     topmodel_block = dict()
     if ("topmodel" in coupled_models):
         assert (lib_files['topmodel'] != "")
-        topmodel_block = get_topmodel_block(lib_files['topmodel'], input_dir)
+        topmodel_block = get_topmodel_block(lib_files['topmodel'], config_dir)
     
     # sloth
     sloth_block = dict()
@@ -431,25 +431,25 @@ def write_realization_file(ngen_dir, forcing_dir, input_dir, realization_file,
     sft_block = dict()
     if ('sft' in coupled_models):
         assert (lib_files['SoilFreezeThaw'] != "")
-        sft_block = get_sft_block(lib_files['SoilFreezeThaw'], input_dir=input_dir)
+        sft_block = get_sft_block(lib_files['SoilFreezeThaw'], config_dir=config_dir)
     
     # smp
     smp_block = dict()
     if ('smp' in coupled_models):
         assert (lib_files['SoilMoistureProfiles'] != "")
-        smp_block = get_smp_block(lib_files['SoilMoistureProfiles'], input_dir, coupled_models)
+        smp_block = get_smp_block(lib_files['SoilMoistureProfiles'], config_dir, coupled_models)
 
     # lasam
     lasam_block = dict()
     if ('lasam' in coupled_models):
         if ("LASAM" in lib_files.keys()):
-            lasam_block = get_lasam_block(lib_files['LASAM'], input_dir)
+            lasam_block = get_lasam_block(lib_files['LASAM'], config_dir)
         elif ("LGAR-C" in lib_files.keys()):
-            lasam_block = get_lasam_block(lib_files['LGAR-C'], input_dir)
+            lasam_block = get_lasam_block(lib_files['LGAR-C'], config_dir)
 
     pet_block = dict()
     if (lib_files['evapotranspiration'] != ""):
-        pet_block = get_pet_block(lib_files['evapotranspiration'], input_dir)
+        pet_block = get_pet_block(lib_files['evapotranspiration'], config_dir)
 
 
     ##########################################################################
@@ -479,7 +479,7 @@ def write_realization_file(ngen_dir, forcing_dir, input_dir, realization_file,
     os.makedirs("outputs/div")
     os.makedirs("outputs/troute")
     os.makedirs("outputs/troute_parq")
-        
+    
     # Update the forcing block if the forcings are in netcdf format
     if (is_netcdf_forcing):
         forcing_block = {
@@ -493,21 +493,11 @@ def write_realization_file(ngen_dir, forcing_dir, input_dir, realization_file,
     if (is_troute) :
         routing_block = {
             "routing": {
-               #"t_route_connection_path": os.path.join(input_dir, "extern/t-route"),
-               "t_route_config_file_with_path": os.path.join(input_dir, "troute_config.yaml")            
+               #"t_route_connection_path": os.path.join(config_dir, "extern/t-route"),
+               "t_route_config_file_with_path": os.path.join(config_dir, "troute_config.yaml")            
              }
         }
         root.update(routing_block)
-        
-        # if div_output does not exist, create one
-        #if(os.path.exists("troute_output")):
-        #   shutil.rmtree("troute_output")
-        
-        #if(os.path.exists("troute_output_par")):
-        #   shutil.rmtree("troute_output_par")
-        
-        #os.mkdir("troute_output")
-        #os.mkdir("troute_output_par")
 
     
     # fill the formulation block "to_be_filled_in" for the global list
@@ -614,17 +604,17 @@ def main():
 
     try:
         parser = argparse.ArgumentParser()
-        parser.add_argument("-ngen", dest="ngen_dir",   type=str, required=True, help="the ngen directory")
-        parser.add_argument("-f", dest="forcing_dir",   type=str, required=False, help="the forcing files directory")
-        parser.add_argument("-i", dest="input_dir",     type=str, required=True, help="the input files directory")
-        parser.add_argument("-m", dest="models_option", type=str, required=True, help="option for models coupling")
-        parser.add_argument("-p", dest="precip_partitioning_scheme", type=str,
-                            required=True, help="option for precip partitioning scheme")
-        parser.add_argument("-r", dest="runoff_scheme", type=str, required=False, help="option for runoff scheme")
-        parser.add_argument("-t", dest="time",          type=json.loads, required=True,  help="simulation start/end time") 
-        parser.add_argument("-b", dest="baseline_case", type=str, required=False, help="option for baseline case", default=False)
-        parser.add_argument("-netcdf", dest="netcdf", type=str, required=False, default=False, help="option for forcing data format")
-        parser.add_argument("-troute", dest="troute", type=str, required=False, default=False, help="option for t-toure")
+        parser.add_argument("-ngen", dest="ngen_dir",      type=str, required=True,  help="ngen base directory")
+        parser.add_argument("-f",    dest="forcing_dir",   type=str, required=False, help="forcing files directory")
+        parser.add_argument("-i",    dest="config_dir",    type=str, required=True,  help="the input files directory")
+        parser.add_argument("-json", dest="json_dir",      type=str, required=True,  help="realization files directory")
+        parser.add_argument("-m",    dest="models_option", type=str, required=True,  help="option for models coupling")
+        parser.add_argument("-r",    dest="runoff_scheme", type=str, required=False, help="option for runoff scheme")
+        parser.add_argument("-b",    dest="baseline_case", type=str, required=False, help="option for baseline case", default=False)
+        parser.add_argument("-t",    dest="time",          type=json.loads, required=True,       help="simulation start/end time")
+        parser.add_argument("-netcdf", dest="netcdf", type=str, required=False, default=False,   help="option for forcing data format")
+        parser.add_argument("-troute", dest="troute", type=str, required=False, default=False,   help="option for t-toure")
+        parser.add_argument("-p",      dest="precip_partitioning_scheme", type=str, required=True, help="option for precip partitioning scheme")
         args = parser.parse_args()
     except:
         parser.print_help()
@@ -633,33 +623,33 @@ def main():
     if (not os.path.exists(args.forcing_dir)):
         sys.exit("Forcing directory does not exist: " + args.forcing_dir)
         
-    cfe_dir = os.path.join(args.input_dir,"cfe")
+    cfe_dir = os.path.join(args.config_dir,"cfe")
     if ( ('cfe' in args.models_option) and (not os.path.exists(cfe_dir)) ):
-        print ("cfe config files directory does not exist under " + args.input_dir)
+        print ("cfe config files directory does not exist under " + args.config_dir)
         sys.exit(0)
     
-    sft_file = os.path.join(args.input_dir,"sft")
+    sft_file = os.path.join(args.config_dir,"sft")
     if ( ('sft' in args.models_option) and (not os.path.exists(sft_file)) ):
-        print ("sft config files directory does not exist under " + args.input_dir)
+        print ("sft config files directory does not exist under " + args.config_dir)
         sys.exit(0)
 
-    smp_file = os.path.join(args.input_dir,"smp")
+    smp_file = os.path.join(args.config_dir,"smp")
     if ( ('smp' in args.models_option) and (not os.path.exists(smp_file)) ):
-        print ("smp config files directory does not exist under " + args.input_dir)
+        print ("smp config files directory does not exist under " + args.config_dir)
         sys.exit(0)
 
-    lasam_file = os.path.join(args.input_dir,"lasam")    
+    lasam_file = os.path.join(args.config_dir,"lasam")    
     if ( ("lasam" in args.models_option) and (not os.path.exists(lasam_file)) ):
-        print ("lasam config files directory does not exist under " + args.input_dir)
+        print ("lasam config files directory does not exist under " + args.config_dir)
         sys.exit(0)
 
     write_realization_file(
-        ngen_dir     = args.ngen_dir,
-        forcing_dir  = args.forcing_dir,
-        input_dir    = args.input_dir, 
-        realization_file = os.path.join(os.getcwd(), "realization_%s.json"%args.models_option),
-        coupled_models   = args.models_option,
-        runoff_scheme    = args.runoff_scheme,
+        ngen_dir          = args.ngen_dir,
+        forcing_dir       = args.forcing_dir,
+        config_dir        = args.config_dir, 
+        realization_file  = os.path.join(os.getcwd(), args.json_dir, "realization_%s.json"%args.models_option),
+        coupled_models    = args.models_option,
+        runoff_scheme     = args.runoff_scheme,
         precip_partitioning_scheme    = args.precip_partitioning_scheme,
         simulation_time   = args.time,
         baseline_case     = args.baseline_case,
