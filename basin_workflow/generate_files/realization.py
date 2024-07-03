@@ -34,7 +34,7 @@ def get_pet_block(model_exe, config_dir):
             "model_type_name": "bmi_c_pet",
             "library_file": model_exe,
             "forcing_file": "",
-            "init_config": os.path.join(config_dir, 'pet/{{id}}_config_pet.txt'), 
+            "init_config": os.path.join(config_dir, 'pet/pet_config_{{id}}.txt'), 
             "allow_exceed_end_time": "true",
             "main_output_variable": "water_potential_evaporation_flux",
             "registration_function":"register_bmi_pet",
@@ -57,7 +57,7 @@ def get_noah_owp_modular_block(model_exe, config_dir):
             "model_type_name": "NoahOWP", 
             "main_output_variable": "QINSUR",
             "library_file": model_exe,
-            "init_config": os.path.join(config_dir, 'nom/{{id}}_config_nom.input'),
+            "init_config": os.path.join(config_dir, 'nom/nom_config_{{id}}.input'),
             "allow_exceed_end_time": True,
             "fixed_time_step": False,
             "uses_forcing_file": False,
@@ -82,7 +82,7 @@ def get_noah_owp_modular_block(model_exe, config_dir):
 # @param model_exe : path to CFE executable
 # @param cfe_standalone : if true, additional parameters are mapped from the SLoTH BMI
 #############################################################################
-def get_cfe_block(model_exe, config_dir, cfe_standalone):
+def get_cfe_block(model_exe, config_dir, cfe_standalone, cfe_with_pet = True):
     
     block = {
         "name": "bmi_c",
@@ -91,13 +91,13 @@ def get_cfe_block(model_exe, config_dir, cfe_standalone):
             "model_type_name": "CFE", 
             "main_output_variable": "Q_OUT",
             "library_file": model_exe,
-            "init_config": os.path.join(config_dir, 'cfe/{{id}}_config_cfe.txt'), 
+            "init_config": os.path.join(config_dir, 'cfe/cfe_config_{{id}}.txt'), 
             "allow_exceed_end_time": True,
             "fixed_time_step": False,
             "uses_forcing_file": False,
             "variables_names_map": {
                 "atmosphere_water__liquid_equivalent_precipitation_rate": "QINSUR",
-                "water_potential_evaporation_flux": "EVAPOTRANS"
+                "water_potential_evaporation_flux": "water_potential_evaporation_flux"
             },
             "registration_function": "register_bmi_cfe"
         }
@@ -112,7 +112,10 @@ def get_cfe_block(model_exe, config_dir, cfe_standalone):
         var_name_map = block["params"]["variables_names_map"]
         var_name_map.update(sub_map)
         block["params"]["variables_names_map"] = var_name_map
-        
+
+    if (not cfe_with_pet):
+        block["params"]["variables_names_map"]["water_potential_evaporation_flux"] = "EVAPOTRANS"
+    
     return block
 
 #############################################################################
@@ -154,7 +157,7 @@ def get_sft_block(model_exe, config_dir):
             "model_type_name": "SFT", 
             "main_output_variable": "num_cells",
             "library_file": model_exe,
-            "init_config": os.path.join(config_dir, 'sft/{{id}}_config_sft.txt'),
+            "init_config": os.path.join(config_dir, 'sft/sft_config_{{id}}.txt'),
             "allow_exceed_end_time": True, 
             "uses_forcing_file": False,
             "variables_names_map": {
@@ -178,7 +181,7 @@ def get_smp_block(model_exe, config_dir, coupled_models):
             "model_type_name": "SMP", 
             "main_output_variable": "soil_water_table",
             "library_file": model_exe,
-            "init_config": os.path.join(config_dir, 'smp/{{id}}_config_smp.txt'),
+            "init_config": os.path.join(config_dir, 'smp/smp_config_{{id}}.txt'),
             "allow_exceed_end_time": True,
             "uses_forcing_file": False,
             "variables_names_map": {
@@ -226,7 +229,7 @@ def get_lasam_block(model_exe, config_dir):
             "model_type_name": "LASAM",
             "main_output_variable": "precipitation_rate",
             "library_file": model_exe,
-            "init_config": os.path.join(config_dir, 'lasam/{{id}}_config_lasam.txt'),
+            "init_config": os.path.join(config_dir, 'lasam/lasam_config_{{id}}.txt'),
             "allow_exceed_end_time": True,
             "uses_forcing_file": False,
             "variables_names_map": {
@@ -261,7 +264,7 @@ def get_sloth_block(model_exe, coupled_models):
 
     params = dict()
     
-    if (coupled_models in ["nom_cfe", "cfe"]):
+    if (coupled_models in ["nom_cfe", "nom_cfe_pet", "cfe"]):
         params = {
             "ice_fraction_schaake(1,double,m,node)": 0.0,
             "ice_fraction_xinanjiang(1,double,1,node)": 0.0,
@@ -412,7 +415,13 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
     cfe_standalone= False
     if ("cfe" in coupled_models):
         assert (lib_files['cfe'] != "")
-        cfe_block = get_cfe_block(lib_files['cfe'], config_dir, cfe_standalone=False)
+
+        is_pet_included = False
+        
+        if ("pet" in coupled_models):
+            is_pet_included = True
+
+        cfe_block = get_cfe_block(lib_files['cfe'], config_dir, cfe_standalone=False, cfe_with_pet = is_pet_included)
     
     # topmodel
     topmodel_block = dict()
@@ -534,6 +543,14 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
 	                    "DEEP_GW_TO_CHANNEL_FLUX", "Q_OUT", "SOIL_STORAGE", "POTENTIAL_ET", "ACTUAL_ET"]
         output_header_fields = ["rain_rate", "direct_runoff", "giuh_runoff", "nash_lateral_runoff",
                                 "deep_gw_to_channel_flux", "q_out", "soil_storage", "PET", "AET"]
+    elif (coupled_models == "nom_cfe_pet"):
+        model_type_name = "NOM_CFE_PET"
+        main_output_variable = "Q_OUT"
+        modules = [sloth_block, nom_block, pet_block, cfe_block]
+        output_variables = ["RAIN_RATE", "DIRECT_RUNOFF", "GIUH_RUNOFF", "NASH_LATERAL_RUNOFF",
+	                    "DEEP_GW_TO_CHANNEL_FLUX", "Q_OUT", "SOIL_STORAGE", "POTENTIAL_ET", "ACTUAL_ET"]
+        output_header_fields = ["rain_rate", "direct_runoff", "giuh_runoff", "nash_lateral_runoff",
+                                "deep_gw_to_channel_flux", "q_out", "soil_storage", "PET", "AET"]
     elif (coupled_models == "nom_lasam"):
         model_type_name = "NOM_LASAM"
         main_output_variable = "total_discharge"
@@ -586,7 +603,7 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
     global_block["params"]["model_type_name"]      = model_type_name
     global_block["params"]["main_output_variable"] = main_output_variable
     global_block["params"]["output_variables"]     = output_variables
-    global_block["params"]["output_variables"]     = output_variables
+    #global_block["params"]["output_variables"]     = output_variables
     global_block["params"]["output_header_fields"] = output_header_fields
     global_block["params"]["modules"]              = modules
 

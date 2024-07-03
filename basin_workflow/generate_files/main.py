@@ -46,7 +46,7 @@ ngen_dir     = "/Users/ahmadjan/codes/ngen/ngen"
 
 # simulation time format YYYYMMDDHHMM (YYYY, MM, DD, HH, MM)
 simulation_time            = '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2015-10-01 00:00:00"}' 
-model_option               = "NC"
+model_option               = "NCP"
 precip_partitioning_scheme = 'Schaake'
 surface_runoff_scheme      = 'NASH_CASCADE'
 is_netcdf_forcing          = True
@@ -152,7 +152,7 @@ for dir in gpkg_dirs:
             partition=f"{ngen_dir}/cmake_build/partitionGenerator {gpkg_dir} {gpkg_dir} {fpar} {nproc} \"\" \"\" "
             result = subprocess.call(partition,shell=True)
             
-    break
+    #break
     
 """
 coupled_models_options = {
@@ -160,6 +160,7 @@ coupled_models_options = {
 "L"   : "lasam",
 "NC"  : "nom_cfe",
 "NL"  : "nom_lasam",
+"NCP" : "nom_cfe_pet",
 "NCSS": "nom_cfe_smp_sft",
 "NLSS": "nom_lasam_smp_sft",
 "NT"  : "nom_topmodel",

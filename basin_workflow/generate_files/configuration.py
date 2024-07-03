@@ -52,15 +52,6 @@ def read_gpkg_file(infile, coupled_models, surface_runoff_scheme):
     layers = fiona.listlayers(infile)
     print ("Geopackage layers: ", layers)
     print ("\n")
-    
-    # extract TWI for topmodel
-    #if ("nom_topmodel" in coupled_models):
-    #    gdf_twi = gpd.read_file(infile, layer='twi')
-    #    gdf_twi.set_index("divide_id", inplace=True)
-
-    #if ("cfe" in coupled_models or "lasam" in coupled_models):
-    #    gdf_giuh = gpd.read_file(infile, layer='giuh')
-    #    gdf_giuh.set_index("divide_id", inplace=True)
         
     gdf_soil['bexp_soil_layers_stag=1'].fillna(16,inplace=True)
     gdf_soil['dksat_soil_layers_stag=1'].fillna(0.00000338,inplace=True)
@@ -73,6 +64,7 @@ def read_gpkg_file(infile, coupled_models, surface_runoff_scheme):
     gdf_soil['slope'].fillna(1.0, inplace=True)
     gdf_soil['ISLTYP'].fillna(1,inplace=True)
     gdf_soil['IVGTYP'].fillna(1,inplace=True)
+    gdf_soil['elevation_mean'].fillna(4,inplace=True) # if nan, put 4 MASL
     
     gdf_soil['gw_Zmax'] = gdf_soil['gw_Zmax']/1000. 
     gdf_soil['gw_Coeff'] = gdf_soil['gw_Coeff']*3600*pow(10,-6)
@@ -98,7 +90,8 @@ def read_gpkg_file(infile, coupled_models, surface_runoff_scheme):
     gdf['expon']               = gdf_soil['gw_Expon'].copy()
     gdf['ISLTYP']              = gdf_soil['ISLTYP'].copy()
     gdf['IVGTYP']              = gdf_soil['IVGTYP'].copy()
-
+    gdf['elevation_mean']      = gdf_soil['elevation_mean'].copy()
+ 
     # ensure parameter `b` is non-zero
     mask = gdf['soil_params.b'].gt(0.0) # greater than or equal to
     min_value = gdf['soil_params.b'][mask].min() # get the min value > 0.0
@@ -612,6 +605,63 @@ def write_lasam_input_files(catids, soil_param_file, gdf_soil, lasam_dir, couple
         with open(lasam_file, "w") as f:
             f.writelines('\n'.join(lasam_params))
 
+#############################################################################
+# The function generates configuration file for potential evapotranspiration model
+# @param catids         : array/list of integers contain catchment ids
+# @param gdf_soil       : geodataframe contains soil properties extracted from the model attributes
+#                          (characterizes soil for specified soil types)
+# @param gdf_soil        : geodataframe contains soil properties extracted from the model attributes
+# @param pet_dir         : output directory (config files are written to this directory)
+#############################################################################
+def write_pet_input_files(catids, gdf_soil, gpkg_file, pet_dir):
+
+    df_cats = gpd.read_file(gpkg_file, layer='divides')
+    df_cats = df_cats.to_crs("EPSG:4326") # change CRS to 4326
+    
+    df_cats.set_index("divide_id", inplace=True)
+    
+    pet_method = 3
+
+    
+    # loop over all catchments and write config files
+    for catID in catids:
+        cat_name = 'cat-'+str(catID)
+        
+        centroid_x = str(df_cats['geometry'][cat_name].centroid.x)
+        centroid_y = str(df_cats['geometry'][cat_name].centroid.y)
+
+        elevation_mean = gdf_soil['elevation_mean'][cat_name]
+        
+        # pet parameters
+        pet_params = ['verbosity=0',
+                      f'pet_method={pet_method}',
+                      'forcing_file=BMI',
+                      'run_unit_tests=0',
+                      'yes_aorc=1',
+                      'yes_wrf=0',
+                      'wind_speed_measurement_height_m=10.0',
+                      'humidity_measurement_height_m=2.0',
+                      'vegetation_height_m=16.0',
+                      'zero_plane_displacement_height_m=0.0003',
+                      'momentum_transfer_roughness_length=0.0',
+                      'heat_transfer_roughness_length_m=0.0',
+                      'surface_longwave_emissivity=1.0',
+                      'surface_shortwave_albedo=0.17',
+                      'cloud_base_height_known=FALSE',
+                      'time_step_size_s=3600',
+                      'num_timesteps=720',
+                      'shortwave_radiation_provided=1',
+                      f'latitude_degrees={centroid_y}'
+                      f'longitude_degrees={centroid_x}',
+                      f'site_elevation_m={elevation_mean}'
+                      ]
+    
+
+        
+        fname_pet = 'pet_config_' + cat_name + '.txt'
+        pet_file = os.path.join(pet_dir, fname_pet)
+        with open(pet_file, "w") as f:
+            f.writelines('\n'.join(pet_params))
 
 #############################################################################
 # The function generates configuration file for t-route model
@@ -755,6 +805,14 @@ def main():
         create_directory(tm_dir)
         
         write_topmodel_input_files(catids, gdf_soil, tm_dir, args.models_option)
+
+    # *************** PET  ********************
+    if "pet" in args.models_option:
+        print ("Generating config files for PET ...")
+        pet_dir = os.path.join(args.output_dir,"pet")
+        create_directory(pet_dir)
+        
+        write_pet_input_files(catids, gdf_soil, args.gpkg_file, pet_dir)
         
     # *************** SFT ********************
     if "sft" in args.models_option:

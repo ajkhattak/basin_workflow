@@ -20,6 +20,7 @@ coupled_models_options = {
     "L"   : "lasam",
     "NC"  : "nom_cfe",
     "NL"  : "nom_lasam",
+    "NCP" : "nom_cfe_pet",
     "NCSS": "nom_cfe_smp_sft",
     "NLSS": "nom_lasam_smp_sft",
     "NT"  : "nom_topmodel",
@@ -61,15 +62,15 @@ def main():
         parser.print_help()
         sys.exit(0)
 
-    # check if geopackage file exists, if not throw an error
+    # check if geopackage file exists, if not, throw an error
     if (not os.path.exists(args.gpkg_file)):
         sys.exit('The gpkg file (%s) does not exist!'%args.gpkg_file)
 
-    # check if forcing dir exists, if not throw an error
+    # check if forcing dir exists, if not, throw an error
     if (not os.path.exists(args.forcing_dir)):
         sys.exit('The forcing directory (%s) does not exist!'%args.forcing_dir)
 
-    # check if config dir (to which config files will be written to) exists, if not throw an error, user must create one 
+    # check if config dir (to which config files are written to) exists, if not, throw an error 
     if (not os.path.exists(args.config_dir)):
         sys.exit("config dir does not exist, create one!")
 
