@@ -633,7 +633,7 @@ def write_pet_input_files(catids, gdf_soil, gpkg_file, pet_dir):
         elevation_mean = gdf_soil['elevation_mean'][cat_name]
         
         # pet parameters
-        pet_params = ['verbosity=0',
+        pet_params = ['verbose=0',
                       f'pet_method={pet_method}',
                       'forcing_file=BMI',
                       'run_unit_tests=0',
