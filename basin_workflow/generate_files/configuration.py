@@ -654,7 +654,7 @@ def write_pet_input_files(catids, gdf_soil, gpkg_file, pet_dir):
                       'time_step_size_s=3600',
                       'num_timesteps=720',
                       'shortwave_radiation_provided=1',
-                      f'latitude_degrees={centroid_y}'
+                      f'latitude_degrees={centroid_y}',
                       f'longitude_degrees={centroid_x}',
                       f'site_elevation_m={elevation_mean}'
                       ]

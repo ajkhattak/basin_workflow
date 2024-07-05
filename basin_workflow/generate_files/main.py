@@ -12,6 +12,7 @@ import glob
 import shutil
 import re
 import geopandas as gpd
+import csv
 
 # Note #1: from the command line just run 'python path_to/main.py'
 # Note #2: make sure to adjust the following required arguments
@@ -96,6 +97,15 @@ def create_clean_dirs(config_dir = "configs", json_dir = "json"):
 #################################################################################
 
 def main():
+    
+    basins_passed = os.path.join(root_dir,"basins_passed.csv")
+    
+    if (os.path.exists(basins_passed)):
+        os.remove(basins_passed)
+
+    basin_ids = []
+    nproc_lst = []
+    
     for dir in gpkg_dirs:
         os.chdir(dir)
 
@@ -137,17 +147,24 @@ def main():
 
 
         #####################################################################
+        nproc = 1
         # Parition geopackage
         if(partition_gpkg):
             if (os.path.exists(f"{ngen_dir}/cmake_build/partitionGenerator")):
             
                 x = gpd.read_file(gpkg_dir, layer="divides")
                 num_div = len(x["divide_id"])
-                nproc = 2
-                if (num_div >= 4 and num_div <= 16):
+                #nproc = 1
+                if (num_div <= 4):
+                    nproc = 1
+                elif (num_div <= 8):
+                    nproc = 2
+                elif (num_div <= 16):
                     nproc = 4
-                elif(num_div <= 48):
+                elif(num_div <= 32):
                     nproc = 8
+                elif(num_div <= 64):
+                    nproc = 12
                 elif(num_div <= 96):
                     nproc = 16
                 else:
@@ -155,9 +172,19 @@ def main():
                 #fpar = os.path.join("data", gpkg_name[:-5].split(".")[0] + f"-par{nproc}.json")     # -5 is to remove .gpkg from the string
                 fpar = os.path.join(json_dir, gpkg_name[:-5].split(".")[0] + f"-par{nproc}.json")     # -5 is to remove .gpkg from the string
                 partition=f"{ngen_dir}/cmake_build/partitionGenerator {gpkg_dir} {gpkg_dir} {fpar} {nproc} \"\" \"\" "
-                result = subprocess.call(partition,shell=True)
-            
-    #break
+                if (nproc > 1):
+                    result = subprocess.call(partition,shell=True)
+
+        id_full =  str(gpkg_name[:-5].split("_")[1]) # -5 is to remove .gpkg from the string, include leading zero
+        basin_ids.append(str(id_full))
+        nproc_lst.append(nproc)
+
+        with open(basins_passed, 'w', newline='') as file:
+            dat = zip(basin_ids, nproc_lst)
+            writer = csv.writer(file)
+            writer.writerow(['basin_id', 'nproc'])
+            writer.writerows(dat)
+        #break
 
 if __name__ == "__main__":
     main()
