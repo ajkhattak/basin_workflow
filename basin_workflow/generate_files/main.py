@@ -45,7 +45,7 @@ forcing_dir  = "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_ca
 ngen_dir     = "/Users/ahmadjan/codes/ngen/ngen"
 
 # simulation time format YYYYMMDDHHMM (YYYY, MM, DD, HH, MM)
-simulation_time            = '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2015-10-01 00:00:00"}' 
+simulation_time            = '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2010-11-01 00:00:00"}' 
 model_option               = "NCP"
 precip_partitioning_scheme = 'Schaake'
 surface_runoff_scheme      = 'NASH_CASCADE'
