@@ -44,14 +44,15 @@ def get_soil_class_NWM(infile):
 # @param infile : input file pointing to hydrofabric basin geopkacge
 # - returns     : geodataframe 
 #############################################################################
-def read_gpkg_file(infile, coupled_models, surface_runoff_scheme):
+def read_gpkg_file(infile, coupled_models, surface_runoff_scheme, verbosity):
     
     gdf_soil = gpd.read_file(infile, layer='model_attributes')
     gdf_soil.set_index("divide_id", inplace=True)
 
     layers = fiona.listlayers(infile)
-    print ("Geopackage layers: ", layers)
-    print ("\n")
+    if (verbosity >=1):
+        print ("Geopackage layers: ", layers)
+        print ("\n")
         
     gdf_soil['bexp_soil_layers_stag=1'].fillna(16,inplace=True)
     gdf_soil['dksat_soil_layers_stag=1'].fillna(0.00000338,inplace=True)
@@ -145,7 +146,7 @@ def write_forcing_files(catids, infile):
 # @param simulation_time : dictionary contain start/end time of the simulation
 
 #############################################################################
-def write_nom_input_files(catids, nom_dir, forcing_dir, gpkg_file, simulation_time):
+def write_nom_input_files(catids, nom_dir, forcing_dir, gpkg_file, simulation_time, verbosity):
     
     df_soil = gpd.read_file(gpkg_file, layer='model_attributes')
     df_cats = gpd.read_file(gpkg_file, layer='divides')
@@ -157,7 +158,9 @@ def write_nom_input_files(catids, nom_dir, forcing_dir, gpkg_file, simulation_ti
     # get soil type and fill with 1 if nan
     df_soil['ISLTYP'].fillna(1,inplace=True)
 
-    print ("NOM simulation time: ", simulation_time)
+    if (verbosity >=1):
+        print ("NOM simulation time: ", simulation_time)
+    
     start_time = pd.Timestamp(simulation_time['start_time']).strftime("%Y%m%d%H%M")
     end_time   = pd.Timestamp(simulation_time['end_time']).strftime("%Y%m%d%H%M")
     
@@ -754,6 +757,7 @@ def main():
         parser.add_argument("-ow",   dest="overwrite",     type=str, required=False, default=True,
                             help="overwrite old/existing files")
         parser.add_argument("-troute", dest="troute", type=str, required=False, default=False, help="option for t-toure")
+        parser.add_argument("-v", dest="verbosity",   type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
     except:
         parser.print_help()
         sys.exit(0)
@@ -769,25 +773,27 @@ def main():
         str_msg = 'The forcing directory does not exist! %s'%args.forcing_dir
         sys.exit(str_msg)
 
-    gdf_soil, catids = read_gpkg_file(args.gpkg_file, args.models_option, args.surface_runoff_scheme)
+    gdf_soil, catids = read_gpkg_file(args.gpkg_file, args.models_option, args.surface_runoff_scheme, args.verbosity)
     
     # doing it outside NOM as some of params from this file are also needed by CFE for Xinanjiang runoff scheme
     nom_params = os.path.join(args.ngen_dir,"extern/noah-owp-modular/noah-owp-modular/parameters")
     
     # *************** NOM  ********************
     if "nom" in args.models_option:
-        print ("Generating config files for NOM ...")
+        if (args.verbosity >=1):
+            print ("Generating config files for NOM ...")
         nom_dir = os.path.join(args.output_dir,"nom")
         create_directory(nom_dir)
         str_sub ="cp -r "+ nom_params + " %s"%nom_dir
         out=subprocess.call(str_sub,shell=True)
         nom_soil_file = os.path.join(nom_dir,"parameters/SOILPARM.TBL")
 
-        write_nom_input_files(catids, nom_dir, args.forcing_dir, args.gpkg_file, args.time)
+        write_nom_input_files(catids, nom_dir, args.forcing_dir, args.gpkg_file, args.time, args.verbosity)
     
     # *************** CFE  ********************
     if "cfe" in args.models_option:
-        print ("Generating config files for CFE ...")
+        if (args.verbosity >=1):
+            print ("Generating config files for CFE ...")
         cfe_dir = os.path.join(args.output_dir,"cfe")
         create_directory(cfe_dir)
 
@@ -800,7 +806,8 @@ def main():
 
     # *************** TOPMODEL  ********************
     if "topmodel" in args.models_option:
-        print ("Generating config files for TopModel ...")
+        if (args.verbosity >=1):
+            print ("Generating config files for TopModel ...")
         tm_dir = os.path.join(args.output_dir,"topmodel")
         create_directory(tm_dir)
         
@@ -808,7 +815,8 @@ def main():
 
     # *************** PET  ********************
     if "pet" in args.models_option:
-        print ("Generating config files for PET ...")
+        if (args.verbosity >=1):
+            print ("Generating config files for PET ...")
         pet_dir = os.path.join(args.output_dir,"pet")
         create_directory(pet_dir)
         
@@ -816,7 +824,8 @@ def main():
         
     # *************** SFT ********************
     if "sft" in args.models_option:
-        print ("Generating config files for SFT and SMP ...")
+        if (args.verbosity >=1):
+            print ("Generating config files for SFT and SMP ...")
         smp_only_flag = False
         
         sft_dir = os.path.join(args.output_dir,"sft")
@@ -835,7 +844,8 @@ def main():
         write_smp_input_files(catids, gdf_soil, smp_dir, args.models_option)
         
     elif ("smp" in args.models_option):
-        print ("Generating config files for SMP...")
+        if (args.verbosity >=1):
+            print ("Generating config files for SMP...")
 
         smp_dir = os.path.join(args.output_dir,"smp")
         create_directory(smp_dir)
@@ -844,7 +854,8 @@ def main():
     
     
     if "lasam" in args.models_option:
-        print ("Generating config files for LASAM ...")
+        if (args.verbosity >=1):
+            print ("Generating config files for LASAM ...")
         lasam_params = os.path.join(args.ngen_dir,"extern/LGAR-C/data/vG_default_params.dat")
 
         if (not os.path.isfile(lasam_params)):

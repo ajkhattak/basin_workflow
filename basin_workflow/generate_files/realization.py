@@ -363,7 +363,7 @@ def get_jinjabmi_unit_conversion_block(model_exe, config_dir):
 def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
                            coupled_models, runoff_scheme, precip_partitioning_scheme,
                            simulation_time, baseline_case, is_netcdf_forcing,
-                           is_troute):
+                           is_troute, verbosity):
 
     lib_file = {}
     extern_path = os.path.join(ngen_dir, 'extern')
@@ -399,9 +399,10 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
             else:
                 lib_files[m] = ""
 
-    print ("\n********** Models executables under extern directory **************")
-    for key, value in lib_files.items():
-        print ("Model: ", key, ",", value)
+    if (verbosity >=2):
+        print ("\n********** Models executables under extern directory **************")
+        for key, value in lib_files.items():
+            print ("Model: ", key, ",", value)
     
     # noah
     nom_block = dict()
@@ -632,6 +633,7 @@ def main():
         parser.add_argument("-netcdf", dest="netcdf", type=str, required=False, default=False,   help="option for forcing data format")
         parser.add_argument("-troute", dest="troute", type=str, required=False, default=False,   help="option for t-toure")
         parser.add_argument("-p",      dest="precip_partitioning_scheme", type=str, required=True, help="option for precip partitioning scheme")
+        parser.add_argument("-v", dest="verbosity",   type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
         args = parser.parse_args()
     except:
         parser.print_help()
@@ -671,7 +673,8 @@ def main():
         simulation_time   = args.time,
         baseline_case     = args.baseline_case,
         is_netcdf_forcing = args.netcdf,
-        is_troute         = args.troute
+        is_troute         = args.troute,
+        verbosity         = args.verbosity
     )
 
 

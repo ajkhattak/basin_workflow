@@ -36,7 +36,6 @@ import geopandas as gpd
 # partition_pgkg             : Set to True for partitioning the geopackage for a parallel ngen run
 
 #NOTE: The script assumes that .gpkg files are stored under cat_id/data/gage_id.gpkg (modify this part according to your settings)
-#      the partitioned .json is also stored in the data directory
 ################################################ ###################################
 
 root_dir     = "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/basins516_model_attr"
@@ -53,7 +52,10 @@ is_netcdf_forcing          = True
 clean_all                  = True
 partition_gpkg             = True
 is_routing                 = True
-print (simulation_time)
+verbosity                  = 0    # 0 = none, 1=low, 2=high
+
+if (verbosity >=1):
+    print (simulation_time)
 
 ############ CHECKS ###################
 assert (os.path.exists(root_dir))
@@ -93,66 +95,72 @@ def create_clean_dirs(config_dir = "configs", json_dir = "json"):
 ############################### MAIN LOOP #######################################
 #################################################################################
 
-for dir in gpkg_dirs:
-    os.chdir(dir)
-    
-    print ("cwd: ", os.getcwd())
-    gpkg_name     = os.path.basename(glob.glob(dir + "/data/*.gpkg")[0])  # <---- modify this line according to local settings
-    gpkg_dir      = f"data/{gpkg_name}"                                   # <---- modify this line according to local settings
-    
-    print("=========================================")
-    print ("Running : ", gpkg_dir)
+def main():
+    for dir in gpkg_dirs:
+        os.chdir(dir)
 
-    # config_dir and json_dir are simply names of the directories (not paths) and are created under the cwdir
-    config_dir = "configs" #+ model_option
-    json_dir   = "json"
+        if (verbosity >=1):
+            print ("cwd: ", os.getcwd())
+        
+        gpkg_name     = os.path.basename(glob.glob(dir + "/data/*.gpkg")[0])  # <---- modify this line according to local settings
+        gpkg_dir      = f"data/{gpkg_name}"                                   # <---- modify this line according to local settings
 
-    create_clean_dirs(config_dir, json_dir)
-
-    # find forcing data for the geopackage
-    if(is_netcdf_forcing):
-        id =  int(gpkg_name[:-5].split("_")[1]) # -5 is to remove .gpkg from the string
-        forcing_file = [f for f in forcing_files if str(id) in f]
-        if(len(forcing_file) == 1):
-            forcing_dir = forcing_file[0]
-        else:
-            print ("Forcing file .nc does not exist for this gpkg, continuing to the next gpkg")
-            break
-            continue
-
-    assert (os.path.exists(forcing_dir))
-    
-    workflow_driver = os.path.join(workflow_dir,"driver.py")
-
-    driver = f'python {workflow_driver} -gpkg {gpkg_dir} -ngen {ngen_dir} -f {forcing_dir} \
-    -o {config_dir} -m {model_option} -p {precip_partitioning_scheme} -r {surface_runoff_scheme} -t \'{simulation_time}\' \
-    -netcdf {is_netcdf_forcing} -troute {is_routing} -json {json_dir}'
-
-    result = subprocess.call(driver,shell=True)
-
-
-    #####################################################################
-    # Parition geopackage
-    if(partition_gpkg):
-        if (os.path.exists(f"{ngen_dir}/cmake_build/partitionGenerator")):
-            
-            x = gpd.read_file(gpkg_dir, layer="divides")
-            num_div = len(x["divide_id"])
-            nproc = 2
-            if (num_div >= 4 and num_div <= 16):
-                nproc = 4
-            elif(num_div <= 48):
-                nproc = 8
-            elif(num_div <= 96):
-                nproc = 16
+        if (verbosity >=0):
+            print("=========================================")
+            print ("Running : ", gpkg_dir)
+        
+        # config_dir and json_dir are simply names of the directories (not paths) and are created under the cwdir
+        config_dir = "configs" #+ model_option
+        json_dir   = "json"
+        
+        create_clean_dirs(config_dir, json_dir)
+        
+        # find forcing data for the geopackage
+        if(is_netcdf_forcing):
+            id =  int(gpkg_name[:-5].split("_")[1]) # -5 is to remove .gpkg from the string
+            forcing_file = [f for f in forcing_files if str(id) in f]
+            if(len(forcing_file) == 1):
+                forcing_dir = forcing_file[0]
             else:
-                nproc = 20
-            #fpar = os.path.join("data", gpkg_name[:-5].split(".")[0] + f"-par{nproc}.json")     # -5 is to remove .gpkg from the string
-            fpar = os.path.join(json_dir, gpkg_name[:-5].split(".")[0] + f"-par{nproc}.json")     # -5 is to remove .gpkg from the string
-            partition=f"{ngen_dir}/cmake_build/partitionGenerator {gpkg_dir} {gpkg_dir} {fpar} {nproc} \"\" \"\" "
-            result = subprocess.call(partition,shell=True)
+                print ("Forcing file .nc does not exist for this gpkg, continuing to the next gpkg")
+                continue
+
+        assert (os.path.exists(forcing_dir))
+    
+        workflow_driver = os.path.join(workflow_dir,"driver.py")
+        
+        driver = f'python {workflow_driver} -gpkg {gpkg_dir} -ngen {ngen_dir} -f {forcing_dir} \
+        -o {config_dir} -m {model_option} -p {precip_partitioning_scheme} -r {surface_runoff_scheme} -t \'{simulation_time}\' \
+        -netcdf {is_netcdf_forcing} -troute {is_routing} -json {json_dir} -v {verbosity}'
+
+        result = subprocess.call(driver,shell=True)
+
+
+        #####################################################################
+        # Parition geopackage
+        if(partition_gpkg):
+            if (os.path.exists(f"{ngen_dir}/cmake_build/partitionGenerator")):
+            
+                x = gpd.read_file(gpkg_dir, layer="divides")
+                num_div = len(x["divide_id"])
+                nproc = 2
+                if (num_div >= 4 and num_div <= 16):
+                    nproc = 4
+                elif(num_div <= 48):
+                    nproc = 8
+                elif(num_div <= 96):
+                    nproc = 16
+                else:
+                    nproc = 20
+                #fpar = os.path.join("data", gpkg_name[:-5].split(".")[0] + f"-par{nproc}.json")     # -5 is to remove .gpkg from the string
+                fpar = os.path.join(json_dir, gpkg_name[:-5].split(".")[0] + f"-par{nproc}.json")     # -5 is to remove .gpkg from the string
+                partition=f"{ngen_dir}/cmake_build/partitionGenerator {gpkg_dir} {gpkg_dir} {fpar} {nproc} \"\" \"\" "
+                result = subprocess.call(partition,shell=True)
             
     #break
+
+if __name__ == "__main__":
+    main()
     
 """
 coupled_models_options = {

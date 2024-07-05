@@ -57,11 +57,12 @@ def main():
         parser.add_argument("-m",    dest="models_option", type=str, required=True,  help="option for models coupling\n%s"%coupled_models_options)
         parser.add_argument("-netcdf", dest="netcdf", type=str, required=False, default=False, help="option for forcing data format")
         parser.add_argument("-troute", dest="troute", type=str, required=False, default=False, help="option for t-route")
+        parser.add_argument("-v", dest="verbosity",   type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
         args = parser.parse_args()
     except:
         parser.print_help()
         sys.exit(0)
-
+    
     # check if geopackage file exists, if not, throw an error
     if (not os.path.exists(args.gpkg_file)):
         sys.exit('The gpkg file (%s) does not exist!'%args.gpkg_file)
@@ -106,15 +107,16 @@ def main():
                               -f {args.forcing_dir} -o {args.config_dir} -m {coupled_models} \
                               -p {args.precip_partitioning_scheme} -r {args.surface_runoff_scheme} \
                               -troute {args.troute} \
-                              -t \'{args.time}\' '
+                              -t \'{args.time}\' -v {args.verbosity}'
 
-    print ("*******************************************")
-    print (colors.BLUE)
-    print ("Running (from driver.py):\n", generate_config_files)
-    print ("Model option provided: ", args.models_option)
-    print ("Generating configuration files for model(s) option: ", coupled_models_options[args.models_option])
-    print (colors.ENDC)
-    print ("*******************************************")
+    if (args.verbosity >=2):
+        print ("*******************************************")
+        print (colors.BLUE)
+        print ("Running (from driver.py):\n", generate_config_files)
+        print ("Model option provided: ", args.models_option)
+        print ("Generating configuration files for model(s) option: ", coupled_models_options[args.models_option])
+        print (colors.ENDC)
+        print ("*******************************************")
     
 
     # the following call will generate config files
@@ -124,20 +126,22 @@ def main():
     if (result):
         sys.exit("config files could not be generated, check the options provided!")
 
-    print ("*******************************************")
-    print (colors.GREEN)
-    print ("Generating realization file ...")
+    if (args.verbosity >=1):
+        print ("*******************************************")
+        print (colors.GREEN)
+        print ("Generating realization file ...")
 
     path_crf_real_file = os.path.join(path_crf,"realization.py")
 
     generate_realization_file = f'python {path_crf_real_file} -ngen {args.ngen_dir} -f {args.forcing_dir} \
                                   -i {args.config_dir} -m {coupled_models} -p {args.precip_partitioning_scheme} \
                                   -b {baseline_case} -r {args.surface_runoff_scheme} -t \'{args.time}\' \
-                                  -netcdf {args.netcdf} -troute {args.troute} -json {args.json_dir}'
+                                  -netcdf {args.netcdf} -troute {args.troute} -json {args.json_dir} \
+                                  -v {args.verbosity}'
 
-    print ("Running (from driver.py): \n ", generate_realization_file)
-
-    print (colors.ENDC)
+    if (args.verbosity >=1):
+        print ("Running (from driver.py): \n ", generate_realization_file)
+        print (colors.ENDC)
     
     result = subprocess.call(generate_realization_file,shell=True)
 
@@ -154,10 +158,11 @@ def main():
         
         convert_to_baseline = f'python {path_crf_baseline_file} -i {infile} -idir {args.config_dir} -o {outfile} -m {coupled_models}'
 
-        print (colors.BLUE)
-        print ("Generating baseline realization file ...")
-        print ("Running (from driver.py):\n ", convert_to_baseline)
-        print (colors.ENDC)
+        if (args.verbosity >=1):
+            print (colors.BLUE)
+            print ("Generating baseline realization file ...")
+            print ("Running (from driver.py):\n ", convert_to_baseline)
+            print (colors.ENDC)
         
         result = subprocess.call(convert_to_baseline,shell=True)
 
