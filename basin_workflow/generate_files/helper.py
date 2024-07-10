@@ -2,7 +2,7 @@ import os
 import shutil
 
 def create_clean_dirs(root_dir, config_dir = "configs", json_dir = "json", setup_another_simulation = False,
-                      rename_existing_simulation ="", clean_all = False):
+                      rename_existing_simulation ="", clean_all = False, clean_except_data = False):
 
     if (setup_another_simulation):
         subdirs  = os.listdir(root_dir)
@@ -10,8 +10,17 @@ def create_clean_dirs(root_dir, config_dir = "configs", json_dir = "json", setup
         for d in subdirs:
             if (d in ["configs", "json", "outputs"]):
                 shutil.move(d, rename_existing_simulation)
+
+    if (clean_except_data):
+        subdirs  = os.listdir(root_dir)
+        for d in subdirs:
+            if (d != "data"):
+                try:
+                    shutil.rmtree(d)
+                except:
+                    os.remove(d)
     
-    if (clean_all):
+    elif (clean_all):
         subdirs  = os.listdir(root_dir)
         for d in subdirs:
             if (d in ["configs", "json", "outputs"]):
@@ -19,7 +28,7 @@ def create_clean_dirs(root_dir, config_dir = "configs", json_dir = "json", setup
                     shutil.rmtree(d)
                 except:
                     os.remove(d)
-            # or delete only the once we create configs json    outputs
+           
     if (not os.path.isdir(config_dir)):
         os.mkdir(config_dir)
 

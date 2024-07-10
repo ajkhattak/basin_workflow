@@ -124,7 +124,8 @@ def main():
         config_dir = "configs" #+ model_option
         json_dir   = "json"
         
-        helper.create_clean_dirs(dir, config_dir, json_dir, setup_another_simulation, rename_existing_simulation, clean_all)
+        helper.create_clean_dirs(dir, config_dir, json_dir, setup_another_simulation,
+                                 rename_existing_simulation, clean_all, clean_except_data)
         
         
     
@@ -193,17 +194,25 @@ if __name__ == "__main__":
     model_option               = d['model_option']
     precip_partitioning_scheme = d['precip_partitioning_scheme']
     surface_runoff_scheme      = d['surface_runoff_scheme']
-    is_netcdf_forcing          = d['is_netcdf_forcing']
-    clean_all                  = d['clean_all']
-    partition_gpkg             = d['partition_gpkg']
-    is_routing                 = d['is_routing']
-    verbosity                  = d['verbosity']    # 0 = none, 1=low, 2=high
-    setup_another_simulation   = d['setup_another_simulation']
-    rename_existing_simulation = d['rename_existing_simulation']
+    is_netcdf_forcing          = d.get('is_netcdf_forcing',True)
+    clean_all                  = d.get('clean_all', False)
+    clean_except_data          = d.get('clean_except_data',False)
+    partition_gpkg             = d.get('partition_gpkg', False)
+    is_routing                 = d.get('is_routing', False)
+    verbosity                  = d.get('verbosity',0)    # 0 = none, 1=low, 2=high
+    setup_another_simulation   = d.get('setup_another_simulation', False)
+    rename_existing_simulation = d.get('rename_existing_simulation', "")
     
     if (verbosity >=1):
         print (simulation_time)
 
+    check = input("\nDo you really want to delete all except \'data\' directory? you will lose all ngen output data: ")
+    if check.lower() in ["y", "yes"]:
+        print ("Deleting all existing simulation data except \'data\' directory.")
+    elif check.lower() in ["n", "no"]:
+        print("Quiting...")
+        quit()
+        
     ############ CHECKS ###################
     assert (os.path.exists(root_dir))
     assert (os.path.exists(workflow_dir))

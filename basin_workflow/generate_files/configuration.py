@@ -705,7 +705,8 @@ def write_troute_input_files(gpkg_file, ngen_dir, output_dir, simulation_time):
     d['compute_parameters']['forcing_parameters']['binary_nexus_file_folder'] = "outputs/troute_parq"
     d['compute_parameters']['forcing_parameters']['nts']                      = int(diff_time / dt)
 
-
+    d['compute_parameters']['cpu_pool'] = 1
+    
     stream_output = {
        "stream_output" : {
           "stream_output_directory" : "outputs/troute",

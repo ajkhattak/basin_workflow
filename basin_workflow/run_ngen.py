@@ -15,8 +15,6 @@ ngen_dir     = "/Users/ahmadjan/codes/ngen/ngen"
 infile = os.path.join(root_dir, "basins_passed.csv")
 indata = pd.read_csv(infile, dtype=str)
 
-print(infile)
-print(indata)
 ngen_exe = os.path.join(ngen_dir, "cmake_build/ngen")
 
 for id, nproc in zip(indata["basin_id"], indata['nproc']):
@@ -24,7 +22,7 @@ for id, nproc in zip(indata["basin_id"], indata['nproc']):
 
     dir = os.path.join(root_dir, id)
     os.chdir(dir)
-    #print (os.getcwd())
+
     gpkg_name     = os.path.basename(glob.glob(dir + "/data/*.gpkg")[0])  # <---- modify this line according to local settings
     gpkg_dir      = f"data/{gpkg_name}"                                   # <---- modify this line according to local settings
 
@@ -43,7 +41,7 @@ for id, nproc in zip(indata["basin_id"], indata['nproc']):
     
     print (f"Run: {run_cmd}")
     result = subprocess.call(run_cmd,shell=True)
-    break
-    #if (nproc < 2):
+    #break
+    
         
 #/Users/ahmadjan/codes/ngen/ngen/cmake_build/ngen data/Gage_01047000.gpkg cat-7395 data/Gage_01047000.gpkg nex-7396 json/realization_nom_cfe_pet.json

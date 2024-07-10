@@ -147,8 +147,7 @@ def main():
 
     if (result):
         sys.exit("realization file could not be generated, check the options provided!")
-    else:
-        print ("************* DONE ************** ")
+        
 
     if (baseline_case):
         infile = os.path.join(os.getcwd(), "realization_%s.json"%coupled_models)
