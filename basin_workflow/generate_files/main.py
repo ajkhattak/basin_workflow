@@ -24,27 +24,53 @@ import helper
 
 ############################# Required Arguments ###################################
 ### Specify the following four directories (change according to your settings)
-# root_dir     : geopackage(s) directory
-# forcing_dir  : lumped forcings directory (pre-downloaed forcing data for each catchment (.csv or .nc))
+# root_dir     : geopackage(s) directory (format root_dir/GAUGE_ID see below)                 
+# forcing_dir  : lumped forcings directory (pre-downloaed forcing data for each catchment (.csv or .nc); only need if forcing directory is outside the structure of the root_dir described below)
 # ngen_dir     : nextgen directory path
 # config_dir   : config directory path (all config files will be stored here)
 
 ### Specify the following model options
-# simulation_time            : simulation start/end times (example is given below)
-# model_option               : model option (see available options below)
-# surface_runoff_scheme      : surface runoff scheme for CFE and LASAM OPTION=[GIUH, NASH_CASCADE]
-# precip_partitioning_scheme : preciptation partitioning scheme for CFE OPTION=[Schaake, Xinanjiang]
-# is_netcdf_forcing          : True if forcing data is in netcdf format, otherwise False
-# clean_all                  : delete all old/existing config files directories
-# partition_pgkg             : Set to True for partitioning the geopackage for a parallel ngen run
+# simulation_time            : string  | simulation start/end times; format YYYYMMDDHHMM (YYYY, MM, DD, HH, MM)
+# model_option               : string  | model option (see available options below)
+# surface_runoff_scheme      : string  | surface runoff scheme for CFE and LASAM OPTION=[GIUH, NASH_CASCADE]
+# precip_partitioning_scheme : string  | preciptation partitioning scheme for CFE OPTION=[Schaake, Xinanjiang]
+# is_netcdf_forcing          : boolean | True if forcing data is in netcdf format
+# clean_all                  : boolean | True to delete all old/existing directories (it won't delete the geopackage or forcing data)
+# partition_pgkg             : boolean | True to partition the geopackage for a parallel ngen run
+# setup_another_simulation   : boolean | for multiple simulation sets such as cfe1.0, cfe2.0, LASAM for the same basins
+# rename_existing_simulation : string  | move the existing simulation set (json, configs, outputs dirs) to this directory, e.g. "sim_cfe1.0"
 
-#NOTE: The script assumes that .gpkg files are stored under cat_id/data/gage_id.gpkg (modify this part according to your settings)
 ################################################ ###################################
 
+"""
+root_dir:
+   - 10244950
+     - data
+       - Gage_10244950.gpkg
+       - forcings
+   - 01047000
+     - data
+       - Gage_01047000.gpkg
+       - forcings
+"""
 
-#################################################################################
+"""
+coupled_models_options = {
+"C"   : "cfe",
+"L"   : "lasam",
+"NC"  : "nom_cfe",
+"NL"  : "nom_lasam",
+"NCP" : "nom_cfe_pet",
+"NCSS": "nom_cfe_smp_sft",
+"NLSS": "nom_lasam_smp_sft",
+"NT"  : "nom_topmodel",
+"BC"  : "baseline_cfe",
+"BL"  : "baseline_lasam"
+}
+"""
+
+
 ############################### MAIN LOOP #######################################
-#################################################################################
 
 def main():
     
@@ -58,6 +84,7 @@ def main():
 
     
     for dir in gpkg_dirs:
+        
         os.chdir(dir)
 
         if (verbosity >=1):
@@ -66,6 +93,9 @@ def main():
         gpkg_name = os.path.basename(glob.glob(dir + "/data/*.gpkg")[0])  # <---- modify this line according to local settings
         gpkg_dir  = f"data/{gpkg_name}"                                   # <---- modify this line according to local settings
 
+        if (verbosity >=0):
+            print("=========================================")
+            print ("Running : ", gpkg_dir)
 
         if (len(forcing_files) > 0):
             id =  int(gpkg_name[:-5].split("_")[1]) # -5 is to remove .gpkg from the string
@@ -77,16 +107,18 @@ def main():
                 continue
 
         elif (is_netcdf_forcing):
-            forcing_dir = glob.glob("data/forcing/*.nc")[0]
+            try:
+                forcing_dir = glob.glob("data/forcing/*.nc")[0]
+            except:
+                print ("Forcing file does not exist under data/forcing, continuing to the next gpkg")
+                continue
         else:
             forcing_dir = "data/forcing"
 
         
         assert (os.path.exists(forcing_dir))
         
-        if (verbosity >=0):
-            print("=========================================")
-            print ("Running : ", gpkg_dir)
+        
         
         # config_dir and json_dir are simply names of the directories (not paths) and are created under the cwdir
         config_dir = "configs" #+ model_option
@@ -113,7 +145,7 @@ def main():
             
                 x = gpd.read_file(gpkg_dir, layer="divides")
                 num_div = len(x["divide_id"])
-                #nproc = 1
+                
                 if (num_div <= 4):
                     nproc = 1
                 elif (num_div <= 8):
@@ -128,9 +160,10 @@ def main():
                     nproc = 16
                 else:
                     nproc = 20
-                #fpar = os.path.join("data", gpkg_name[:-5].split(".")[0] + f"-par{nproc}.json")     # -5 is to remove .gpkg from the string
+
                 fpar = os.path.join(json_dir, gpkg_name[:-5].split(".")[0] + f"-par{nproc}.json")     # -5 is to remove .gpkg from the string
                 partition=f"{ngen_dir}/cmake_build/partitionGenerator {gpkg_dir} {gpkg_dir} {fpar} {nproc} \"\" \"\" "
+
                 if (nproc > 1):
                     result = subprocess.call(partition,shell=True)
 
@@ -143,7 +176,9 @@ def main():
             writer = csv.writer(file)
             writer.writerow(['basin_id', 'nproc'])
             writer.writerows(dat)
-        break
+
+        print ("************* DONE ************** ")
+        #break
 
 if __name__ == "__main__":
     
@@ -151,12 +186,9 @@ if __name__ == "__main__":
         d = yaml.safe_load(file)
 
 
-    workflow_dir = d["workflow_dir"]
-    root_dir     = d["root_dir"]
-    #nc_forcing_dir  = "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/forcings" # provide only if all .nc files are stored in one directory
-    ngen_dir     = d["ngen_dir"]
-
-    # simulation time format YYYYMMDDHHMM (YYYY, MM, DD, HH, MM)
+    workflow_dir               = d["workflow_dir"]
+    root_dir                   = d["root_dir"]
+    ngen_dir                   = d["ngen_dir"]
     simulation_time            = d["simulation_time"]
     model_option               = d['model_option']
     precip_partitioning_scheme = d['precip_partitioning_scheme']
@@ -168,7 +200,7 @@ if __name__ == "__main__":
     verbosity                  = d['verbosity']    # 0 = none, 1=low, 2=high
     setup_another_simulation   = d['setup_another_simulation']
     rename_existing_simulation = d['rename_existing_simulation']
-
+    
     if (verbosity >=1):
         print (simulation_time)
 
@@ -183,10 +215,11 @@ if __name__ == "__main__":
     forcing_files = []
     if (is_netcdf_forcing):
         try:
+            nc_forcing_dir  = d['nc_forcing_dir']
             forcing_files = glob.glob(os.path.join(nc_forcing_dir, "*.nc"), recursive = True)
             assert (len(forcing_files) > 0)
         except:
             if (verbosity >=1):
-                print ("Forcing stored in the local sub directories")
+                print ("Forcing stored in the local sub directory (data/forcing)")
             
     main()
