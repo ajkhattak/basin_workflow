@@ -48,37 +48,36 @@ def read_gpkg_file(infile, coupled_models, surface_runoff_scheme, verbosity):
     
     gdf_soil = gpd.read_file(infile, layer='model_attributes')
     gdf_soil.set_index("divide_id", inplace=True)
-
+    gdf_div = gpd.read_file(infile, layer='divides')
+    
     layers = fiona.listlayers(infile)
     if (verbosity >=1):
         print ("Geopackage layers: ", layers)
         print ("\n")
-        
-    gdf_soil['bexp_soil_layers_stag=1'].fillna(16,inplace=True)
-    gdf_soil['dksat_soil_layers_stag=1'].fillna(0.00000338,inplace=True)
-    gdf_soil['psisat_soil_layers_stag=1'].fillna(0.355,inplace=True)  
-    gdf_soil['smcmax_soil_layers_stag=1'].fillna(0.439,inplace=True)
-    gdf_soil['smcwlt_soil_layers_stag=1'].fillna(0.066,inplace=True)
-    gdf_soil['gw_Zmax'].fillna(0.01,inplace=True)
-    gdf_soil['gw_Coeff'].fillna(1.8e-05,inplace=True)
-    gdf_soil['gw_Expon'].fillna(6.0,inplace=True)
-    gdf_soil['slope'].fillna(1.0, inplace=True)
-    gdf_soil['ISLTYP'].fillna(1,inplace=True)
-    gdf_soil['IVGTYP'].fillna(1,inplace=True)
-    gdf_soil['elevation_mean'].fillna(4,inplace=True) # if nan, put 4 MASL
     
-    gdf_soil['gw_Zmax'] = gdf_soil['gw_Zmax']/1000. 
+    gdf_soil['bexp_soil_layers_stag=1'] = gdf_soil['bexp_soil_layers_stag=1'].fillna(16)
+    gdf_soil['dksat_soil_layers_stag=1'] = gdf_soil['dksat_soil_layers_stag=1'].fillna(0.00000338)
+    gdf_soil['psisat_soil_layers_stag=1'] = gdf_soil['psisat_soil_layers_stag=1'].fillna(0.355)
+    gdf_soil['smcmax_soil_layers_stag=1'] = gdf_soil['smcmax_soil_layers_stag=1'].fillna(0.439)
+    gdf_soil['smcwlt_soil_layers_stag=1'] = gdf_soil['smcwlt_soil_layers_stag=1'].fillna(0.066)
+    gdf_soil['gw_Zmax'] = gdf_soil['gw_Zmax'].fillna(0.01)
+    gdf_soil['gw_Coeff'] = gdf_soil['gw_Coeff'].fillna(1.8e-05)
+    gdf_soil['gw_Expon'] = gdf_soil['gw_Expon'].fillna(6.0)
+    gdf_soil['slope'] = gdf_soil['slope'].fillna(1.0)
+    gdf_soil['ISLTYP'] = gdf_soil['ISLTYP'].fillna(1)
+    gdf_soil['IVGTYP'] = gdf_soil['IVGTYP'].fillna(1)
+    gdf_soil['elevation_mean'] = gdf_soil['elevation_mean'].fillna(4) # if nan, put 4 MASL
+    gdf_soil['gw_Zmax'] = gdf_soil['gw_Zmax']/1000.
     gdf_soil['gw_Coeff'] = gdf_soil['gw_Coeff']*3600*pow(10,-6)
     
     
     if('refkdt' in gdf_soil):
-        gdf_soil['refkdt'].fillna(3.0,inplace=True)
+        gdf_soil['refkdt'] = gdf_soil['refkdt'].fillna(3.0)
     else:
-        gdf_soil['refkdt']  = 3.0
-
+        gdf_soil['refkdt'] = 3.0
     
     # copy parameters needed
-    gdf = gpd.GeoDataFrame(pd.DataFrame(), geometry= gdf_soil['geometry'], index=gdf_soil.index)
+    gdf = gpd.GeoDataFrame(pd.DataFrame(), geometry= gdf_div['geometry'], index=gdf_soil.index)
     gdf['soil_params.b']       = gdf_soil['bexp_soil_layers_stag=1'].copy()
     gdf['soil_params.satdk']   = gdf_soil['dksat_soil_layers_stag=1'].copy()
     gdf['soil_params.satpsi']  = gdf_soil['psisat_soil_layers_stag=1'].copy()
@@ -92,7 +91,7 @@ def read_gpkg_file(infile, coupled_models, surface_runoff_scheme, verbosity):
     gdf['ISLTYP']              = gdf_soil['ISLTYP'].copy()
     gdf['IVGTYP']              = gdf_soil['IVGTYP'].copy()
     gdf['elevation_mean']      = gdf_soil['elevation_mean'].copy()
- 
+    
     # ensure parameter `b` is non-zero
     mask = gdf['soil_params.b'].gt(0.0) # greater than or equal to
     min_value = gdf['soil_params.b'][mask].min() # get the min value > 0.0
@@ -156,7 +155,9 @@ def write_nom_input_files(catids, nom_dir, forcing_dir, gpkg_file, simulation_ti
     df_cats.set_index("divide_id", inplace=True)
 
     # get soil type and fill with 1 if nan
-    df_soil['ISLTYP'].fillna(1,inplace=True)
+    df_soil['ISLTYP'] = df_soil['ISLTYP'].fillna(1)
+    df_soil['IVGTYP'] = df_soil['IVGTYP'].fillna(1)
+    #df_soil['ISLTYP'].fillna(1,inplace=True)
 
     if (verbosity >=1):
         print ("NOM simulation time: ", simulation_time)

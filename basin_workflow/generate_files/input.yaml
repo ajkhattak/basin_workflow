@@ -1,0 +1,33 @@
+workflow_dir: "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/generate_files"
+root_dir    : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/basins516_model_attr"
+ngen_dir    : "/Users/ahmadjan/codes/ngen/ngen"
+#nc_forcing_dir  = "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/forcings" # provide only if all .nc files are stored in one directory
+# simulation time format YYYYMMDDHHMM (YYYY, MM, DD, HH, MM)
+simulation_time            : '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2010-11-01 00:00:00"}' 
+model_option               : "NCP"
+precip_partitioning_scheme : 'Schaake'
+surface_runoff_scheme      : 'NASH_CASCADE'
+is_netcdf_forcing          : True
+clean_all                  : True
+partition_gpkg             : True
+is_routing                 : True
+verbosity                  : 0    # 0 = none, 1=low, 2=high
+setup_another_simulation   : True
+rename_existing_simulation : "sim_cfe2.0"
+
+
+
+"""
+coupled_models_options = {
+"C"   : "cfe",
+"L"   : "lasam",
+"NC"  : "nom_cfe",
+"NL"  : "nom_lasam",
+"NCP" : "nom_cfe_pet",
+"NCSS": "nom_cfe_smp_sft",
+"NLSS": "nom_lasam_smp_sft",
+"NT"  : "nom_topmodel",
+"BC"  : "baseline_cfe",
+"BL"  : "baseline_lasam"
+}
+"""
