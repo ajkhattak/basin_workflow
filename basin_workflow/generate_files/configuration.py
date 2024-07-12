@@ -304,7 +304,7 @@ def write_cfe_input_files(catids, precip_partitioning_scheme, surface_runoff_sch
                       'expon='+str(gdf_soil['expon'][cat_name])+'[]',
                       'gw_storage=0.05[m/m]',
                       'alpha_fc=0.33',
-                      'soil_storage=0.1[m/m]',
+                      'soil_storage=0.4[m/m]',
                       'K_nash=0.03[]',
                       'K_lf=0.01[]',
                       'nash_storage=0.0,0.0',
@@ -702,10 +702,12 @@ def write_troute_input_files(gpkg_file, ngen_dir, output_dir, simulation_time):
     
     d['compute_parameters']['forcing_parameters']['qlat_input_folder'] = "outputs/div"
     d['compute_parameters']['forcing_parameters']['qlat_file_pattern_filter'] = "nex-*"
-    d['compute_parameters']['forcing_parameters']['binary_nexus_file_folder'] = "outputs/troute_parq"
+    #d['compute_parameters']['forcing_parameters']['binary_nexus_file_folder'] = "outputs/troute_parq"
+    del d['compute_parameters']['forcing_parameters']['binary_nexus_file_folder']
     d['compute_parameters']['forcing_parameters']['nts']                      = int(diff_time / dt)
+    d['compute_parameters']['forcing_parameters']['max_loop_size']            = 10000000
 
-    d['compute_parameters']['cpu_pool'] = 1
+    d['compute_parameters']['cpu_pool'] = 10
     
     stream_output = {
        "stream_output" : {

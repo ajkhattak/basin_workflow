@@ -531,27 +531,27 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
         model_type_name = "CFE"
         main_output_variable = "Q_OUT"
         modules = [sloth_block, pet_block, cfe_block]
-        output_variables = ["RAIN_RATE", "DIRECT_RUNOFF", "GIUH_RUNOFF", "NASH_LATERAL_RUNOFF",
-	                    "DEEP_GW_TO_CHANNEL_FLUX", "Q_OUT", "SOIL_STORAGE", "POTENTIAL_ET", "ACTUAL_ET"]
-        output_header_fields = ["rain_rate", "direct_runoff", "giuh_runoff", "nash_lateral_runoff",
-                                "deep_gw_to_channel_flux", "q_out", "soil_storage",  "PET", "AET"]
+        output_variables = ["RAIN_RATE", "DIRECT_RUNOFF", "GIUH_RUNOFF", "INFILTRATION_EXCESS", "NASH_LATERAL_RUNOFF",
+	                    "DEEP_GW_TO_CHANNEL_FLUX", "SOIL_TO_GW_FLUX", "Q_OUT", "SOIL_STORAGE", "POTENTIAL_ET", "ACTUAL_ET"]
+        output_header_fields = ["rain_rate", "direct_runoff", "giuh_runoff", "infiltration_excess","nash_lateral_runoff",
+                                "deep_gw_to_channel_flux", "soil_to_gw_flux", "q_out", "soil_storage",  "PET", "AET"]
         
     elif (coupled_models == "nom_cfe"):
         model_type_name = "NOM_CFE"
         main_output_variable = "Q_OUT"
         modules = [sloth_block, nom_block, cfe_block]
-        output_variables = ["RAIN_RATE", "DIRECT_RUNOFF", "GIUH_RUNOFF", "NASH_LATERAL_RUNOFF",
-	                    "DEEP_GW_TO_CHANNEL_FLUX", "Q_OUT", "SOIL_STORAGE", "POTENTIAL_ET", "ACTUAL_ET"]
-        output_header_fields = ["rain_rate", "direct_runoff", "giuh_runoff", "nash_lateral_runoff",
-                                "deep_gw_to_channel_flux", "q_out", "soil_storage", "PET", "AET"]
+        output_variables = ["RAIN_RATE", "DIRECT_RUNOFF", "GIUH_RUNOFF", "INFILTRATION_EXCESS", "NASH_LATERAL_RUNOFF",
+	                    "DEEP_GW_TO_CHANNEL_FLUX", "SOIL_TO_GW_FLUX", "Q_OUT", "SOIL_STORAGE", "POTENTIAL_ET", "ACTUAL_ET"]
+        output_header_fields = ["rain_rate", "direct_runoff", "giuh_runoff", "infiltration_excess", "nash_lateral_runoff",
+                                "deep_gw_to_channel_flux", "soil_to_gw_flux", "q_out", "soil_storage", "PET", "AET"]
     elif (coupled_models == "nom_cfe_pet"):
         model_type_name = "NOM_CFE_PET"
         main_output_variable = "Q_OUT"
         modules = [sloth_block, nom_block, pet_block, cfe_block]
-        output_variables = ["RAIN_RATE", "DIRECT_RUNOFF", "GIUH_RUNOFF", "NASH_LATERAL_RUNOFF",
-	                    "DEEP_GW_TO_CHANNEL_FLUX", "Q_OUT", "SOIL_STORAGE", "POTENTIAL_ET", "ACTUAL_ET"]
-        output_header_fields = ["rain_rate", "direct_runoff", "giuh_runoff", "nash_lateral_runoff",
-                                "deep_gw_to_channel_flux", "q_out", "soil_storage", "PET", "AET"]
+        output_variables = ["RAIN_RATE", "DIRECT_RUNOFF", "GIUH_RUNOFF", "INFILTRATION_EXCESS", "NASH_LATERAL_RUNOFF",
+	                    "DEEP_GW_TO_CHANNEL_FLUX", "SOIL_TO_GW_FLUX", "Q_OUT", "SOIL_STORAGE", "POTENTIAL_ET", "ACTUAL_ET"]
+        output_header_fields = ["rain_rate", "direct_runoff", "giuh_runoff", "infiltration_excess", "nash_lateral_runoff",
+                                "deep_gw_to_channel_flux", "soil_to_gw_flux", "q_out", "soil_storage", "PET", "AET"]
     elif (coupled_models == "nom_lasam"):
         model_type_name = "NOM_LASAM"
         main_output_variable = "total_discharge"

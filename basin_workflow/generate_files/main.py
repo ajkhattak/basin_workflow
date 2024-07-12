@@ -147,27 +147,25 @@ def main():
                 x = gpd.read_file(gpkg_dir, layer="divides")
                 num_div = len(x["divide_id"])
                 
-                if (num_div <= 4):
+                if (num_div <= 10):
                     nproc = 1
-                elif (num_div <= 8):
-                    nproc = 2
-                elif (num_div <= 16):
+                elif (num_div <= 20):
                     nproc = 4
-                elif(num_div <= 32):
+                elif (num_div <= 50):
                     nproc = 8
-                elif(num_div <= 64):
-                    nproc = 12
-                elif(num_div <= 96):
+                elif(num_div <= 100):
                     nproc = 16
                 else:
                     nproc = 20
-
+                
                 fpar = os.path.join(json_dir, gpkg_name[:-5].split(".")[0] + f"-par{nproc}.json")     # -5 is to remove .gpkg from the string
                 partition=f"{ngen_dir}/cmake_build/partitionGenerator {gpkg_dir} {gpkg_dir} {fpar} {nproc} \"\" \"\" "
 
                 if (nproc > 1):
                     result = subprocess.call(partition,shell=True)
-
+            else:
+                print ("Partitioning geopackage is requested but partitionGenerator does not exit!")
+                
         id_full =  str(gpkg_name[:-5].split("_")[1]) # -5 is to remove .gpkg from the string, include leading zero
         basin_ids.append(str(id_full))
         nproc_lst.append(nproc)
