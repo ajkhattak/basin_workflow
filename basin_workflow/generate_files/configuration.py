@@ -712,7 +712,7 @@ def write_troute_input_files(gpkg_file, ngen_dir, output_dir, simulation_time):
     stream_output = {
        "stream_output" : {
           "stream_output_directory" : "outputs/troute",
-          'stream_output_time' : 1, #[hr]
+          'stream_output_time' : 1000000, #[hr]
           'stream_output_type' : '.nc', # netcdf '.nc' or '.csv' or '.pkl'
           'stream_output_internal_frequency' : 60 #[min]
           }
