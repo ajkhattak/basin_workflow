@@ -2,7 +2,7 @@ import os
 import shutil
 
 def create_clean_dirs(root_dir, config_dir = "configs", json_dir = "json", setup_another_simulation = False,
-                      rename_existing_simulation ="", clean_all = False, clean_except_data = False):
+                      rename_existing_simulation = "", clean_all = False, clean_except_data = False):
 
     if (setup_another_simulation):
         subdirs  = os.listdir(root_dir)

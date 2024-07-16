@@ -1,9 +1,9 @@
 # See main.py for details about these parameters
 
-workflow_dir : "/home/ahmad.jan/codes/basin_workflow/basin_workflow/generate_files"
-root_dir     : "/home/ahmad.jan/core/projects/ngen_evaluation_camels/basins516"
-ngen_dir     : "/home/ahmad.jan/codes/ngen/ngen"
-nc_forcing_dir  : "/local/For_Ahmad/CAMELS_Basins_NextGen_Forcings"
+workflow_dir : "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow"
+root_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/basins516_model_attr"
+ngen_dir     : "/Users/ahmadjan/codes/ngen/ngen"
+nc_forcing_dir  : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/forcings"
 
 simulation_time            : '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2012-10-01 00:00:00"}' 
 model_option               : "NCP"
@@ -12,8 +12,9 @@ surface_runoff_scheme      : 'NASH_CASCADE'
 is_netcdf_forcing          : True
 clean_all                  : True
 clean_except_data          : True
-partition_gpkg             : True
 is_routing                 : True
 verbosity                  : 0
+partition_basin            : True
+partition_num_processors   : 6
 setup_another_simulation   : False
 rename_existing_simulation : "sim_cfe2.0"
