@@ -48,20 +48,20 @@ fun_crop_upper <- function(values, coverage_fraction) {
 
 
 # Add model attribtes to the geopackage
-add_model_attributes <- function(div_path, hf_version = 'v2.1.1') {
+add_model_attributes <- function(div_infile, hf_version = 'v2.1.1') {
   
   base = 's3://lynker-spatial/hydrofabric/v2.1.1/nextgen/conus'
   
   # net has divide_id, id, and vupid that are used for filtering below
-  net = as_sqlite(outfile, "network") 
+  net = as_sqlite(div_infile, "network") 
   
   # Courtesy of Mike Johnson
   model_attr <- arrow::open_dataset(glue('{base}_model-attributes')) |>
-    inner_join(collect(distinct(dplyr::select(db, divide_id, vpuid)))) |> 
+    inner_join(collect(distinct(dplyr::select(net, divide_id, vpuid)))) |> 
     dplyr::collect() 
   
   flowpath_attr <- arrow::open_dataset(glue('{base}_flowpath-attributes')) |>
-    inner_join(collect(distinct(dplyr::select(db, id, vpuid)))) |> 
+    inner_join(collect(distinct(dplyr::select(net, id, vpuid)))) |> 
     dplyr::collect()
   
   #cat ("m_attr: ", nrow(model_attr))
@@ -69,9 +69,9 @@ add_model_attributes <- function(div_path, hf_version = 'v2.1.1') {
   stopifnot(nrow(flowpath_attr) > 0)
   
   # Write the attributes to a new table in the hydrofabric subset GPKG
-  sf::st_write(model_attr, div_path, layer = "model_attributes", append = FALSE)
+  sf::st_write(model_attr, div_infile, layer = "model_attributes", append = FALSE)
   
-  sf::st_write(flowpath_attr, div_path, layer = "flowpath_attributes", append = FALSE)
+  sf::st_write(flowpath_attr, div_infile, layer = "flowpath_attributes", append = FALSE)
   
   return(model_attr)
   

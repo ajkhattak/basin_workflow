@@ -67,13 +67,21 @@ if(!requireNamespace("ggplot2", quietly=TRUE))
 
 # install arrow package from source, if any conflicts/errors happen due to arrow package
 if(!requireNamespace("arrow", quietly=TRUE) || reinstall_arrow) {
-  Sys.setenv("NOT_CRAN" = "true")
-  Sys.setenv(LIBARROW_BINARY = TRUE)
-  install.packages('arrow', type = "source") 
-  # if ran into arrow installation issues, once can try the following too.
-  #install.packages("arrow", repos = https://apache.r-universe.dev) 
-}
+  # 1
+  #Sys.setenv("NOT_CRAN" = "true")
+  #Sys.setenv(LIBARROW_BINARY = TRUE)
+  #install.packages('arrow', type = "source") 
+  
+  # 2
+  Sys.setenv(NOT_CRAN=TRUE, LIBARROW_MINIMAL=FALSE, LIBARROW_BINARY=FALSE)
+  install.packages("arrow", repos = "https://packagemanager.posit.co/cran/2024-04-01")
 
+  # 3
+  # if ran into arrow installation issues, once can try the following too.
+  # S3 support not enabled for r-universe by default (https://github.com/apache/arrow/issues/43030)
+  #install.packages("arrow", repos = 'https://apache.r-universe.dev') 
+}
+ 
 
 library(hydrofabric)
 suppressPackageStartupMessages(library(hydrofabric))

@@ -36,7 +36,7 @@ run_driver <- function(gage_id = NULL, is_gpkg_provided = FALSE,
   layers_before_cfe_attr <- sf::st_layers(outfile)
   #print (layers_before_cfe_attr$name)
   
-  m_attr <- add_model_attributes(div_path = outfile)
+  m_attr <- add_model_attributes(div_infile = outfile)
   
   layers_after_cfe_attr <- sf::st_layers(outfile)
   #print (layers_after_cfe_attr$name)
