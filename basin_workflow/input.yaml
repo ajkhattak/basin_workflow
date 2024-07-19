@@ -10,11 +10,9 @@ model_option               : "NCP"
 precip_partitioning_scheme : 'Schaake'
 surface_runoff_scheme      : 'NASH_CASCADE'
 is_netcdf_forcing          : True
-clean_all                  : True
-clean_except_data          : True
+clean                      : ['existing']
 is_routing                 : True
 verbosity                  : 0
-partition_basin            : True
-partition_num_processors   : 6
-setup_another_simulation   : False
-rename_existing_simulation : "sim_cfe2.0"
+num_processors             : 6
+setup_simulation           : True
+rename_existing_simulation : ""

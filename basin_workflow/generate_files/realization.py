@@ -482,14 +482,6 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
         "output_root": "./outputs/div"
     }
 
-    # if outputs dir does not exist, create one
-    if(os.path.exists("outputs")):
-       shutil.rmtree("outputs")
-    
-    os.makedirs("outputs/div")
-    os.makedirs("outputs/troute")
-    os.makedirs("outputs/troute_parq")
-    
     # Update the forcing block if the forcings are in netcdf format
     if (is_netcdf_forcing):
         forcing_block = {

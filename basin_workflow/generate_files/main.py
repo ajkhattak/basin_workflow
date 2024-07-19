@@ -14,6 +14,8 @@ import re
 import geopandas as gpd
 import csv
 import yaml
+import multiprocessing
+from functools import partial # used for partially applied function which allows to create new functions with arguments
 
 import helper
 # Note #1: from the command line just run 'python path_to/main.py'
@@ -24,10 +26,11 @@ import helper
 
 ############################# Required Arguments ###################################
 ### Specify the following four directories (change according to your settings)
-# root_dir     : geopackage(s) directory (format root_dir/GAUGE_ID see below)                 
-# forcing_dir  : lumped forcings directory (pre-downloaded forcing data for each catchment (.csv or .nc); only need if forcing directory is outside the structure of the root_dir described below)
-# ngen_dir     : nextgen directory path
-# config_dir   : config directory path (all config files will be stored here)
+# workflow_dir    : points to the base directory of generate_files under basin_workflow
+# root_dir        : geopackage(s) directory (format root_dir/GAUGE_ID see below)                 
+# nc_forcing_dir  : lumped forcings directory (pre-downloaded forcing data for each catchment (.csv or .nc); only need if forcing
+#                   directory is outside the structure of the root_dir described below)
+# ngen_dir        : nextgen directory path
 
 ### Specify the following model options
 # simulation_time            : string  | simulation start/end times; format YYYYMMDDHHMM (YYYY, MM, DD, HH, MM)
@@ -35,13 +38,14 @@ import helper
 # surface_runoff_scheme      : string  | surface runoff scheme for CFE and LASAM OPTION=[GIUH, NASH_CASCADE]
 # precip_partitioning_scheme : string  | precipitation partitioning scheme for CFE OPTION=[Schaake, Xinanjiang]
 # is_netcdf_forcing          : boolean | True if forcing data is in netcdf format
-# clean_all                  : boolean | True to delete all old/existing directories (it won't delete the geopackage or forcing data)
-# partition_basin            : boolean | True to partition the basin for a parallel ngen run; if True provide partition_num_processors
-# partition_num_processors   : int     | True to partition the geopackage for a parallel ngen run
-# setup_another_simulation   : boolean | for multiple simulation sets such as cfe1.0, cfe2.0, LASAM for the same basins
+# clean                      : str/lst | Options = all, existing, none (all deletes everything other than data directory, existing deletes
+#                                        existing simulation configs, json, and outputs directories
+# num_processors_config      : int     | Number of processors for generating config/realiation files
+# num_processors_sim         : int     | Number of processors for catchment/geopackage partition for ngen parallel runs
+# setup_simulation           : boolean | True to create files for simulaiton;
 # rename_existing_simulation : string  | move the existing simulation set (json, configs, outputs dirs) to this directory, e.g. "sim_cfe1.0"
 
-################################################ ###################################
+####################################################################################
 
 """
 root_dir:
@@ -70,10 +74,116 @@ coupled_models_options = {
 }
 """
 
+###########################################################################
+class colors:
+    GREEN = '\033[92m'
+    RED   = '\033[91m'
+    END   = '\033[0m'
+
+# Set all variables as  global variables from your yaml config file
+parent_dir = os.path.dirname(os.path.dirname(sys.argv[0]))
+with open(os.path.join(parent_dir, "input.yaml"), 'r') as file:
+    d = yaml.safe_load(file)
+
+workflow_dir               = d["workflow_dir"]
+root_dir                   = d["root_dir"]
+ngen_dir                   = d["ngen_dir"]
+simulation_time            = d["simulation_time"]
+model_option               = d['model_option']
+precip_partitioning_scheme = d['precip_partitioning_scheme']
+surface_runoff_scheme      = d['surface_runoff_scheme']
+is_netcdf_forcing          = d.get('is_netcdf_forcing', True)
+clean                      = d.get('clean', "none")
+is_routing                 = d.get('is_routing', False)
+verbosity                  = d.get('verbosity', 0)
+num_processors_config      = d.get('num_processors_config', 1)
+num_processors_sim         = d.get('num_processors_sim', 1)
+setup_simulation           = d.get('setup_simulation', True)
+rename_existing_simulation = d.get('rename_existing_simulation', "")
+
+def process_clean_input_param():
+    clean_lst = []
+    if (isinstance(clean, str)):
+        clean_lst = [clean]
+    elif (isinstance(clean, list)):
+        clean_lst.extend(clean)
+    return clean_lst
+
+clean = process_clean_input_param()
+
+##############################################################################
+
+def generate_catchment_files(dir, forcing_files):
+    os.chdir(dir)
+
+    basin_ids = []
+    num_cats  = []
+    if (verbosity >=1):
+        print ("cwd: ", os.getcwd())
+    
+    gpkg_name = os.path.basename(glob.glob(dir + "/data/*.gpkg")[0])
+    gpkg_dir = f"data/{gpkg_name}"
+
+    filled_dot = '●'
+
+    if (setup_simulation):
+        if verbosity >= 0:
+            print(filled_dot, gpkg_name, end="")
+
+        
+        if len(forcing_files) > 0:
+            id = int(gpkg_name[:-5].split("_")[1])
+            forcing_file = [f for f in forcing_files if str(id) in f]
+            if len(forcing_file) == 1:
+                forcing_dir = forcing_file[0]
+            else:
+                if verbosity >= 1:
+                    print("Forcing file .nc does not exist for this gpkg, continuing to the next gpkg")
+                print (colors.RED + "  Failed " + colors.END )
+                return
+        elif is_netcdf_forcing:
+            try:
+                forcing_dir = glob.glob("data/forcing/*.nc")[0]
+            except:
+                if verbosity >= 1:
+                    print("Forcing file does not exist under data/forcing, continuing to the next gpkg")
+                print (colors.RED + "  Failed " + colors.END )
+                return
+        else:
+            forcing_dir = "data/forcing"
+
+        assert os.path.exists(forcing_dir)
+
+    config_dir = "configs"
+    json_dir = "json"
+
+    helper.create_clean_dirs(dir, config_dir, json_dir, setup_simulation = setup_simulation,
+                             rename_existing_simulation = rename_existing_simulation, clean = clean)
+
+    if (not setup_simulation):
+        return
+
+    workflow_driver = os.path.join(workflow_dir, "generate_files/driver.py")
+
+    driver = f'python {workflow_driver} -gpkg {gpkg_dir} -ngen {ngen_dir} -f {forcing_dir} \
+    -o {config_dir} -m {model_option} -p {precip_partitioning_scheme} -r {surface_runoff_scheme} -t \'{simulation_time}\' \
+    -netcdf {is_netcdf_forcing} -troute {is_routing} -json {json_dir} -v {verbosity}'
+
+    result = subprocess.call(driver, shell=True)
+
+    id_full = str(gpkg_name[:-5].split("_")[1])
+    basin_ids.append(str(id_full))
+
+    x = gpd.read_file(gpkg_dir, layer="divides")
+    num_cats.append(len(x["divide_id"]))
+
+    print (colors.GREEN + "  Passed " + colors.END )
+
+    return basin_ids, num_cats
 
 ############################### MAIN LOOP #######################################
 
-def main():
+def main(forcing_files, nproc = 4):
     
     basins_passed = os.path.join(root_dir,"basins_passed.csv")
     
@@ -83,70 +193,23 @@ def main():
     basin_ids = []
     num_cats  = []
 
+    # create a pool of processors using multiprocessing tool
+    pool = multiprocessing.Pool(processes=nproc)
     
-    for dir in gpkg_dirs:
-        
-        os.chdir(dir)
+    #print ("CPU:", multiprocessing.cpu_count())
 
-        if (verbosity >=1):
-            print ("cwd: ", os.getcwd())
-        
-        gpkg_name = os.path.basename(glob.glob(dir + "/data/*.gpkg")[0])  # <---- modify this line according to local settings
-        gpkg_dir  = f"data/{gpkg_name}"                                   # <---- modify this line according to local settings
+    partial_generate_files_catchment = partial(generate_catchment_files, forcing_files=forcing_files)
 
-        if (verbosity >=0):
-            print("=========================================")
-            print ("Running : ", gpkg_dir)
+    # map catchments to each processor
+    results = pool.map(partial_generate_files_catchment, gpkg_dirs)
+    results = [result for result in results if result is not None]
 
-        if (len(forcing_files) > 0):
-            id =  int(gpkg_name[:-5].split("_")[1]) # -5 is to remove .gpkg from the string
-            forcing_file = [f for f in forcing_files if str(id) in f]
-            if(len(forcing_file) == 1):
-                forcing_dir = forcing_file[0]
-            else:
-                print ("Forcing file .nc does not exist for this gpkg, continuing to the next gpkg")
-                continue
+    # collect results from all processes
+    for result in results:
+        basin_ids.extend(result[0])
+        num_cats.extend(result[1])
 
-        elif (is_netcdf_forcing):
-            try:
-                forcing_dir = glob.glob("data/forcing/*.nc")[0]
-            except:
-                print ("Forcing file does not exist under data/forcing, continuing to the next gpkg")
-                continue
-        else:
-            forcing_dir = "data/forcing"
-
-        
-        assert (os.path.exists(forcing_dir))
-        
-        
-        # config_dir and json_dir are simply names of the directories (not paths) and are created under the cwdir
-        config_dir = "configs" #+ model_option
-        json_dir   = "json"
-        
-        helper.create_clean_dirs(dir, config_dir, json_dir, setup_another_simulation,
-                                 rename_existing_simulation, clean_all, clean_except_data)
-        
-        
-        workflow_driver = os.path.join(workflow_dir,"generate_files/driver.py")
-        
-        driver = f'python {workflow_driver} -gpkg {gpkg_dir} -ngen {ngen_dir} -f {forcing_dir} \
-        -o {config_dir} -m {model_option} -p {precip_partitioning_scheme} -r {surface_runoff_scheme} -t \'{simulation_time}\' \
-        -netcdf {is_netcdf_forcing} -troute {is_routing} -json {json_dir} -v {verbosity}'
-
-        result = subprocess.call(driver,shell=True)
-
-        #----------------------------------------------------------------#
-        ## extract gage id with number of sub-catchments for parallel runs
-        id_full =  str(gpkg_name[:-5].split("_")[1]) # -5 is to remove .gpkg from the string, include leading zero
-        basin_ids.append(str(id_full))
-
-        x = gpd.read_file(gpkg_dir, layer="divides")
-        num_cats.append(len(x["divide_id"]))
-
-        print ("************* DONE ************** ")
-        #break
-        
+    # Write results to CSV
     with open(basins_passed, 'w', newline='') as file:
         dat = zip(basin_ids, num_cats)
         writer = csv.writer(file)
@@ -154,38 +217,17 @@ def main():
         writer.writerows(dat)
 
 if __name__ == "__main__":
-
-    parent_dir = os.path.dirname(os.path.dirname(sys.argv[0]))
-
-    with open(parent_dir+"/input.yaml", 'r') as file:
-        d = yaml.safe_load(file)
-
-
-    workflow_dir               = d["workflow_dir"]
-    root_dir                   = d["root_dir"]
-    ngen_dir                   = d["ngen_dir"]
-    simulation_time            = d["simulation_time"]
-    model_option               = d['model_option']
-    precip_partitioning_scheme = d['precip_partitioning_scheme']
-    surface_runoff_scheme      = d['surface_runoff_scheme']
-    is_netcdf_forcing          = d.get('is_netcdf_forcing',True)
-    clean_all                  = d.get('clean_all', False)
-    clean_except_data          = d.get('clean_except_data',False)
-    is_routing                 = d.get('is_routing', False)
-    verbosity                  = d.get('verbosity',0)    # 0 = none, 1=low, 2=high
-    setup_another_simulation   = d.get('setup_another_simulation', False)
-    rename_existing_simulation = d.get('rename_existing_simulation', "")
     
     if (verbosity >=1):
         print (simulation_time)
 
-    check = input("\nDo you really want to delete all except \'data\' directory? you will lose all ngen output data: ")
-    if check.lower() in ["y", "yes"]:
-        print ("Deleting all existing simulation data except \'data\' directory.")
-    elif check.lower() in ["n", "no"]:
-        print("Quiting...")
-        quit()
-        
+    if (clean[0] == "all"):
+        check = input("\nDo you really want to delete all except \'data\' directory? you will lose all ngen output data: ")
+        if check.lower() in ["y", "yes"]:
+            print ("Deleting all existing simulation data except \'data\' directory.")
+        elif check.lower() in ["n", "no"]:
+            sys.exit("Quiting...")
+    
     ############ CHECKS ###################
     assert (os.path.exists(root_dir))
     assert (os.path.exists(workflow_dir))
@@ -204,4 +246,4 @@ if __name__ == "__main__":
             if (verbosity >=1):
                 print ("Forcing stored in the local sub directory (data/forcing)")
             
-    main()
+    main(forcing_files, nproc = num_processors_config)
