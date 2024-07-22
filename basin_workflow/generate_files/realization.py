@@ -399,7 +399,7 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
             else:
                 lib_files[m] = ""
 
-    if (verbosity >=2):
+    if (verbosity >=3):
         print ("\n********** Models executables under extern directory **************")
         for key, value in lib_files.items():
             print ("Model: ", key, ",", value)

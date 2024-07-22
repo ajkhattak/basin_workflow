@@ -51,7 +51,7 @@ def read_gpkg_file(infile, coupled_models, surface_runoff_scheme, verbosity):
     gdf_div = gpd.read_file(infile, layer='divides')
     
     layers = fiona.listlayers(infile)
-    if (verbosity >=1):
+    if (verbosity >=3):
         print ("Geopackage layers: ", layers)
         print ("\n")
     
@@ -159,7 +159,7 @@ def write_nom_input_files(catids, nom_dir, forcing_dir, gpkg_file, simulation_ti
     df_soil['IVGTYP'] = df_soil['IVGTYP'].fillna(1)
     #df_soil['ISLTYP'].fillna(1,inplace=True)
 
-    if (verbosity >=1):
+    if (verbosity >=3):
         print ("NOM simulation time: ", simulation_time)
     
     start_time = pd.Timestamp(simulation_time['start_time']).strftime("%Y%m%d%H%M")
@@ -784,7 +784,7 @@ def main():
     
     # *************** NOM  ********************
     if "nom" in args.models_option:
-        if (args.verbosity >=1):
+        if (args.verbosity >=3):
             print ("Generating config files for NOM ...")
         nom_dir = os.path.join(args.output_dir,"nom")
         create_directory(nom_dir)
@@ -796,7 +796,7 @@ def main():
     
     # *************** CFE  ********************
     if "cfe" in args.models_option:
-        if (args.verbosity >=1):
+        if (args.verbosity >=3):
             print ("Generating config files for CFE ...")
         cfe_dir = os.path.join(args.output_dir,"cfe")
         create_directory(cfe_dir)
@@ -810,7 +810,7 @@ def main():
 
     # *************** TOPMODEL  ********************
     if "topmodel" in args.models_option:
-        if (args.verbosity >=1):
+        if (args.verbosity >=3):
             print ("Generating config files for TopModel ...")
         tm_dir = os.path.join(args.output_dir,"topmodel")
         create_directory(tm_dir)
@@ -819,7 +819,7 @@ def main():
 
     # *************** PET  ********************
     if "pet" in args.models_option:
-        if (args.verbosity >=1):
+        if (args.verbosity >=3):
             print ("Generating config files for PET ...")
         pet_dir = os.path.join(args.output_dir,"pet")
         create_directory(pet_dir)
@@ -828,7 +828,7 @@ def main():
         
     # *************** SFT ********************
     if "sft" in args.models_option:
-        if (args.verbosity >=1):
+        if (args.verbosity >=3):
             print ("Generating config files for SFT and SMP ...")
         smp_only_flag = False
         
@@ -848,7 +848,7 @@ def main():
         write_smp_input_files(catids, gdf_soil, smp_dir, args.models_option)
         
     elif ("smp" in args.models_option):
-        if (args.verbosity >=1):
+        if (args.verbosity >=3):
             print ("Generating config files for SMP...")
 
         smp_dir = os.path.join(args.output_dir,"smp")
@@ -858,7 +858,7 @@ def main():
     
     
     if "lasam" in args.models_option:
-        if (args.verbosity >=1):
+        if (args.verbosity >=3):
             print ("Generating config files for LASAM ...")
         lasam_params = os.path.join(args.ngen_dir,"extern/LGAR-C/data/vG_default_params.dat")
 

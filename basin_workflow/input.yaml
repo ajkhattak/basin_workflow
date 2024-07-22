@@ -1,6 +1,6 @@
 # See main.py for details about these parameters
 
-workflow_dir : "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/generate_files/"
+workflow_dir : "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/"
 root_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/basins516_model_attr"
 ngen_dir     : "/Users/ahmadjan/codes/ngen/ngen"
 nc_forcing_dir  : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/forcings"

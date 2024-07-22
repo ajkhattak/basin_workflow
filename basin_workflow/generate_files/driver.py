@@ -109,7 +109,7 @@ def main():
                               -troute {args.troute} \
                               -t \'{args.time}\' -v {args.verbosity}'
 
-    if (args.verbosity >=2):
+    if (args.verbosity >=3):
         print ("*******************************************")
         print (colors.BLUE)
         print ("Running (from driver.py):\n", generate_config_files)
@@ -126,7 +126,7 @@ def main():
     if (result):
         sys.exit("config files could not be generated, check the options provided!")
 
-    if (args.verbosity >=1):
+    if (args.verbosity >=3):
         print ("*******************************************")
         print (colors.GREEN)
         print ("Generating realization file ...")
@@ -139,7 +139,7 @@ def main():
                                   -netcdf {args.netcdf} -troute {args.troute} -json {args.json_dir} \
                                   -v {args.verbosity}'
 
-    if (args.verbosity >=1):
+    if (args.verbosity >=3):
         print ("Running (from driver.py): \n ", generate_realization_file)
         print (colors.ENDC)
     
@@ -157,7 +157,7 @@ def main():
         
         convert_to_baseline = f'python {path_crf_baseline_file} -i {infile} -idir {args.config_dir} -o {outfile} -m {coupled_models}'
 
-        if (args.verbosity >=1):
+        if (args.verbosity >=3):
             print (colors.BLUE)
             print ("Generating baseline realization file ...")
             print ("Running (from driver.py):\n ", convert_to_baseline)

@@ -119,7 +119,8 @@ def generate_catchment_files(dir, forcing_files):
 
     basin_ids = []
     num_cats  = []
-    if (verbosity >=1):
+    
+    if (verbosity >=2):
         print ("cwd: ", os.getcwd())
     
     gpkg_name = os.path.basename(glob.glob(dir + "/data/*.gpkg")[0])
@@ -128,7 +129,8 @@ def generate_catchment_files(dir, forcing_files):
     filled_dot = '●'
 
     if (setup_simulation):
-        if verbosity >= 0:
+        
+        if verbosity >=1:
             print(filled_dot, gpkg_name, end="")
 
         
@@ -138,17 +140,19 @@ def generate_catchment_files(dir, forcing_files):
             if len(forcing_file) == 1:
                 forcing_dir = forcing_file[0]
             else:
-                if verbosity >= 1:
+                if verbosity >=2:
                     print("Forcing file .nc does not exist for this gpkg, continuing to the next gpkg")
-                print (colors.RED + "  Failed " + colors.END )
+                if verbosity >=1:
+                    print (colors.RED + "  Failed " + colors.END )
                 return
         elif is_netcdf_forcing:
             try:
                 forcing_dir = glob.glob("data/forcing/*.nc")[0]
             except:
-                if verbosity >= 1:
+                if verbosity >=2:
                     print("Forcing file does not exist under data/forcing, continuing to the next gpkg")
-                print (colors.RED + "  Failed " + colors.END )
+                if verbosity >=1:
+                    print (colors.RED + "  Failed " + colors.END )
                 return
         else:
             forcing_dir = "data/forcing"
@@ -178,7 +182,8 @@ def generate_catchment_files(dir, forcing_files):
     x = gpd.read_file(gpkg_dir, layer="divides")
     num_cats.append(len(x["divide_id"]))
 
-    print (colors.GREEN + "  Passed " + colors.END )
+    if verbosity >=1:
+        print (colors.GREEN + "  Passed " + colors.END )
 
     return basin_ids, num_cats
 
@@ -223,7 +228,7 @@ if __name__ == "__main__":
 
     start_time = time.time()
     
-    if (verbosity >=1):
+    if (verbosity >=2):
         print (simulation_time)
 
     if (clean[0] == "all"):
@@ -251,7 +256,7 @@ if __name__ == "__main__":
             forcing_files = glob.glob(os.path.join(nc_forcing_dir, "*.nc"), recursive = True)
             assert (len(forcing_files) > 0)
         except:
-            if (verbosity >=1):
+            if (verbosity >=2):
                 print ("Forcing stored in the local sub directory (data/forcing)")
             
     success_ncats = main(forcing_files, nproc = num_processors_config)
