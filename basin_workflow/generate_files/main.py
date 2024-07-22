@@ -234,6 +234,9 @@ if __name__ == "__main__":
     assert (os.path.exists(ngen_dir))
     ######################################
 
+    if (not os.path.exists(os.path.join(workflow_dir, "generate_files"))):
+        sys.exit("check `workflow_dir`, it should be the parent directory of `generate_files` directory")
+
     gpkg_dirs = glob.glob(root_dir + "/*/", recursive = True)
 
     forcing_files = []
