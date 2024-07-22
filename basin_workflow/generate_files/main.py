@@ -16,6 +16,7 @@ import csv
 import yaml
 import multiprocessing
 from functools import partial # used for partially applied function which allows to create new functions with arguments
+import time
 
 import helper
 # Note #1: from the command line just run 'python path_to/main.py'
@@ -216,7 +217,11 @@ def main(forcing_files, nproc = 4):
         writer.writerow(['basin_id', 'n_cats'])
         writer.writerows(dat)
 
+    return len(num_cats)
+
 if __name__ == "__main__":
+
+    start_time = time.time()
     
     if (verbosity >=1):
         print (simulation_time)
@@ -249,4 +254,14 @@ if __name__ == "__main__":
             if (verbosity >=1):
                 print ("Forcing stored in the local sub directory (data/forcing)")
             
-    main(forcing_files, nproc = num_processors_config)
+    success_ncats = main(forcing_files, nproc = num_processors_config)
+
+    end_time = time.time()
+    total_time = end_time - start_time # in seconds
+
+    print ("================== SUMMARY ===============================")
+    print("| Total time         = %s [sec], %s [min]" % (round(total_time,4), round(total_time/60.,4)))
+    print("| Total no of basins = %s "% len(gpkg_dirs))
+    print("| Succeeded          = %s "% success_ncats)
+    print("| Failed             = %s "% (len(gpkg_dirs)-success_ncats))
+    print ("==========================================================")
