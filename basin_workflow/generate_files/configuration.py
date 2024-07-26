@@ -46,7 +46,7 @@ def get_soil_class_NWM(infile):
 #############################################################################
 def read_gpkg_file(infile, coupled_models, surface_runoff_scheme, verbosity):
     
-    gdf_soil = gpd.read_file(infile, layer='model_attributes')
+    gdf_soil = gpd.read_file(infile, layer='model-attributes')
     gdf_soil.set_index("divide_id", inplace=True)
     gdf_div = gpd.read_file(infile, layer='divides')
     
@@ -147,7 +147,7 @@ def write_forcing_files(catids, infile):
 #############################################################################
 def write_nom_input_files(catids, nom_dir, forcing_dir, gpkg_file, simulation_time, verbosity):
     
-    df_soil = gpd.read_file(gpkg_file, layer='model_attributes')
+    df_soil = gpd.read_file(gpkg_file, layer='model-attributes')
     df_cats = gpd.read_file(gpkg_file, layer='divides')
     df_cats = df_cats.to_crs("EPSG:4326") # change CRS to 4326
     

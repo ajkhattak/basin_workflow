@@ -115,16 +115,21 @@ clean = process_clean_input_param()
 ##############################################################################
 
 def generate_catchment_files(dir, forcing_files):
+    
     os.chdir(dir)
 
     basin_ids = []
     num_cats  = []
     
     if (verbosity >=2):
+        print ("dir: ", dir)
         print ("cwd: ", os.getcwd())
-    
-    gpkg_name = os.path.basename(glob.glob(dir + "/data/*.gpkg")[0])
-    gpkg_dir = f"data/{gpkg_name}"
+
+    if (os.path.exists(os.path.join(dir,"data"))):
+        gpkg_name = os.path.basename(glob.glob(dir + "/data/*.gpkg")[0])
+        gpkg_dir = f"data/{gpkg_name}"
+    else:
+        return
 
     filled_dot = '●'
 
