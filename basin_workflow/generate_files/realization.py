@@ -27,11 +27,12 @@ import shutil
 # @param model_exe : path to PET executable
 #############################################################################
 def get_pet_block(model_exe, config_dir):
-    
+    print ("config: ", config_dir)
     block = {
 	"name": "bmi_c",
 	"params": {
-            "model_type_name": "bmi_c_pet",
+            "name": "bmi_c",
+            "model_type_name": "PET",
             "library_file": model_exe,
             "forcing_file": "",
             "init_config": os.path.join(config_dir, 'pet/pet_config_{{id}}.txt'), 
@@ -363,7 +364,7 @@ def get_jinjabmi_unit_conversion_block(model_exe, config_dir):
 def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
                            coupled_models, runoff_scheme, precip_partitioning_scheme,
                            simulation_time, baseline_case, is_netcdf_forcing,
-                           is_troute, verbosity):
+                           is_troute, verbosity, sim_output_dir):
 
     lib_file = {}
     extern_path = os.path.join(ngen_dir, 'extern')
@@ -479,7 +480,7 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
                 "provider": "CsvPerFeature"
             }
         },
-        "output_root": "./outputs/div"
+        "output_root": os.path.join(sim_output_dir, "div")
     }
 
     # Update the forcing block if the forcings are in netcdf format
@@ -626,6 +627,7 @@ def main():
         parser.add_argument("-troute", dest="troute", type=str, required=False, default=False,   help="option for t-toure")
         parser.add_argument("-p",      dest="precip_partitioning_scheme", type=str, required=True, help="option for precip partitioning scheme")
         parser.add_argument("-v", dest="verbosity",   type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
+        parser.add_argument("-sout",   dest="sim_output_dir",  type=str, required=True,  help="ngen runs output directory")
         args = parser.parse_args()
     except:
         parser.print_help()
@@ -666,7 +668,8 @@ def main():
         baseline_case     = args.baseline_case,
         is_netcdf_forcing = args.netcdf,
         is_troute         = args.troute,
-        verbosity         = args.verbosity
+        verbosity         = args.verbosity,
+        sim_output_dir    = args.sim_output_dir
     )
 
 

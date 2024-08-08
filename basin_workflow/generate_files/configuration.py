@@ -22,6 +22,9 @@ import geopandas as gpd
 import numpy as np
 import fiona
 import yaml
+import platform
+
+os_name = platform.system()
 
 #############################################################################
 # module reads NWM soil type file and returns a table
@@ -55,20 +58,20 @@ def read_gpkg_file(infile, coupled_models, surface_runoff_scheme, verbosity):
         print ("Geopackage layers: ", layers)
         print ("\n")
     
-    gdf_soil['bexp_soil_layers_stag=1'] = gdf_soil['bexp_soil_layers_stag=1'].fillna(16)
-    gdf_soil['dksat_soil_layers_stag=1'] = gdf_soil['dksat_soil_layers_stag=1'].fillna(0.00000338)
+    gdf_soil['bexp_soil_layers_stag=1']   = gdf_soil['bexp_soil_layers_stag=1'].fillna(16)
+    gdf_soil['dksat_soil_layers_stag=1']  = gdf_soil['dksat_soil_layers_stag=1'].fillna(0.00000338)
     gdf_soil['psisat_soil_layers_stag=1'] = gdf_soil['psisat_soil_layers_stag=1'].fillna(0.355)
     gdf_soil['smcmax_soil_layers_stag=1'] = gdf_soil['smcmax_soil_layers_stag=1'].fillna(0.439)
     gdf_soil['smcwlt_soil_layers_stag=1'] = gdf_soil['smcwlt_soil_layers_stag=1'].fillna(0.066)
-    gdf_soil['gw_Zmax'] = gdf_soil['gw_Zmax'].fillna(0.01)
+    gdf_soil['gw_Zmax']  = gdf_soil['gw_Zmax'].fillna(0.01)
     gdf_soil['gw_Coeff'] = gdf_soil['gw_Coeff'].fillna(1.8e-05)
     gdf_soil['gw_Expon'] = gdf_soil['gw_Expon'].fillna(6.0)
-    gdf_soil['slope'] = gdf_soil['slope'].fillna(1.0)
-    gdf_soil['ISLTYP'] = gdf_soil['ISLTYP'].fillna(1)
-    gdf_soil['IVGTYP'] = gdf_soil['IVGTYP'].fillna(1)
+    gdf_soil['slope']    = gdf_soil['slope'].fillna(1.0)
+    gdf_soil['ISLTYP']   = gdf_soil['ISLTYP'].fillna(1)
+    gdf_soil['IVGTYP']   = gdf_soil['IVGTYP'].fillna(1)
     gdf_soil['elevation_mean'] = gdf_soil['elevation_mean'].fillna(4) # if nan, put 4 MASL
-    gdf_soil['gw_Zmax'] = gdf_soil['gw_Zmax']/1000.
-    gdf_soil['gw_Coeff'] = gdf_soil['gw_Coeff']*3600*pow(10,-6)
+    gdf_soil['gw_Zmax']        = gdf_soil['gw_Zmax']/1000.
+    gdf_soil['gw_Coeff']       = gdf_soil['gw_Coeff']*3600*pow(10,-6)
     
     
     if('refkdt' in gdf_soil):
@@ -670,13 +673,10 @@ def write_pet_input_files(catids, gdf_soil, gpkg_file, pet_dir):
 #############################################################################
 # The function generates configuration file for t-route model
 # @param catids         : array/list of integers contain catchment ids
-# @param soil_param_file : input file containing soil properties read by LASAM
-#                          (characterizes soil for specified soil types)
-# @gdf_soil             : geodataframe contains soil properties extracted from the hydrofabric
-# @param lasam_dir        : output directory (config files are written to this directory)
-# @param coupled_models : option needed to modify SMP config files based on the coupling type
+# @param troute_dir        : output directory (config files are written to this directory)
 #############################################################################
-def write_troute_input_files(gpkg_file, ngen_dir, output_dir, simulation_time):
+def write_troute_input_files(gpkg_file, ngen_dir, troute_dir, simulation_time,
+                             sim_output_dir):
 
     routing_file = os.path.join(ngen_dir, "data/gauge_01073000/routing_config.yaml")
 
@@ -700,7 +700,7 @@ def write_troute_input_files(gpkg_file, ngen_dir, output_dir, simulation_time):
     
     d['compute_parameters']['restart_parameters']['start_datetime'] = start_time.strftime("%Y-%m-%d_%H:%M:%S")
     
-    d['compute_parameters']['forcing_parameters']['qlat_input_folder'] = "outputs/div"
+    d['compute_parameters']['forcing_parameters']['qlat_input_folder'] =  os.path.join(sim_output_dir,"div")
     d['compute_parameters']['forcing_parameters']['qlat_file_pattern_filter'] = "nex-*"
     #d['compute_parameters']['forcing_parameters']['binary_nexus_file_folder'] = "outputs/troute_parq"
     del d['compute_parameters']['forcing_parameters']['binary_nexus_file_folder']
@@ -711,18 +711,75 @@ def write_troute_input_files(gpkg_file, ngen_dir, output_dir, simulation_time):
     
     stream_output = {
        "stream_output" : {
-          "stream_output_directory" : "outputs/troute",
+          "stream_output_directory" : os.path.join(sim_output_dir, "troute"),
           'stream_output_time' : 1000000, #[hr]
-          'stream_output_type' : '.nc', # netcdf '.nc' or '.csv' or '.pkl'
+          'stream_output_type' : '.csv', # netcdf '.nc' or '.csv' or '.pkl'
           'stream_output_internal_frequency' : 60 #[min]
           }
     }
     
     d['output_parameters'] = stream_output
     
-    with open(os.path.join(output_dir,"troute_config.yaml"), 'w') as file:
+    with open(os.path.join(troute_dir,"troute_config.yaml"), 'w') as file:
         yaml.dump(d,file, default_flow_style=False, sort_keys=False)
 
+
+
+#############################################################################
+# The function generates configuration file for t-route model
+# @param catids         : array/list of integers contain catchment ids
+# @ngen_dir             : ngen directory
+# @param gpkg_file      : basin geopackage file
+# @param real_file      : realization file
+#############################################################################
+def write_calib_input_files(gpkg_file, ngen_dir, cal_dir, real_file, troute_output_file,
+                            ngen_cal_file, num_proc = 1):
+   
+    #config_dir = os.path.join(os.path.dirname(os.path.dirname(sys.argv[0])),"configs")
+    #ngen_cal_config_dir  = os.path.join(os.path.dirname(sys.argv[0]),"configs")
+
+    #ngen_cal_file = os.path.join(ngen_cal_config_dir, "input_calib.yaml")
+
+    if (not os.path.exists(ngen_cal_file)):
+        sys.exit("Sample calib yaml file does not exist, provided is " + ngen_cal_file)
+    
+    with open(ngen_cal_file, 'r') as file:
+        d = yaml.safe_load(file)
+
+    d['general']['workdir']   = os.path.dirname(os.path.dirname(gpkg_file))
+
+    d['model']['binary']      = os.path.join(ngen_dir, "cmake_build/ngen")
+    d['model']['realization'] = real_file
+    d['model']['hydrofabric'] = gpkg_file
+    d['model']['routing_output'] = troute_output_file
+    gdf_fp_attr = gpd.read_file(gpkg_file, layer='flowpath-attributes')
+
+    gdf_fp_cols = gdf_fp_attr[['id',  'rl_gages']] # select the two columns of interest
+
+    # Find out row(s) where rl_gages is not None (to get the corresponding waterbody)
+    rl_gages = gdf_fp_cols[gdf_fp_cols['rl_gages'].notna()]
+
+    ids = rl_gages['id'].tolist()
+    
+    if (len(ids) == 1):
+        d['model']['eval_feature'] = ids[0]
+    else:
+        print ("more than one rl_gages exist in the geopackage... fix me later!")
+        sys.exit(1)
+
+    if (num_proc > 1):
+        d['model']['parallel'] = num_proc
+
+    if os_name == "Darwin" and num_proc == 1:
+        d['model']['binary'] = f'PYTHONEXECUTABLE=$(which python) ' + os.path.join(ngen_dir, "cmake_build/ngen")
+    if os_name == "Darwin" and num_proc > 1:
+        d['model']['binary'] = f'mpirun -np {num_proc} PYTHONEXECUTABLE=$(which python) ' + os.path.join(ngen_dir, "cmake_build/ngen")
+        d['model']['parallel'] = 1
+    
+    with open(os.path.join(cal_dir,"calib_config.yaml"), 'w') as file:
+        yaml.dump(d,file, default_flow_style=False, sort_keys=False)
+
+        
 #############################################################################
 #############################################################################
 def create_directory(dir_name):
@@ -760,14 +817,17 @@ def main():
                             help="simulation start/end time") 
         parser.add_argument("-ow",   dest="overwrite",     type=str, required=False, default=True,
                             help="overwrite old/existing files")
-        parser.add_argument("-troute", dest="troute", type=str, required=False, default=False, help="option for t-toure")
-        parser.add_argument("-v", dest="verbosity",   type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
+        parser.add_argument("-troute", dest="troute",    type=str, required=False, default=False, help="option for t-toure")
+        parser.add_argument("-v",      dest="verbosity", type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
+        parser.add_argument("-c",      dest="calib",     type=str, required=False, default=False, help="option for calibration")
+        parser.add_argument("-json",   dest="json_dir",  type=str, required=True,  help="realization files directory")
+        parser.add_argument("-sout",   dest="sim_output_dir",  type=str, required=True,  help="ngen runs output directory")
     except:
         parser.print_help()
-        sys.exit(0)
+        sys.exit(1)
     
     args = parser.parse_args()
-
+    
     if (not os.path.exists(args.gpkg_file)):
         str_msg = 'The gpkg file does not exist! %s'%args.gpkg_file
         sys.exit(str_msg)
@@ -873,10 +933,16 @@ def main():
 
         write_lasam_input_files(catids, os.path.join(lasam_dir, "vG_default_params.dat"),
                                 gdf_soil, lasam_dir, args.models_option)
-    
+
+
     if (args.troute):
-        write_troute_input_files(args.gpkg_file, args.ngen_dir, args.output_dir, args.time)
-        
+        write_troute_input_files(args.gpkg_file, args.ngen_dir, args.output_dir, args.time,
+                                 sim_output_dir = args.sim_output_dir)
+
+    #if (args.calib):
+    #    real_file = os.path.join(args.json_dir, "realization_%s.json"%args.models_option)
+    #    write_calib_input_files(args.gpkg_file, args.ngen_dir, args.output_dir, real_file)
+    
     ## create uniform forcings
     #forcing_file = os.path.join(args.forcing_dir,"cat-base.csv")
     #write_forcing_files(catids, forcing_file)

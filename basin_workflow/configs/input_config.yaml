@@ -1,0 +1,22 @@
+# See main.py for details about these parameters
+
+workflow_dir : "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/"
+root_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/test"
+ngen_dir     : "/Users/ahmadjan/codes/ngen/ngen"
+nc_forcing_dir  : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/forcings"
+
+simulation_time            : '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2010-10-02 00:00:00"}' 
+model_option               : "NCP"
+precip_partitioning_scheme : 'Schaake'
+surface_runoff_scheme      : 'NASH_CASCADE'
+#surface_runoff_scheme      : 'GIUH'
+is_netcdf_forcing          : True
+clean                      : ['existing']
+is_routing                 : True
+verbosity                  : 3
+num_processors_sim         : 1
+num_processors_adaptive    : False
+num_processors_config      : 1
+setup_simulation           : True
+rename_existing_simulation : ""
+is_calibration             : True

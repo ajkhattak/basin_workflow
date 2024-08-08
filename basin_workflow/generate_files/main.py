@@ -17,6 +17,7 @@ import yaml
 import multiprocessing
 from functools import partial # used for partially applied function which allows to create new functions with arguments
 import time
+import argparse
 
 import helper
 # Note #1: from the command line just run 'python path_to/main.py'
@@ -82,8 +83,12 @@ class colors:
     END   = '\033[0m'
 
 # Set all variables as  global variables from your yaml config file
-parent_dir = os.path.dirname(os.path.dirname(sys.argv[0]))
-with open(os.path.join(parent_dir, "input.yaml"), 'r') as file:
+#parent_dir = os.path.dirname(os.path.dirname(sys.argv[0]))
+#with open(os.path.join(parent_dir, "input.yaml"), 'r') as file:
+#    d = yaml.safe_load(file)
+
+infile  = sys.argv[1]
+with open(infile, 'r') as file:
     d = yaml.safe_load(file)
 
 workflow_dir               = d["workflow_dir"]
@@ -101,6 +106,7 @@ num_processors_config      = d.get('num_processors_config', 1)
 num_processors_sim         = d.get('num_processors_sim', 1)
 setup_simulation           = d.get('setup_simulation', True)
 rename_existing_simulation = d.get('rename_existing_simulation', "")
+is_calibration             = d.get('is_calibration', False)
 
 def process_clean_input_param():
     clean_lst = []
@@ -164,9 +170,11 @@ def generate_catchment_files(dir, forcing_files):
 
         assert os.path.exists(forcing_dir)
 
-    config_dir = "configs"
-    json_dir = "json"
-
+    config_dir = os.path.join(dir,"configs")
+    json_dir   = os.path.join(dir, "json")
+    gpkg_dir   = os.path.join(dir, gpkg_dir)
+    sim_output_dir = os.path.join(dir, "outputs")
+    
     helper.create_clean_dirs(dir, config_dir, json_dir, setup_simulation = setup_simulation,
                              rename_existing_simulation = rename_existing_simulation, clean = clean)
 
@@ -177,18 +185,21 @@ def generate_catchment_files(dir, forcing_files):
 
     driver = f'python {workflow_driver} -gpkg {gpkg_dir} -ngen {ngen_dir} -f {forcing_dir} \
     -o {config_dir} -m {model_option} -p {precip_partitioning_scheme} -r {surface_runoff_scheme} -t \'{simulation_time}\' \
-    -netcdf {is_netcdf_forcing} -troute {is_routing} -json {json_dir} -v {verbosity}'
+    -netcdf {is_netcdf_forcing} -troute {is_routing} -json {json_dir} -v {verbosity} -c {is_calibration} \
+    -sout {sim_output_dir}'
 
-    result = subprocess.call(driver, shell=True)
+    failed = subprocess.call(driver, shell=True)
 
-    id_full = str(gpkg_name[:-5].split("_")[1])
-    basin_ids.append(str(id_full))
+    if (not failed):
+        id_full = str(gpkg_name[:-5].split("_")[1])
+        basin_ids.append(str(id_full))
 
-    x = gpd.read_file(gpkg_dir, layer="divides")
-    num_cats.append(len(x["divide_id"]))
+        x = gpd.read_file(gpkg_dir, layer="divides")
+        num_cats.append(len(x["divide_id"]))
 
     if verbosity >=1:
-        print (colors.GREEN + "  Passed " + colors.END )
+        result = "Passed" if not failed else "Failed" 
+        print (colors.GREEN + "  %s "%result + colors.END )
 
     return basin_ids, num_cats
 
@@ -252,8 +263,9 @@ if __name__ == "__main__":
     if (not os.path.exists(os.path.join(workflow_dir, "generate_files"))):
         sys.exit("check `workflow_dir`, it should be the parent directory of `generate_files` directory")
 
-    gpkg_dirs = glob.glob(root_dir + "/*/", recursive = True)
-
+    all_dirs = glob.glob(root_dir + "/*/", recursive = True)
+    gpkg_dirs = [g for g in all_dirs if "failed_cats" not in g] # remove the failed_cats directory
+ 
     forcing_files = []
     if (is_netcdf_forcing):
         try:

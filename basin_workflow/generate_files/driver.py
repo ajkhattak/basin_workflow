@@ -57,11 +57,13 @@ def main():
         parser.add_argument("-m",    dest="models_option", type=str, required=True,  help="option for models coupling\n%s"%coupled_models_options)
         parser.add_argument("-netcdf", dest="netcdf", type=str, required=False, default=False, help="option for forcing data format")
         parser.add_argument("-troute", dest="troute", type=str, required=False, default=False, help="option for t-route")
-        parser.add_argument("-v", dest="verbosity",   type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
+        parser.add_argument("-v",      dest="verbosity", type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
+        parser.add_argument("-c",      dest="calib",     type=str, required=False, default=False, help="option for calibration")
+        parser.add_argument("-sout",   dest="sim_output_dir",  type=str, required=True,  help="ngen runs output directory")
         args = parser.parse_args()
     except:
         parser.print_help()
-        sys.exit(0)
+        sys.exit(1)
     
     # check if geopackage file exists, if not, throw an error
     if (not os.path.exists(args.gpkg_file)):
@@ -107,7 +109,9 @@ def main():
                               -f {args.forcing_dir} -o {args.config_dir} -m {coupled_models} \
                               -p {args.precip_partitioning_scheme} -r {args.surface_runoff_scheme} \
                               -troute {args.troute} \
-                              -t \'{args.time}\' -v {args.verbosity}'
+                              -t \'{args.time}\' -v {args.verbosity} \
+                              -c {args.calib} -json {args.json_dir} \
+                              -sout {args.sim_output_dir}'
 
     if (args.verbosity >=3):
         print ("*******************************************")
@@ -137,7 +141,7 @@ def main():
                                   -i {args.config_dir} -m {coupled_models} -p {args.precip_partitioning_scheme} \
                                   -b {baseline_case} -r {args.surface_runoff_scheme} -t \'{args.time}\' \
                                   -netcdf {args.netcdf} -troute {args.troute} -json {args.json_dir} \
-                                  -v {args.verbosity}'
+                                  -v {args.verbosity} -sout {args.sim_output_dir}'
 
     if (args.verbosity >=3):
         print ("Running (from driver.py): \n ", generate_realization_file)
