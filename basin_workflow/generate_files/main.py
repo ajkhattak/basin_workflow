@@ -92,7 +92,7 @@ with open(infile, 'r') as file:
     d = yaml.safe_load(file)
 
 workflow_dir               = d["workflow_dir"]
-root_dir                   = d["root_dir"]
+root_dir                   = d["output_dir"]
 ngen_dir                   = d["ngen_dir"]
 simulation_time            = d["simulation_time"]
 model_option               = d['model_option']

@@ -20,20 +20,33 @@ def runner():
     if (args.gg):
         print ("Generating geopackages...")
         generate_gpkg = f"Rscript {workflow_dir}/giuh_twi/main.R {workflow_dir}/configs/input_gpkg_params.yaml"
-        #result = subprocess.call(generate_gpkg,shell=True)
-        print ("DONE \u2713")
+        status = subprocess.call(generate_gpkg,shell=True)
+
+        if (status):
+            sys.exit("Failed during generating geopackge(s) step...")
+        else:
+            print ("DONE \u2713")
 
     if (args.cf):
         print ("Generating config files...")
         generate_configs = f"python {workflow_dir}/generate_files/main.py {workflow_dir}/configs/input_config.yaml"
-        result = subprocess.call(generate_configs,shell=True)
-        print ("DONE \u2713")
+        status = subprocess.call(generate_configs,shell=True)
+
+        if (status):
+            sys.exit("Failed during generating config files step...")
+        else:
+            print ("DONE \u2713")
 
     if (args.r and not args.rc):
         print ("Running NextGen (without calibration) ...")
         run_command = f"python {workflow_dir}/run_ngen.py {workflow_dir}/configs/input_config.yaml"
-        result = subprocess.call(run_command,shell=True)
-        print ("DONE \u2713")
+        status = subprocess.call(run_command,shell=True)
+
+        if (status):
+            sys.exit("Failed during ngen execution...")
+        else:
+            print ("DONE \u2713")
+
         
     if (args.rc):
         print ("Running NextGen (with calibration) ...")
@@ -48,7 +61,12 @@ def runner():
         #result = subprocess.call(run_command,shell=True)
 
         run_command = f"python {workflow_dir}/runner.py {workflow_dir}/configs/input_config.yaml"
-        result = subprocess.call(run_command,shell=True)
+        status = subprocess.call(run_command,shell=True)
+
+        if (status):
+            sys.exit("Failed during ngen-cal execution...")
+        else:
+            print ("DONE \u2713")
     print ("**********************************")
     
     

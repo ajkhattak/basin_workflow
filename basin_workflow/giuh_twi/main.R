@@ -80,16 +80,26 @@ setup <-function() {
              use_gage_id   = {use_gage_id}, \n 
              use_gage_file = {use_gage_file}, \n 
              use_gpkg      = {use_gpkg}"))
-    stop()
+    return(1)
+  }
+  
+  if (!file.exists(output_dir)) {
+    print(glue("Output directory does not exist, provided: {output_dir}"))
+    return(1)
   }
   
   setwd(output_dir)
   wbt_wd(getwd())
+  
+  return(0)
 }
 
 # call setup function to read parameters from config file
-setup()
-
+result <- setup()
+if (result){
+  quit(save = "default", status = 1)
+  stop("Setup failed!")
+}
 
 ################################ OPTIONS #######################################
 
