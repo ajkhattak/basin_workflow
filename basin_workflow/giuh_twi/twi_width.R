@@ -11,29 +11,30 @@ twi_function <- function(div_infile, dem_output_dir, distribution = 'quantiles',
   
   # @param out_type Output type; one of 'cells' (default), 'catchment area', and 'specific contributing area'.
   wbt_d8_flow_accumulation(input = glue("{dem_output_dir}/dem_corr.tif"), output = glue("{dem_output_dir}/sca.tif")
-                           , out_type = 'specific contributing area')
+                           , out_type = 'specific contributing area', verbose_mode = FALSE)
   
   
-  wbt_slope(dem = glue("{dem_output_dir}/dem_corr.tif"), output = glue("{dem_output_dir}/slope.tif"))
+  wbt_slope(dem = glue("{dem_output_dir}/dem_corr.tif"), output = glue("{dem_output_dir}/slope.tif"),
+            verbose_mode = FALSE)
   
   wbt_wetness_index(sca = glue("{dem_output_dir}/sca.tif"), slope = glue("{dem_output_dir}/slope.tif"), 
-                    output = glue("{dem_output_dir}/twi.tif"))
+                    output = glue("{dem_output_dir}/twi.tif"), verbose_mode = FALSE)
   
   twi = rast(glue("{dem_output_dir}/twi.tif"))
-  #print (twi)
+  
   twi[twi < 0] <- 0
   twi[twi > 50] <- 50
   
   if (distribution == 'quantiles') {
-    twi_cat <- execute_zonal(data = twi,
+    twi_cat <- zonal::execute_zonal(data = twi,
                              geom = div,
                              ID = "divide_id",
-                             fun = equal_population_distribution,
+                             fun = zonal::equal_population_distribution,
                              groups = nclasses)
     
   }
   else if (distribution == 'simple') {
-     twi_cat <- execute_zonal(data = twi,
+     twi_cat <- zonal::execute_zonal(data = twi,
                               geom = div,
                               ID = "divide_id",
                               fun = zonal::distribution,
@@ -41,7 +42,7 @@ twi_function <- function(div_infile, dem_output_dir, distribution = 'quantiles',
      
      
   }
-
+  
   return(twi_cat)
 }
 
@@ -60,13 +61,13 @@ width_function <- function(div_infile, dem_output_dir) {
   
   flowpath_length <- rast(glue("{dem_output_dir}/downslope_fp_length.tif"))
   
-  fp_min_ftn = execute_zonal(data = flowpath_length,
+  fp_min_ftn = zonal::execute_zonal(data = flowpath_length,
                              geom = div,
                              ID = "divide_id",
                              fun = fun_crop_lower)
   
   
-  fp_max_ftn = execute_zonal(data = flowpath_length,
+  fp_max_ftn = zonal::execute_zonal(data = flowpath_length,
                              geom = div,
                              ID = "divide_id",
                              fun = fun_crop_upper)  

@@ -14,7 +14,7 @@ giuh_function <- function(div_infile, dem_output_dir, vel_channel = 1, vel_overl
   
   # @param out_type Output type; one of 'cells' (default), 'catchment area', and 'specific contributing area'.
   wbt_d8_flow_accumulation(input = glue("{dem_output_dir}/dem_corr.tif"), output = glue("{dem_output_dir}/giuh_sca.tif"),
-                           out_type = 'specific contributing area')
+                           out_type = 'specific contributing area', verbose_mode = FALSE)
   
   sca <- rast(glue("{dem_output_dir}/giuh_sca.tif"))
   rasterized_river <- rasterizeGeom(vect(river), sca, fun="length")
@@ -38,13 +38,15 @@ giuh_function <- function(div_infile, dem_output_dir, vel_channel = 1, vel_overl
   writeRaster(x, glue("{dem_output_dir}/giuh_travel_time.tif") ,overwrite=TRUE)  
   
   # This one calculates the path to the basin outlet
-  wbt_d8_pointer(dem = glue("{dem_output_dir}/dem_corr.tif"), output = glue("{dem_output_dir}/dem_d8.tif"))
+  wbt_d8_pointer(dem = glue("{dem_output_dir}/dem_corr.tif"), output = glue("{dem_output_dir}/dem_d8.tif"),
+                 verbose_mode = FALSE)
   
   # Using S = V * T => T = S/V; divide distance (flowpath_length) by weights (1/V)
   # Get giuh_minutes raster by computing flowpath length * weights = meter * X = meter * min/meter = min
   wbt_downslope_flowpath_length(d8_pntr = glue("{dem_output_dir}/dem_d8.tif"),
                                 output  = glue("{dem_output_dir}/giuh_minute.tif"),
-                                weights = glue("{dem_output_dir}/giuh_travel_time.tif"))
+                                weights = glue("{dem_output_dir}/giuh_travel_time.tif"),
+                                verbose_mode = FALSE)
   
   # from basin outlet to catchment outlet workflow
   giuh_minute <- rast(glue("{dem_output_dir}/giuh_minute.tif"))
@@ -74,8 +76,6 @@ giuh_function <- function(div_infile, dem_output_dir, vel_channel = 1, vel_overl
   # subtract adjusted-raster (created 15% and 85% quantiles) from minimun-catchment-value to get localized distance
   # of a point to the catchment outlet
   downslope_giuh_cat_outlet <- rast_giuh_minute_temp - rasterized_time_min
-  
-  #print (downslope_giuh_cat_outlet)
   
   writeRaster(downslope_giuh_cat_outlet, glue("{dem_output_dir}/downslope_giuh_cat_outlet.tif"),
               overwrite=TRUE)  

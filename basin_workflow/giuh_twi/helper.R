@@ -3,7 +3,6 @@
 # @date  February 05, 2024
 
 # Get the DEM
-
 dem_function <- function(div_infile,
                          dem_infile = "/vsicurl/https://lynker-spatial.s3.amazonaws.com/gridded-resources/dem.vrt",
                          dem_output_dir) {
@@ -12,7 +11,6 @@ dem_function <- function(div_infile,
   
   # Get the catchment geopackage
   div <- read_sf(div_infile, 'divides')
-  #river <- read_sf(div_infile, "flowlines")
   
   # Buffer because we want to guarantee we don not have boundary issues when processing the DEM
   div_bf <- st_buffer(div,dist=5000)
@@ -51,27 +49,27 @@ fun_crop_upper <- function(values, coverage_fraction) {
 add_model_attributes <- function(div_infile, hf_version = 'v2.1.1') {
   
   base = 's3://lynker-spatial/hydrofabric/v2.1.1/nextgen/conus'
-  
+
   # net has divide_id, id, and vupid that are used for filtering below
   net = as_sqlite(div_infile, "network") 
-  
+
   # Courtesy of Mike Johnson
   model_attr <- arrow::open_dataset(glue('{base}_model-attributes')) |>
-    inner_join(collect(distinct(dplyr::select(net, divide_id, vpuid)))) |> 
+    dplyr::inner_join(dplyr::collect(dplyr::distinct(dplyr::select(net, divide_id, vpuid)))) |> 
     dplyr::collect() 
-  
+
   flowpath_attr <- arrow::open_dataset(glue('{base}_flowpath-attributes')) |>
-    inner_join(collect(distinct(dplyr::select(net, id, vpuid)))) |> 
+    dplyr::inner_join(dplyr::collect(dplyr::distinct(dplyr::select(net, id, vpuid)))) |> 
     dplyr::collect()
-  
+
   #cat ("m_attr: ", nrow(model_attr))
   stopifnot(nrow(model_attr) > 0)
   stopifnot(nrow(flowpath_attr) > 0)
   
   # Write the attributes to a new table in the hydrofabric subset GPKG
-  sf::st_write(model_attr, div_infile, layer = "model_attributes", append = FALSE)
+  sf::st_write(model_attr, div_infile, layer = "model-attributes", append = FALSE)
   
-  sf::st_write(flowpath_attr, div_infile, layer = "flowpath_attributes", append = FALSE)
+  sf::st_write(flowpath_attr, div_infile, layer = "flowpath-attributes", append = FALSE)
   
   return(model_attr)
   
@@ -87,4 +85,16 @@ add_model_attributes <- function(div_infile, hf_version = 'v2.1.1') {
   #flowpath_attr <- open_dataset(glue('s3://lynker-spatial/hydrofabric/{hf_version}/nextgen/conus_flowpath-attributes')) |>
   #  filter(vpuid %in% unique(net$vpuid), divide_id %in% unique(net$id)) |> 
   #  collect()
+}
+
+# get parameter function check if a param is provided otherwise a default value
+get_param <- function(input, param, default_value) {
+
+  tryCatch({
+    value = eval(parse(text = paste("input$", param, sep = "")))
+    
+    if (is.null(value)) default_value else value
+    }, error = function(e) {
+      default_value
+    })
 }

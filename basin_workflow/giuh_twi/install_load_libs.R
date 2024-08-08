@@ -64,6 +64,11 @@ if(!requireNamespace("jsonlite", quietly=TRUE))
 if(!requireNamespace("ggplot2", quietly=TRUE)) 
   install.packages("ggplot2")
 
+if(!requireNamespace("pbapply", quietly=TRUE)) 
+  install.packages("pbapply")
+
+if(!requireNamespace("yaml", quietly=TRUE)) 
+  install.packages("yaml")
 
 # install arrow package from source, if any conflicts/errors happen due to arrow package
 if(!requireNamespace("arrow", quietly=TRUE) || reinstall_arrow) {
@@ -98,4 +103,37 @@ library(jsonlite)
 library(ggplot2)
 library(Metrics)
 library(arrow)
+library(pbapply)
+library(parallel)
+library(yaml)
 
+# put all packages in a list for the use in parallel execution
+libraries_lst <- c(library(hydrofabric),
+                   suppressPackageStartupMessages(library(hydrofabric)),
+                   library(climateR),
+                   library(zonal),
+                   library(whitebox),
+                   library(sf),
+                   library(terra),
+                   library(dplyr),
+                   library(glue),
+                   suppressPackageStartupMessages(library(raster)),
+                   library(jsonlite),
+                   library(ggplot2),
+                   library(Metrics),
+                   library(arrow),
+                   library(RSQLite),
+                   library(DBI),
+                   library(pbapply),
+                   library(parallel),
+                   library(yaml)
+                   )
+
+# to sync hydrofabric to local machine
+local   <- "/Users/ahmadjan/Core/SimulationsData/preprocessing/hydrofabricS3"
+s3      <- "s3://lynker-spatial/hydrofabric"
+version <-  'v2.1.1'
+type    <- "nextgen"
+domain  <- "conus"
+
+(sys <- glue::glue("aws s3 sync {s3}/{version}/{type} {local}/{version}/{type}"))
