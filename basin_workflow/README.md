@@ -12,9 +12,9 @@ and executing them within the NextGen framework.
 ### Configuration files
 The workflow needs three configuration files, the options and paths need to be adjusted to local settings, please see these files for further instruction.
 
-- config file for option `-gg` (see [here](basin_workflow/configs/input_gpkg_params.yaml)). Changes to this file needed.
-- config file for option `-cf` (see [here](basin_workflow/configs/input_config.yaml)). Changes to this file needed.
-- config file for option `-rc` (see [here](basin_workflow/configs/input_calib.yaml). Changes to this file needed. 
+- config file for option `-gg` (see [here](https://github.com/ajkhattak/basin_workflow/blob/master/basin_workflow/configs/input_gpkg_params.yaml)). Changes to this file needed.
+- config file for option `-cf` (see [here](https://github.com/ajkhattak/basin_workflow/blob/master/basin_workflow/configs/input_config.yaml)). Changes to this file needed.
+- config file for option `-rc` (see [here](https://github.com/ajkhattak/basin_workflow/blob/master/basin_workflow/configs/input_calib.yaml)). Changes to this file needed. 
 
 ### Running the workflow
 - run `python /Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/main.py OPTIONS = [-gg -cf -r -rc]
