@@ -49,9 +49,14 @@ setup <-function() {
   } else if (length(args) > 1) {
     stop("Please provide only one argument (input.yaml).")
   } else {
-    infile_config <- "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/configs/input_gpkg_params.yaml"
+    infile_config <- "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/configs/input_gpkg_paramsX.yaml"
   }
 
+  if (!file.exists(infile_config)) {
+    print(paste0("input config file does not exist, provided: ", infile_config))
+    return(1)
+  }
+  
   inputs = yaml.load_file(infile_config)
 
   workflow_dir      <<- inputs$workflow_dir
@@ -97,7 +102,7 @@ setup <-function() {
 # call setup function to read parameters from config file
 result <- setup()
 if (result){
-  quit(save = "default", status = 1)
+  #quit(save = "no", status = 1)
   stop("Setup failed!")
 }
 

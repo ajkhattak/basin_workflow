@@ -11,23 +11,25 @@ import yaml
 import platform
 from generate_files import configuration
 import json
-os_name = platform.system()
 
+
+os_name = platform.system()
 infile  = sys.argv[1]
-#with open(os.path.dirname(sys.argv[0])+"/input.yaml", 'r') as file:
-#    d = yaml.safe_load(file)
 
 with open(infile, 'r') as file:
     d = yaml.safe_load(file)
     
+
 workflow_dir     = d["workflow_dir"]
-root_dir         = d["root_dir"]
+root_dir         = d["output_dir"]
 ngen_dir         = d["ngen_dir"]
 nproc            = int(d.get('num_processors_sim', 1))
 nproc_adaptive   = int(d.get('num_processors_adaptive', True))
 is_calibration   = d.get('is_calibration', False)
 simulation_time  = json.loads(d["simulation_time"])
 
+#
+#
 def run_ngen_wihtout_calibration():
     
     infile = os.path.join(root_dir, "basins_passed.csv")
@@ -43,8 +45,8 @@ def run_ngen_wihtout_calibration():
         dir = os.path.join(root_dir, id)
         os.chdir(dir)
 
-        gpkg_name     = os.path.basename(glob.glob(dir + "/data/*.gpkg")[0])  # <---- modify this line according to local settings
-        gpkg_file      = f"data/{gpkg_name}"                                   # <---- modify this line according to local settings
+        gpkg_name  = os.path.basename(glob.glob(dir + "/data/*.gpkg")[0])
+        gpkg_file  = f"data/{gpkg_name}" 
 
         nproc_local = nproc
         
@@ -69,14 +71,13 @@ def run_ngen_wihtout_calibration():
         
         print (f"Run command: {run_cmd} ", flush = True)
         result = subprocess.call(run_cmd,shell=True)
-        #break
+
     
 def run_ngen_with_calibration():
 
     infile = os.path.join(root_dir, "basins_passed.csv")
     indata = pd.read_csv(infile, dtype=str)
 
-    #ngen_exe = os.path.join(ngen_dir, "cmake_build/ngen")
 
     ngen_cal_config_dir  = os.path.join(os.path.dirname(sys.argv[0]),"configs")
     ngen_cal_file = os.path.join(ngen_cal_config_dir, "input_calib.yaml")
@@ -87,9 +88,6 @@ def run_ngen_with_calibration():
         
         dir = os.path.join(root_dir, id)
         os.chdir(dir)
-
-        #gpkg_name   = os.path.basename(glob.glob(dir + "/data/*.gpkg")[0])  # <---- modify this line according to local settings
-        #gpkg_dir    = f"data/{gpkg_name}"                                   # <---- modify this line according to local settings
 
         gpkg_file = glob.glob(dir + "/data/*.gpkg")[0]
         nproc_local = nproc
@@ -102,37 +100,24 @@ def run_ngen_with_calibration():
         
         if (nproc_local > 1):
             nproc_local, file_par = generate_partition_basin_file(ncats, gpkg_file)
-        
+            file_par = os.path.join(dir, file_par)
         print ("Running basin %s on cores %s ********"%(id, nproc_local), flush = True)
         
         realization = glob.glob(dir+"/json/realization_*.json")
 
-        print ("REALL: ", realization, dir)
         assert (len(realization) == 1)
 
         realization = realization[0]
 
-        
-        configuration.write_calib_input_files(gpkg_file = gpkg_file, ngen_dir = ngen_dir, cal_dir = cal_dir,
-                                              real_file = realization, ngen_cal_file = ngen_cal_file,
-                                              num_proc = nproc_local, troute_output_file = troute_output_file)
-        """
-        if (nproc_local == 1):
-            run_command = f"python -m ngen.cal {workflow_dir}/configs/input_calib.yaml"  
-            
-            #run_cmd = f'{ngen_exe} {gpkg_dir} all {gpkg_dir} all {realization}'
-        else:
-            run_cmd = f'mpirun -np {nproc_local} {ngen_exe} {gpkg_dir} all {gpkg_dir} all {realization} {file_par}'
-
-        if os_name == "Darwin":
-            run_cmd = f'PYTHONEXECUTABLE=$(which python) {run_cmd}'
-        
-        print (f"Run command: {run_cmd} ", flush = True)
-        result = subprocess.call(run_cmd,shell=True)
-        #break
-        
-        """
-        print ("current: ", os.getcwd())
+        configuration.write_calib_input_files(gpkg_file = gpkg_file,
+                                              ngen_dir = ngen_dir,
+                                              cal_dir = cal_dir,
+                                              realz_file = realization,
+                                              realz_file_par = file_par,
+                                              ngen_cal_file = ngen_cal_file,
+                                              num_proc = nproc_local,
+                                              troute_output_file = troute_output_file)
+        #quit()
         run_command = f"python -m ngen.cal configs/calib_config.yaml"  
         result = subprocess.call(run_command,shell=True)
 

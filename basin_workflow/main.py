@@ -10,8 +10,6 @@ import yaml
 import argparse
 
 
-#parent_dir = os.path.dirname(os.path.dirname(sys.argv[0]))
-
 workflow_dir = os.path.dirname(sys.argv[0])
 
 
@@ -55,11 +53,6 @@ def runner():
         with open(infile, 'r') as file:
             d = yaml.safe_load(file)
 
-        root_dir = d["root_dir"]
-
-        #run_command = f"python -m ngen.cal {workflow_dir}/configs/input_calib.yaml"  
-        #result = subprocess.call(run_command,shell=True)
-
         run_command = f"python {workflow_dir}/runner.py {workflow_dir}/configs/input_config.yaml"
         status = subprocess.call(run_command,shell=True)
 
@@ -67,23 +60,10 @@ def runner():
             sys.exit("Failed during ngen-cal execution...")
         else:
             print ("DONE \u2713")
+    
     print ("**********************************")
     
     
-    
-    #print (run_command)
-    #print ("Running simulations...")
-    
-
-def generate_gpkg():
-    print ("Generating geopackages ...")
-    generate_gpkg = f"Rscript ~/codes/workflows/basin_workflow/basin_workflow/giuh_twi/main.R configs/input_gpkg.yaml"
-    #result = subprocess.call(generate_configs,shell=True)
-    
-def generate_configs():
-    print ("Generating config files...")
-    generate_configs = f"python {workflow_dir}/generate_files/main.py"
-    #result = subprocess.call(generate_configs,shell=True)
 
 if __name__ == "__main__":
     

@@ -732,13 +732,8 @@ def write_troute_input_files(gpkg_file, ngen_dir, troute_dir, simulation_time,
 # @param gpkg_file      : basin geopackage file
 # @param real_file      : realization file
 #############################################################################
-def write_calib_input_files(gpkg_file, ngen_dir, cal_dir, real_file, troute_output_file,
-                            ngen_cal_file, num_proc = 1):
-   
-    #config_dir = os.path.join(os.path.dirname(os.path.dirname(sys.argv[0])),"configs")
-    #ngen_cal_config_dir  = os.path.join(os.path.dirname(sys.argv[0]),"configs")
-
-    #ngen_cal_file = os.path.join(ngen_cal_config_dir, "input_calib.yaml")
+def write_calib_input_files(gpkg_file, ngen_dir, cal_dir, realz_file, realz_file_par,
+                            troute_output_file, ngen_cal_file, num_proc = 1):
 
     if (not os.path.exists(ngen_cal_file)):
         sys.exit("Sample calib yaml file does not exist, provided is " + ngen_cal_file)
@@ -749,7 +744,7 @@ def write_calib_input_files(gpkg_file, ngen_dir, cal_dir, real_file, troute_outp
     d['general']['workdir']   = os.path.dirname(os.path.dirname(gpkg_file))
 
     d['model']['binary']      = os.path.join(ngen_dir, "cmake_build/ngen")
-    d['model']['realization'] = real_file
+    d['model']['realization'] = realz_file
     d['model']['hydrofabric'] = gpkg_file
     d['model']['routing_output'] = troute_output_file
     gdf_fp_attr = gpd.read_file(gpkg_file, layer='flowpath-attributes')
@@ -769,12 +764,12 @@ def write_calib_input_files(gpkg_file, ngen_dir, cal_dir, real_file, troute_outp
 
     if (num_proc > 1):
         d['model']['parallel'] = num_proc
+        d['model']['partitions'] = realz_file_par
 
-    if os_name == "Darwin" and num_proc == 1:
+    if os_name == "Darwin":
         d['model']['binary'] = f'PYTHONEXECUTABLE=$(which python) ' + os.path.join(ngen_dir, "cmake_build/ngen")
-    if os_name == "Darwin" and num_proc > 1:
-        d['model']['binary'] = f'mpirun -np {num_proc} PYTHONEXECUTABLE=$(which python) ' + os.path.join(ngen_dir, "cmake_build/ngen")
-        d['model']['parallel'] = 1
+    else:
+        d['model']['binary'] = os.path.join(ngen_dir, "cmake_build/ngen")
     
     with open(os.path.join(cal_dir,"calib_config.yaml"), 'w') as file:
         yaml.dump(d,file, default_flow_style=False, sort_keys=False)

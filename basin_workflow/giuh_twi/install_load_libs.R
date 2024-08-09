@@ -130,10 +130,10 @@ libraries_lst <- c(library(hydrofabric),
                    )
 
 # to sync hydrofabric to local machine
-local   <- "/Users/ahmadjan/Core/SimulationsData/preprocessing/hydrofabricS3"
-s3      <- "s3://lynker-spatial/hydrofabric"
-version <-  'v2.1.1'
-type    <- "nextgen"
-domain  <- "conus"
+#local   <- "/Users/ahmadjan/Core/SimulationsData/preprocessing/hydrofabricS3"
+#s3      <- "s3://lynker-spatial/hydrofabric"
+#version <-  'v2.1.1'
+#type    <- "nextgen"
+#domain  <- "conus"
 
-(sys <- glue::glue("aws s3 sync {s3}/{version}/{type} {local}/{version}/{type}"))
+#(sys <- glue::glue("aws s3 sync {s3}/{version}/{type} {local}/{version}/{type}"))
