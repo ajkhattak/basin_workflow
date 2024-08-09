@@ -57,7 +57,7 @@ def read_gpkg_file(infile, coupled_models, surface_runoff_scheme, verbosity):
         except:
             print("layer 'model-attributes or model_attributes does not exist!'")
             sys.exit(1)
-
+    
     gdf_soil.set_index("divide_id", inplace=True)
     gdf_div = gpd.read_file(infile, layer='divides')
     
@@ -162,7 +162,7 @@ def write_nom_input_files(catids, nom_dir, forcing_dir, gpkg_file, simulation_ti
         df_soil = gpd.read_file(gpkg_file, layer='model-attributes')
     except:
         try:
-            df_soil = gpd.read_file(infile, layer='model_attributes')
+            df_soil = gpd.read_file(gpkg_file, layer='model_attributes')
         except:
             print("layer 'model-attributes' or 'model_attributes' does not exist!'")
             sys.exit(1)

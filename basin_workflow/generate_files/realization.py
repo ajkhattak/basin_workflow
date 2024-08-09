@@ -27,7 +27,7 @@ import shutil
 # @param model_exe : path to PET executable
 #############################################################################
 def get_pet_block(model_exe, config_dir):
-    print ("config: ", config_dir)
+
     block = {
 	"name": "bmi_c",
 	"params": {
