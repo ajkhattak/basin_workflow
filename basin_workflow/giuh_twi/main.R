@@ -49,7 +49,7 @@ setup <-function() {
   } else if (length(args) > 1) {
     stop("Please provide only one argument (input.yaml).")
   } else {
-    infile_config <- "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/configs/input_gpkg_paramsX.yaml"
+    infile_config <- "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/configs/input_gpkg_params.yaml"
   }
 
   if (!file.exists(infile_config)) {
