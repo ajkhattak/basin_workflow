@@ -48,8 +48,15 @@ def get_soil_class_NWM(infile):
 # - returns     : geodataframe 
 #############################################################################
 def read_gpkg_file(infile, coupled_models, surface_runoff_scheme, verbosity):
-    
-    gdf_soil = gpd.read_file(infile, layer='model-attributes')
+
+    try:
+        gdf_soil = gpd.read_file(infile, layer='model-attributes')
+    except:
+        gdf_soil = gpd.read_file(infile, layer='model_attributes')
+    except:
+        print("layer 'model-attributes or model_attributes does not exist!'")
+         sys.exit(1)
+
     gdf_soil.set_index("divide_id", inplace=True)
     gdf_div = gpd.read_file(infile, layer='divides')
     
@@ -149,8 +156,15 @@ def write_forcing_files(catids, infile):
 
 #############################################################################
 def write_nom_input_files(catids, nom_dir, forcing_dir, gpkg_file, simulation_time, verbosity):
-    
-    df_soil = gpd.read_file(gpkg_file, layer='model-attributes')
+
+    try:
+        df_soil = gpd.read_file(gpkg_file, layer='model-attributes')
+    except:
+        df_soil = gpd.read_file(infile, layer='model_attributes')
+    except:
+        print("layer 'model-attributes' or 'model_attributes' does not exist!'")
+        sys.exit(1)
+
     df_cats = gpd.read_file(gpkg_file, layer='divides')
     df_cats = df_cats.to_crs("EPSG:4326") # change CRS to 4326
     
@@ -747,7 +761,14 @@ def write_calib_input_files(gpkg_file, ngen_dir, cal_dir, realz_file, realz_file
     d['model']['realization'] = realz_file
     d['model']['hydrofabric'] = gpkg_file
     d['model']['routing_output'] = troute_output_file
-    gdf_fp_attr = gpd.read_file(gpkg_file, layer='flowpath-attributes')
+
+    try:
+        gdf_fp_attr = gpd.read_file(gpkg_file, layer='flowpath-attributes')
+    except:
+        gdf_fp_attr = gpd.read_file(gpkg_file, layer='flowpath_attributes')
+    except:
+        print("layer 'flowpath-attributes' or 'flowpath_attributes' does not exist!'")
+        sys.exit(1)
 
     gdf_fp_cols = gdf_fp_attr[['id',  'rl_gages']] # select the two columns of interest
 
