@@ -49,7 +49,8 @@ def run_ngen_wihtout_calibration():
         gpkg_file  = f"data/{gpkg_name}" 
 
         nproc_local = nproc
-        
+
+        file_par = ""
         if (nproc_local > 1):
             nproc_local, file_par = generate_partition_basin_file(ncats, gpkg_file)
         

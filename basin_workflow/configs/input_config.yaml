@@ -1,22 +1,55 @@
 # See main.py for details about these parameters
 
-workflow_dir : "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/"
-output_dir   : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/test"
-ngen_dir     : "/Users/ahmadjan/codes/ngen/ngen"
-nc_forcing_dir  : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/forcings"
+#
+# See main.R for further details
+# make sure to install yaml package using install.packages("yaml") if not installed already
 
-simulation_time            : '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2010-10-02 00:00:00"}' 
-model_option               : "NCP"
-precip_partitioning_scheme : 'Schaake'
-surface_runoff_scheme      : 'NASH_CASCADE'
-#surface_runoff_scheme      : 'GIUH'
-is_netcdf_forcing          : True
-clean                      : ['existing']
-is_routing                 : True
-verbosity                  : 3
-num_processors_sim         : 1
-num_processors_adaptive    : False
-num_processors_config      : 1
-setup_simulation           : True
-rename_existing_simulation : ""
-is_calibration             : True
+workflow_dir  : "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/"
+output_dir    : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/basins516_model_attr"
+
+
+gpkg_model_params :
+  hf_source             : "/Users/ahmadjan/Core/SimulationsData/preprocessing/hydrofabricS3"
+  number_processors     : 2
+  reinstall_hydrofabric : FALSE
+  reinstall_arrow       : FALSE
+
+  options :
+    use_gage_id :
+      use_gage_id : TRUE
+      gage_ids    : "01052500"
+      #gage_ids    : ["04115265", "07301410", "04063700", "12488500"]
+      
+    use_gage_file :
+      use_gage_file : FALSE
+      gage_file     : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/CAMELS_v3_calib_BestModelsAll.csv"
+      column_name   : "hru_id_CAMELS"
+
+    use_gpkg :
+      use_gpkg  : FALSE
+      gpkg_dir  : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/test/test_gpkg"
+      pattern   :  "Gage_"
+      
+###############
+simulatons :
+  ngen_dir           : "/Users/ahmadjan/codes/ngen/ngen"
+  is_netcdf_forcing  : True
+  nc_forcing_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/forcings"
+
+  simulation_time            : '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2010-10-02 00:00:00"}' 
+  model_option               : "NCP"
+  precip_partitioning_scheme : 'Schaake'
+  surface_runoff_scheme      : 'NASH_CASCADE' # 'GIUH' for cfe1.0
+  is_routing                 : True    
+  is_calibration             : True
+
+  clean                      : ['existing']
+  setup_simulation           : True
+  verbosity                  : 0
+
+  num_processors_sim         : 2
+  num_processors_adaptive    : False
+  num_processors_config      : 1
+
+  rename_existing_simulation : ""
+

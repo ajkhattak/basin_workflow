@@ -91,22 +91,23 @@ infile  = sys.argv[1]
 with open(infile, 'r') as file:
     d = yaml.safe_load(file)
 
+dsim = d['simulatons']
 workflow_dir               = d["workflow_dir"]
 root_dir                   = d["output_dir"]
-ngen_dir                   = d["ngen_dir"]
-simulation_time            = d["simulation_time"]
-model_option               = d['model_option']
-precip_partitioning_scheme = d['precip_partitioning_scheme']
-surface_runoff_scheme      = d['surface_runoff_scheme']
-is_netcdf_forcing          = d.get('is_netcdf_forcing', True)
-clean                      = d.get('clean', "none")
-is_routing                 = d.get('is_routing', False)
-verbosity                  = d.get('verbosity', 0)
-num_processors_config      = d.get('num_processors_config', 1)
-num_processors_sim         = d.get('num_processors_sim', 1)
-setup_simulation           = d.get('setup_simulation', True)
-rename_existing_simulation = d.get('rename_existing_simulation', "")
-is_calibration             = d.get('is_calibration', False)
+ngen_dir                   = dsim["ngen_dir"]
+simulation_time            = dsim["simulation_time"]
+model_option               = dsim['model_option']
+precip_partitioning_scheme = dsim['precip_partitioning_scheme']
+surface_runoff_scheme      = dsim['surface_runoff_scheme']
+is_netcdf_forcing          = dsim.get('is_netcdf_forcing', True)
+clean                      = dsim.get('clean', "none")
+is_routing                 = dsim.get('is_routing', False)
+verbosity                  = dsim.get('verbosity', 0)
+num_processors_config      = dsim.get('num_processors_config', 1)
+num_processors_sim         = dsim.get('num_processors_sim', 1)
+setup_simulation           = dsim.get('setup_simulation', True)
+rename_existing_simulation = dsim.get('rename_existing_simulation', "")
+is_calibration             = dsim.get('is_calibration', False)
 
 def process_clean_input_param():
     clean_lst = []
@@ -167,6 +168,12 @@ def generate_catchment_files(dir, forcing_files):
                 return
         else:
             forcing_dir = "data/forcing"
+            if (not os.path.exists(forcing_dir)):
+                if verbosity >=2:
+                    print(f"Forcing file does not exist under {forcing_dir}, continuing to the next gpkg")
+                if verbosity >=1:
+                    print (colors.RED + "  Failed " + colors.END )
+                return
 
         assert os.path.exists(forcing_dir)
 
@@ -269,7 +276,10 @@ if __name__ == "__main__":
     forcing_files = []
     if (is_netcdf_forcing):
         try:
-            nc_forcing_dir  = d['nc_forcing_dir']
+            nc_forcing_dir  = dsim['nc_forcing_dir']
+            if (not os.path.exists(nc_forcing_dir)):
+                sys.exit(f"Forcing directory does not exist. Provided: {nc_forcing_dir}")
+
             forcing_files = glob.glob(os.path.join(nc_forcing_dir, "*.nc"), recursive = True)
             assert (len(forcing_files) > 0)
         except:

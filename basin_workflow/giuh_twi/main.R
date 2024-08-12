@@ -49,7 +49,7 @@ setup <-function() {
   } else if (length(args) > 1) {
     stop("Please provide only one argument (input.yaml).")
   } else {
-    infile_config <- "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/configs/input_gpkg_params.yaml"
+    infile_config <- "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/configs/input_config.yaml"
   }
 
   if (!file.exists(infile_config)) {
@@ -61,24 +61,24 @@ setup <-function() {
 
   workflow_dir      <<- inputs$workflow_dir
   output_dir        <<- inputs$output_dir
-  hf_source         <<- inputs$hf_source
-  reinstall_arrow   <<- inputs$reinstall_arrow
-  nproc             <<- inputs$number_processors
-  reinstall_hydrofabric <<- inputs$reinstall_hydrofabric
+  hf_source         <<- inputs$gpkg_model_params$hf_source
+  reinstall_arrow   <<- inputs$gpkg_model_params$reinstall_arrow
+  nproc             <<- inputs$gpkg_model_params$number_processors
+  reinstall_hydrofabric <<- inputs$gpkg_model_params$reinstall_hydrofabric
   
   source(paste0(workflow_dir, "/giuh_twi/install_load_libs.R"))
   source(glue("{workflow_dir}/giuh_twi/custom_functions.R"))
 
-  use_gage_id   <<-  get_param(inputs, "options$use_gage_id$use_gage_id", FALSE)
-  gage_ids      <<-  get_param(inputs, "options$use_gage_id$gage_ids", NULL)
+  use_gage_id   <<- get_param(inputs, "gpkg_model_params$options$use_gage_id$use_gage_id", FALSE)
+  gage_ids      <<- get_param(inputs, "gpkg_model_params$options$use_gage_id$gage_ids", NULL)
   
-  use_gage_file <<- get_param(inputs, "options$use_gage_file$use_gage_file", FALSE)
-  gage_file     <<- get_param(inputs, "options$use_gage_file$gage_file", NULL)
-  column_name   <<- get_param(inputs, "options$use_gage_file$column_name", "")
+  use_gage_file <<- get_param(inputs, "gpkg_model_params$options$use_gage_file$use_gage_file", FALSE)
+  gage_file     <<- get_param(inputs, "gpkg_model_params$options$use_gage_file$gage_file", NULL)
+  column_name   <<- get_param(inputs, "gpkg_model_params$options$use_gage_file$column_name", "")
   
-  use_gpkg      <<- get_param(inputs, "options$use_gpkg$use_gpkg", FALSE)
-  gpkg_dir      <<- get_param(inputs, "options$use_gpkg$gpkg_dir", NULL)
-  pattern       <<- get_param(inputs, "options$use_gpkg$pattern", "Gage_")
+  use_gpkg      <<- get_param(inputs, "gpkg_model_params$options$use_gpkg$use_gpkg", FALSE)
+  gpkg_dir      <<- get_param(inputs, "gpkg_model_params$options$use_gpkg$gpkg_dir", NULL)
+  pattern       <<- get_param(inputs, "gpkg_model_params$options$use_gpkg$pattern", "Gage_")
   
   if (sum(use_gage_id, use_gage_file, use_gpkg) > 1){
     print(glue("Only one condition needs to be TRUE, user provide: \n
@@ -102,7 +102,6 @@ setup <-function() {
 # call setup function to read parameters from config file
 result <- setup()
 if (result){
-  #quit(save = "no", status = 1)
   stop("Setup failed!")
 }
 

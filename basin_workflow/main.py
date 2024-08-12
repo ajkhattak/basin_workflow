@@ -15,7 +15,7 @@ workflow_dir = os.path.dirname(sys.argv[0])
 
 def runner():
     
-    if (args.gg):
+    if (args.gpkg):
         print ("Generating geopackages...")
         generate_gpkg = f"Rscript {workflow_dir}/giuh_twi/main.R {workflow_dir}/configs/input_gpkg_params.yaml"
         status = subprocess.call(generate_gpkg,shell=True)
@@ -25,7 +25,7 @@ def runner():
         else:
             print ("DONE \u2713")
 
-    if (args.cf):
+    if (args.conf):
         print ("Generating config files...")
         generate_configs = f"python {workflow_dir}/generate_files/main.py {workflow_dir}/configs/input_config.yaml"
         status = subprocess.call(generate_configs,shell=True)
@@ -35,7 +35,7 @@ def runner():
         else:
             print ("DONE \u2713")
 
-    if (args.r and not args.rc):
+    if (args.run and not args.cal):
         print ("Running NextGen (without calibration) ...")
         run_command = f"python {workflow_dir}/run_ngen.py {workflow_dir}/configs/input_config.yaml"
         status = subprocess.call(run_command,shell=True)
@@ -46,7 +46,7 @@ def runner():
             print ("DONE \u2713")
 
         
-    if (args.rc):
+    if (args.cal):
         print ("Running NextGen (with calibration) ...")
         infile = f"{workflow_dir}/configs/input_config.yaml"
         
@@ -69,10 +69,10 @@ if __name__ == "__main__":
     
     try:
         parser = argparse.ArgumentParser()
-        parser.add_argument("-gg", action='store_true', help="generate gpkg files")
-        parser.add_argument("-cf", action='store_true', help="generate config files")
-        parser.add_argument("-r",  action='store_true', help="run nextgen without caliberation")
-        parser.add_argument("-rc", action='store_true', help="run nextgen with caliberation")
+        parser.add_argument("-gpkg", action='store_true', help="generate gpkg files")
+        parser.add_argument("-conf", action='store_true', help="generate config files")
+        parser.add_argument("-run",  action='store_true', help="run nextgen without caliberation")
+        parser.add_argument("-cal",  action='store_true', help="run nextgen with caliberation")
         
         args = parser.parse_args()
     except:
