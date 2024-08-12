@@ -31,7 +31,7 @@ gpkg_model_params :
       pattern   :  "Gage_"
       
 ###############
-simulatons :
+simulations :
   ngen_dir           : "/Users/ahmadjan/codes/ngen/ngen"
   is_netcdf_forcing  : True
   nc_forcing_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/forcings"

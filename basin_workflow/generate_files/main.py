@@ -91,7 +91,7 @@ infile  = sys.argv[1]
 with open(infile, 'r') as file:
     d = yaml.safe_load(file)
 
-dsim = d['simulatons']
+dsim = d['simulations']
 workflow_dir               = d["workflow_dir"]
 root_dir                   = d["output_dir"]
 ngen_dir                   = dsim["ngen_dir"]
