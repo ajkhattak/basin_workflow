@@ -19,14 +19,14 @@ infile  = sys.argv[1]
 with open(infile, 'r') as file:
     d = yaml.safe_load(file)
     
-
+dsim = d['simulations']
 workflow_dir     = d["workflow_dir"]
 root_dir         = d["output_dir"]
-ngen_dir         = d["ngen_dir"]
-nproc            = int(d.get('num_processors_sim', 1))
-nproc_adaptive   = int(d.get('num_processors_adaptive', True))
-is_calibration   = d.get('is_calibration', False)
-simulation_time  = json.loads(d["simulation_time"])
+ngen_dir         = dsim["ngen_dir"]
+nproc            = int(dsim.get('num_processors_sim', 1))
+nproc_adaptive   = int(dsim.get('num_processors_adaptive', True))
+is_calibration   = dsim.get('is_calibration', False)
+simulation_time  = json.loads(dsim["simulation_time"])
 
 #
 #

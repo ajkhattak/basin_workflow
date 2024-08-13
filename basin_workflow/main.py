@@ -37,7 +37,7 @@ def runner():
 
     if (args.run and not args.cal):
         print ("Running NextGen (without calibration) ...")
-        run_command = f"python {workflow_dir}/run_ngen.py {workflow_dir}/configs/input_config.yaml"
+        run_command = f"python {workflow_dir}/runner.py {workflow_dir}/configs/input_config.yaml"
         status = subprocess.call(run_command,shell=True)
 
         if (status):
