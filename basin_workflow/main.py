@@ -17,7 +17,7 @@ def runner():
     
     if (args.gpkg):
         print ("Generating geopackages...")
-        generate_gpkg = f"Rscript {workflow_dir}/giuh_twi/main.R {workflow_dir}/configs/input_gpkg_params.yaml"
+        generate_gpkg = f"Rscript {workflow_dir}/giuh_twi/main.R {workflow_dir}/configs/input_config.yaml"
         status = subprocess.call(generate_gpkg,shell=True)
 
         if (status):

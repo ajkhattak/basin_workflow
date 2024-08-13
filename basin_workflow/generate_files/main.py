@@ -246,7 +246,7 @@ def main(forcing_files, nproc = 4):
         writer.writerows(dat)
 
     pool.close()
-    pooljoin()
+    pool.join()
 
     return len(num_cats)
 
