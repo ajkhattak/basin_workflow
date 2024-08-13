@@ -182,7 +182,7 @@ def generate_catchment_files(dir, forcing_files):
     gpkg_dir   = os.path.join(dir, gpkg_dir)
     sim_output_dir = os.path.join(dir, "outputs")
     
-    helper.create_clean_dirs(dir, config_dir, json_dir, setup_simulation = setup_simulation,
+    helper.create_clean_dirs(output_dir = dir, setup_simulation = setup_simulation,
                              rename_existing_simulation = rename_existing_simulation, clean = clean)
 
     if (not setup_simulation):

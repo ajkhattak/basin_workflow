@@ -2,9 +2,11 @@ import os
 import shutil
 
 
-def create_clean_dirs(output_dir, config_dir = "configs", json_dir = "json", output_dir = "outputs",
-                      setup_simulation = True, rename_existing_simulation = "", clean = ["none"]):
-
+def create_clean_dirs(output_dir,
+                      setup_simulation = True,
+                      rename_existing_simulation = "",
+                      clean = ["none"]):
+    print (" *************OO ", output_dir)
     if (isinstance(rename_existing_simulation, str) and rename_existing_simulation != ""):
         subdirs  = os.listdir(output_dir)
         os.mkdir(rename_existing_simulation)
@@ -47,8 +49,8 @@ def create_clean_dirs(output_dir, config_dir = "configs", json_dir = "json", out
                 except:
                     os.remove(d)
         
-        os.mkdir(config_dir)
-        os.mkdir(json_dir)
+        os.mkdir("configs")
+        os.mkdir("json")
         os.makedirs("outputs/div")
         os.makedirs("outputs/troute")
         os.makedirs("outputs/troute_parq")
