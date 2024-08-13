@@ -245,6 +245,9 @@ def main(forcing_files, nproc = 4):
         writer.writerow(['basin_id', 'n_cats'])
         writer.writerows(dat)
 
+    pool.close()
+    pooljoin()
+
     return len(num_cats)
 
 if __name__ == "__main__":
