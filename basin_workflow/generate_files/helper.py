@@ -6,7 +6,7 @@ def create_clean_dirs(output_dir,
                       setup_simulation = True,
                       rename_existing_simulation = "",
                       clean = ["none"]):
-    print (" *************OO ", output_dir)
+
     if (isinstance(rename_existing_simulation, str) and rename_existing_simulation != ""):
         subdirs  = os.listdir(output_dir)
         os.mkdir(rename_existing_simulation)
