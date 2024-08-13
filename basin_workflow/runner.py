@@ -18,10 +18,10 @@ infile  = sys.argv[1]
 
 with open(infile, 'r') as file:
     d = yaml.safe_load(file)
-    
+
 dsim = d['simulations']
 workflow_dir     = d["workflow_dir"]
-root_dir         = d["output_dir"]
+output_dir         = d["output_dir"]
 ngen_dir         = dsim["ngen_dir"]
 nproc            = int(dsim.get('num_processors_sim', 1))
 nproc_adaptive   = int(dsim.get('num_processors_adaptive', True))
@@ -32,7 +32,7 @@ simulation_time  = json.loads(dsim["simulation_time"])
 #
 def run_ngen_without_calibration():
     
-    infile = os.path.join(root_dir, "basins_passed.csv")
+    infile = os.path.join(output_dir, "basins_passed.csv")
     indata = pd.read_csv(infile, dtype=str)
 
     ngen_exe = os.path.join(ngen_dir, "cmake_build/ngen")
@@ -42,7 +42,7 @@ def run_ngen_without_calibration():
 
         ncats = int(ncats)
         
-        dir = os.path.join(root_dir, id)
+        dir = os.path.join(output_dir, id)
         os.chdir(dir)
 
         gpkg_name  = os.path.basename(glob.glob(dir + "/data/*.gpkg")[0])
@@ -76,7 +76,7 @@ def run_ngen_without_calibration():
     
 def run_ngen_with_calibration():
 
-    infile = os.path.join(root_dir, "basins_passed.csv")
+    infile = os.path.join(output_dir, "basins_passed.csv")
     indata = pd.read_csv(infile, dtype=str)
 
 
@@ -87,7 +87,7 @@ def run_ngen_with_calibration():
 
         ncats = int(ncats)
         
-        dir = os.path.join(root_dir, id)
+        dir = os.path.join(output_dir, id)
         os.chdir(dir)
 
         gpkg_file = glob.glob(dir + "/data/*.gpkg")[0]

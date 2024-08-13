@@ -29,9 +29,9 @@ import helper
 ############################# Required Arguments ###################################
 ### Specify the following four directories (change according to your settings)
 # workflow_dir    : points to the base directory of generate_files under basin_workflow
-# root_dir        : geopackage(s) directory (format root_dir/GAUGE_ID see below)                 
+# output_dir        : geopackage(s) directory (format output_dir/GAUGE_ID see below)                 
 # nc_forcing_dir  : lumped forcings directory (pre-downloaded forcing data for each catchment (.csv or .nc); only need if forcing
-#                   directory is outside the structure of the root_dir described below)
+#                   directory is outside the structure of the output_dir described below)
 # ngen_dir        : nextgen directory path
 
 ### Specify the following model options
@@ -50,7 +50,7 @@ import helper
 ####################################################################################
 
 """
-root_dir:
+output_dir:
    - 10244950
      - data
        - Gage_10244950.gpkg
@@ -93,7 +93,7 @@ with open(infile, 'r') as file:
 
 dsim = d['simulations']
 workflow_dir               = d["workflow_dir"]
-root_dir                   = d["output_dir"]
+output_dir                   = d["output_dir"]
 ngen_dir                   = dsim["ngen_dir"]
 simulation_time            = dsim["simulation_time"]
 model_option               = dsim['model_option']
@@ -214,7 +214,7 @@ def generate_catchment_files(dir, forcing_files):
 
 def main(forcing_files, nproc = 4):
     
-    basins_passed = os.path.join(root_dir,"basins_passed.csv")
+    basins_passed = os.path.join(output_dir,"basins_passed.csv")
     
     if (os.path.exists(basins_passed)):
         os.remove(basins_passed)
@@ -265,7 +265,7 @@ if __name__ == "__main__":
             sys.exit("Quiting...")
     
     ############ CHECKS ###################
-    assert (os.path.exists(root_dir))
+    assert (os.path.exists(output_dir))
     assert (os.path.exists(workflow_dir))
     assert (os.path.exists(ngen_dir))
     ######################################
@@ -273,7 +273,7 @@ if __name__ == "__main__":
     if (not os.path.exists(os.path.join(workflow_dir, "generate_files"))):
         sys.exit("check `workflow_dir`, it should be the parent directory of `generate_files` directory")
 
-    all_dirs = glob.glob(root_dir + "/*/", recursive = True)
+    all_dirs = glob.glob(output_dir + "/*/", recursive = True)
     gpkg_dirs = [g for g in all_dirs if "failed_cats" not in g] # remove the failed_cats directory
  
     forcing_files = []
