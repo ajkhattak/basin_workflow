@@ -484,16 +484,17 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
     }
 
     # Update the forcing block if the forcings are in netcdf format
-    if (is_netcdf_forcing):
+    if (is_netcdf_forcing in ["True", "true", "TRUE", "Yes", "yes",  "YES"]):
+        
         forcing_block = {
             "path": forcing_dir,
             "provider": "NetCDF"
         }
         
-    root["global"]["forcing"] = forcing_block
+        root["global"]["forcing"] = forcing_block
     
     # routing block
-    if (is_troute) :
+    if (is_troute in ["True", "true", "TRUE", "Yes", "yes",  "YES"]) :
         routing_block = {
             "routing": {
                #"t_route_connection_path": os.path.join(config_dir, "extern/t-route"),

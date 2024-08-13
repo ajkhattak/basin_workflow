@@ -34,20 +34,9 @@ def runner():
             sys.exit("Failed during generating config files step...")
         else:
             print ("DONE \u2713")
-
-    if (args.run and not args.cal):
-        print ("Running NextGen (without calibration) ...")
-        run_command = f"python {workflow_dir}/runner.py {workflow_dir}/configs/input_config.yaml"
-        status = subprocess.call(run_command,shell=True)
-
-        if (status):
-            sys.exit("Failed during ngen execution...")
-        else:
-            print ("DONE \u2713")
-
         
-    if (args.cal):
-        print ("Running NextGen (with calibration) ...")
+    if (args.run):
+        print ("Calling Runner ...")
         infile = f"{workflow_dir}/configs/input_config.yaml"
         
         with open(infile, 'r') as file:
@@ -72,7 +61,7 @@ if __name__ == "__main__":
         parser.add_argument("-gpkg", action='store_true', help="generate gpkg files")
         parser.add_argument("-conf", action='store_true', help="generate config files")
         parser.add_argument("-run",  action='store_true', help="run nextgen without caliberation")
-        parser.add_argument("-cal",  action='store_true', help="run nextgen with caliberation")
+        #parser.add_argument("-cal",  action='store_true', help="run nextgen with caliberation")
         
         args = parser.parse_args()
     except:

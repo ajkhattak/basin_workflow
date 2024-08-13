@@ -110,7 +110,7 @@ def main():
                               -p {args.precip_partitioning_scheme} -r {args.surface_runoff_scheme} \
                               -troute {args.troute} \
                               -t \'{args.time}\' -v {args.verbosity} \
-                              -c {args.calib} -json {args.json_dir} \
+                              -json {args.json_dir} \
                               -sout {args.sim_output_dir}'
 
     if (args.verbosity >=3):

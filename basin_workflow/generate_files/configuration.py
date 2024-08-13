@@ -838,7 +838,6 @@ def main():
                             help="overwrite old/existing files")
         parser.add_argument("-troute", dest="troute",    type=str, required=False, default=False, help="option for t-toure")
         parser.add_argument("-v",      dest="verbosity", type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
-        parser.add_argument("-c",      dest="calib",     type=str, required=False, default=False, help="option for calibration")
         parser.add_argument("-json",   dest="json_dir",  type=str, required=True,  help="realization files directory")
         parser.add_argument("-sout",   dest="sim_output_dir",  type=str, required=True,  help="ngen runs output directory")
     except:

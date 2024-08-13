@@ -30,7 +30,7 @@ simulation_time  = json.loads(dsim["simulation_time"])
 
 #
 #
-def run_ngen_wihtout_calibration():
+def run_ngen_without_calibration():
     
     infile = os.path.join(root_dir, "basins_passed.csv")
     indata = pd.read_csv(infile, dtype=str)
@@ -98,7 +98,8 @@ def run_ngen_with_calibration():
         troute_output_file = os.path.join(dir, "outputs/troute", "troute_output_{}.csv".format(start_time))
         print ( troute_output_file)
         cal_dir = os.path.join(dir,"configs")
-        
+
+        file_par = ""
         if (nproc_local > 1):
             nproc_local, file_par = generate_partition_basin_file(ncats, gpkg_file)
             file_par = os.path.join(dir, file_par)
@@ -154,7 +155,9 @@ if __name__ == "__main__":
 
 
     if (not is_calibration):
+        print ("Running NextGen without calibration ...")
         run_ngen_without_calibration()
     else:
+        print ("Running NextGen with calibration ...")
         run_ngen_with_calibration()
         
