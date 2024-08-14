@@ -774,7 +774,7 @@ def write_calib_input_files(gpkg_file, ngen_dir, cal_dir, realz_file, realz_file
             sys.exit(1)
 
     gdf_fp_cols = gdf_fp_attr[['id',  'rl_gages']] # select the two columns of interest
-
+    
     # Find out row(s) where rl_gages is not None (to get the corresponding waterbody)
     rl_gages = gdf_fp_cols[gdf_fp_cols['rl_gages'].notna()]
 
@@ -783,8 +783,14 @@ def write_calib_input_files(gpkg_file, ngen_dir, cal_dir, realz_file, realz_file
     if (len(ids) == 1):
         d['model']['eval_feature'] = ids[0]
     else:
-        print ("more than one rl_gages exist in the geopackage... fix me later!")
-        sys.exit(1)
+        print ("more than one rl_gages exist in the geopackage, using max drainage area to filter...")
+        div = gpd.read_file(gpkg_file, layer='divides')
+        df = div[['divide_id', 'tot_drainage_areasqkm']]
+        index = df['divide_id'].map(lambda x: 'wb-'+str(x.split("-")[1]))
+        df.set_index(index, inplace=True)
+        idmax = df['tot_drainage_areasqkm'].idxmax() # maximum drainage area catchment ID; downstream outlet
+        d['model']['eval_feature'] = idmax
+        #sys.exit(1)
 
     if (num_proc > 1):
         d['model']['parallel'] = num_proc
