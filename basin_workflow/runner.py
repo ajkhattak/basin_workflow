@@ -129,16 +129,11 @@ def generate_partition_basin_file(ncats, gpkg_file):
     nproc_local = nproc
     json_dir   = "json"
 
-    if(nproc_adaptive):
-        if (ncats <= nproc_local):
-            nproc_local = ncats
-        if (ncats < nproc_local):
-            nproc_local = 1
-        elif (ncats <= 150):
-            nproc_new = int(ncats/nproc_local)
-        else:
-            nproc_local = 30
-                
+    if (ncats <= nproc_local):
+        nproc_local = ncats
+    elif(nproc_adaptive):
+        nproc_local = min(int(ncats/nproc_local), 20)
+
     fpar = " "
     
     if (nproc_local > 1):
