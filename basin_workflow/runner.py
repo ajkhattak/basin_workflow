@@ -91,12 +91,13 @@ def run_ngen_with_calibration():
         os.chdir(dir)
 
         gpkg_file = glob.glob(dir + "/data/*.gpkg")[0]
+        gpkg_name  = os.path.basename(gpkg_file).split(".")[0]
         nproc_local = nproc
         
         start_time = pd.Timestamp(simulation_time['start_time']).strftime("%Y%m%d%H%M")
         
-        troute_output_file = os.path.join(dir, "outputs/troute", "troute_output_{}.csv".format(start_time))
-        
+        #troute_output_file = os.path.join(dir, "outputs/troute", "troute_output_{}.csv".format(start_time))
+        troute_output_file = os.path.join(dir, "outputs/troute", "flowveldepth_{}.csv".format(gpkg_name))
         cal_dir = os.path.join(dir,"configs")
 
         file_par = ""

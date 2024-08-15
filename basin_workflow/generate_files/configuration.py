@@ -696,15 +696,17 @@ def write_troute_input_files(gpkg_file, ngen_dir, troute_dir, simulation_time,
 
     routing_file = os.path.join(ngen_dir, "data/gauge_01073000/routing_config.yaml")
 
+    gpkg_name  = os.path.basename(gpkg_file).split(".")[0]
+    
     if (not os.path.exists(routing_file)):
         sys.exit("Sample routing yaml file does not exist, provided is " + routing_file)
     
     with open(routing_file, 'r') as file:
         d = yaml.safe_load(file)
     
-    d['network_topology_parameters']['supernetwork_parameters']['geo_file_path'] = gpkg_file
-        
+    d['network_topology_parameters']['supernetwork_parameters']['geo_file_path'] = gpkg_file    
     d['network_topology_parameters']['waterbody_parameters']['level_pool']['level_pool_waterbody_parameter_file_path'] = gpkg_file
+    d['network_topology_parameters']['supernetwork_parameters']['title_string'] = gpkg_name
     
     dt = 300 # seconds
     
@@ -715,7 +717,6 @@ def write_troute_input_files(gpkg_file, ngen_dir, troute_dir, simulation_time,
     diff_time = (end_time - start_time).total_seconds()
     
     d['compute_parameters']['restart_parameters']['start_datetime'] = start_time.strftime("%Y-%m-%d_%H:%M:%S")
-    
     d['compute_parameters']['forcing_parameters']['qlat_input_folder'] =  os.path.join(sim_output_dir,"div")
     d['compute_parameters']['forcing_parameters']['qlat_file_pattern_filter'] = "nex-*"
     #d['compute_parameters']['forcing_parameters']['binary_nexus_file_folder'] = "outputs/troute_parq"
@@ -726,6 +727,9 @@ def write_troute_input_files(gpkg_file, ngen_dir, troute_dir, simulation_time,
     d['compute_parameters']['cpu_pool'] = 10
     
     stream_output = {
+        "csv_output" : {
+            "csv_output_folder" : os.path.join(sim_output_dir, "troute")
+        },
        "stream_output" : {
           "stream_output_directory" : os.path.join(sim_output_dir, "troute"),
           'stream_output_time' : 1000000, #[hr]
@@ -763,7 +767,8 @@ def write_calib_input_files(gpkg_file, ngen_dir, cal_dir, realz_file, realz_file
     d['model']['realization'] = realz_file
     d['model']['hydrofabric'] = gpkg_file
     d['model']['routing_output'] = troute_output_file
-
+    d['model']['nexus_output']   = os.path.join(os.path.dirname(os.path.dirname(gpkg_file)), "outputs/div")
+    
     try:
         gdf_fp_attr = gpd.read_file(gpkg_file, layer='flowpath-attributes')
     except:
