@@ -8,9 +8,10 @@ import os, sys
 import subprocess
 import yaml
 import argparse
+from pathlib import Path
 
-
-workflow_dir = os.path.dirname(sys.argv[0])
+path = Path(sys.argv[0]).resolve()
+workflow_dir = path.parent
 
 
 def runner():

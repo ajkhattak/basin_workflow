@@ -11,7 +11,7 @@ import yaml
 import platform
 from generate_files import configuration
 import json
-
+from pathlib import Path
 
 os_name = platform.system()
 infile  = sys.argv[1]
@@ -21,7 +21,7 @@ with open(infile, 'r') as file:
 
 dsim = d['simulations']
 workflow_dir     = d["workflow_dir"]
-output_dir         = d["output_dir"]
+output_dir       = d["output_dir"]
 ngen_dir         = dsim["ngen_dir"]
 nproc            = int(dsim.get('num_processors_sim', 1))
 nproc_adaptive   = int(dsim.get('num_processors_adaptive', True))
@@ -78,10 +78,9 @@ def run_ngen_with_calibration():
 
     infile = os.path.join(output_dir, "basins_passed.csv")
     indata = pd.read_csv(infile, dtype=str)
-
-
-    ngen_cal_config_dir  = os.path.join(os.path.dirname(sys.argv[0]),"configs")
-    ngen_cal_file = os.path.join(ngen_cal_config_dir, "input_calib.yaml")
+   
+    path = Path(sys.argv[0]).resolve() # get the absolute path
+    ngen_cal_file = os.path.join(path.parent, "configs", "input_calib.yaml")
     
     for id, ncats in zip(indata["basin_id"], indata['n_cats']):
 

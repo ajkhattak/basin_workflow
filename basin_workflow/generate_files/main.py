@@ -82,18 +82,13 @@ class colors:
     RED   = '\033[91m'
     END   = '\033[0m'
 
-# Set all variables as  global variables from your yaml config file
-#parent_dir = os.path.dirname(os.path.dirname(sys.argv[0]))
-#with open(os.path.join(parent_dir, "input.yaml"), 'r') as file:
-#    d = yaml.safe_load(file)
-
 infile  = sys.argv[1]
 with open(infile, 'r') as file:
     d = yaml.safe_load(file)
 
 dsim = d['simulations']
 workflow_dir               = d["workflow_dir"]
-output_dir                   = d["output_dir"]
+output_dir                 = d["output_dir"]
 ngen_dir                   = dsim["ngen_dir"]
 simulation_time            = dsim["simulation_time"]
 model_option               = dsim['model_option']
