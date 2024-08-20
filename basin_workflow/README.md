@@ -20,7 +20,7 @@ Run: python /Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/main.p
 Note: These options can be run individually or all together by `path_to/main.py -gpkg -conf -run`. The `-gpkg` is an expensive step, should be run once to get the desired basin geopacakge.
 
 - Option: `-gpkg` downloads geopackage(s) given a gage ID(s), computes TWI, GIUH, and Nash parameters, and append them to the geopackage along with other model parameters (from S3 bucket) as `model-attributes`
-- Option: `-cong` generates configuration files for the selected models/basins
+- Option: `-conf` generates configuration files for the selected models/basins
 - Option: `-run` runs NextGen simulations with and without calibration. The workflow uses [ngen-cal](https://github.com/NOAA-OWP/ngen-cal) for calibration
 
 
