@@ -364,7 +364,8 @@ def get_jinjabmi_unit_conversion_block(model_exe, config_dir):
 def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
                            coupled_models, runoff_scheme, precip_partitioning_scheme,
                            simulation_time, baseline_case, is_netcdf_forcing,
-                           is_troute, verbosity, sim_output_dir):
+                           is_troute, verbosity, sim_output_dir,
+                           is_calib):
 
     lib_file = {}
     extern_path = os.path.join(ngen_dir, 'extern')
@@ -480,8 +481,12 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
                 "provider": "CsvPerFeature"
             }
         },
-        "output_root": os.path.join(sim_output_dir, "div")
+        #"output_root": os.path.join(sim_output_dir, "div")
     }
+
+
+    if(is_calib in ["False", "false", "FALSE", "No", "no",  "NO"]):
+        root["output_root"] = os.path.join(sim_output_dir, "div")
 
     # Update the forcing block if the forcings are in netcdf format
     if (is_netcdf_forcing in ["True", "true", "TRUE", "Yes", "yes",  "YES"]):
@@ -629,6 +634,7 @@ def main():
         parser.add_argument("-p",      dest="precip_partitioning_scheme", type=str, required=True, help="option for precip partitioning scheme")
         parser.add_argument("-v", dest="verbosity",   type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
         parser.add_argument("-sout",   dest="sim_output_dir",  type=str, required=True,  help="ngen runs output directory")
+        parser.add_argument("-c",      dest="calib",     type=str, required=False, default=False, help="option for calibration")
         args = parser.parse_args()
     except:
         parser.print_help()
@@ -670,7 +676,8 @@ def main():
         is_netcdf_forcing = args.netcdf,
         is_troute         = args.troute,
         verbosity         = args.verbosity,
-        sim_output_dir    = args.sim_output_dir
+        sim_output_dir    = args.sim_output_dir,
+        is_calib          = args.calib
     )
 
 

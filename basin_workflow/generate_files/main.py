@@ -187,7 +187,7 @@ def generate_catchment_files(dir, forcing_files):
 
     driver = f'python {workflow_driver} -gpkg {gpkg_dir} -ngen {ngen_dir} -f {forcing_dir} \
     -o {config_dir} -m {model_option} -p {precip_partitioning_scheme} -r {surface_runoff_scheme} -t \'{simulation_time}\' \
-    -netcdf {is_netcdf_forcing} -troute {is_routing} -json {json_dir} -v {verbosity} \
+    -netcdf {is_netcdf_forcing} -troute {is_routing} -json {json_dir} -v {verbosity} -c {is_calibration} \
     -sout {sim_output_dir}'
 
     failed = subprocess.call(driver, shell=True)

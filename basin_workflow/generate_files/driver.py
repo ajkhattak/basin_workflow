@@ -111,7 +111,8 @@ def main():
                               -troute {args.troute} \
                               -t \'{args.time}\' -v {args.verbosity} \
                               -json {args.json_dir} \
-                              -sout {args.sim_output_dir}'
+                              -sout {args.sim_output_dir} \
+                              -c {args.calib}'
 
     if (args.verbosity >=3):
         print ("*******************************************")
@@ -141,7 +142,8 @@ def main():
                                   -i {args.config_dir} -m {coupled_models} -p {args.precip_partitioning_scheme} \
                                   -b {baseline_case} -r {args.surface_runoff_scheme} -t \'{args.time}\' \
                                   -netcdf {args.netcdf} -troute {args.troute} -json {args.json_dir} \
-                                  -v {args.verbosity} -sout {args.sim_output_dir}'
+                                  -v {args.verbosity} -sout {args.sim_output_dir} \
+                                  -c {args.calib}'
 
     if (args.verbosity >=3):
         print ("Running (from driver.py): \n ", generate_realization_file)

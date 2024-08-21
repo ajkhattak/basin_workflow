@@ -692,7 +692,7 @@ def write_pet_input_files(catids, gdf_soil, gpkg_file, pet_dir):
 # @param troute_dir        : output directory (config files are written to this directory)
 #############################################################################
 def write_troute_input_files(gpkg_file, ngen_dir, troute_dir, simulation_time,
-                             sim_output_dir):
+                             sim_output_dir, is_calib):
 
     routing_file = os.path.join(ngen_dir, "data/gauge_01073000/routing_config.yaml")
 
@@ -717,7 +717,13 @@ def write_troute_input_files(gpkg_file, ngen_dir, troute_dir, simulation_time,
     diff_time = (end_time - start_time).total_seconds()
     
     d['compute_parameters']['restart_parameters']['start_datetime'] = start_time.strftime("%Y-%m-%d_%H:%M:%S")
-    d['compute_parameters']['forcing_parameters']['qlat_input_folder'] =  os.path.join(sim_output_dir,"div")
+    
+
+    if(is_calib in ["True", "true", "TRUE", "Yes", "yes",  "YES"]):
+        d['compute_parameters']['forcing_parameters']['qlat_input_folder'] =  "./"
+    else:
+        d['compute_parameters']['forcing_parameters']['qlat_input_folder'] =  os.path.join(sim_output_dir,"div")
+    
     d['compute_parameters']['forcing_parameters']['qlat_file_pattern_filter'] = "nex-*"
     #d['compute_parameters']['forcing_parameters']['binary_nexus_file_folder'] = "outputs/troute_parq"
     del d['compute_parameters']['forcing_parameters']['binary_nexus_file_folder']
@@ -725,18 +731,28 @@ def write_troute_input_files(gpkg_file, ngen_dir, troute_dir, simulation_time,
     d['compute_parameters']['forcing_parameters']['max_loop_size']            = 10000000
 
     d['compute_parameters']['cpu_pool'] = 10
-    
-    stream_output = {
-        "csv_output" : {
-            "csv_output_folder" : os.path.join(sim_output_dir, "troute")
-        },
-       "stream_output" : {
-          "stream_output_directory" : os.path.join(sim_output_dir, "troute"),
-          'stream_output_time' : 1000000, #[hr]
-          'stream_output_type' : '.csv', # netcdf '.nc' or '.csv' or '.pkl'
-          'stream_output_internal_frequency' : 60 #[min]
-          }
-    }
+
+    if(is_calib in ["True", "true", "TRUE", "Yes", "yes",  "YES"]):
+        stream_output = {
+            "csv_output" : {
+                "csv_output_folder" : "./"
+            },
+            "stream_output" : {
+                "stream_output_directory" : "./",
+                'stream_output_time'      : -1, #[hr], -1 = write one file at the end of simulation
+                'stream_output_type'      : '.csv', # netcdf '.nc' or '.csv' or '.pkl'
+                'stream_output_internal_frequency' : 60 #[min]
+            }
+        }
+    else:
+        stream_output = {
+            "stream_output" : {
+                'stream_output_directory' : os.path.join(sim_output_dir, "troute"),
+                'stream_output_time'      : -1, #[hr], -1 = write one file at the end of simulation
+                'stream_output_type'      : '.csv', # netcdf '.nc' or '.csv' or '.pkl'
+                'stream_output_internal_frequency' : 60 #[min]
+            }
+        }
     
     d['output_parameters'] = stream_output
     
@@ -761,13 +777,13 @@ def write_calib_input_files(gpkg_file, ngen_dir, cal_dir, realz_file, realz_file
     with open(ngen_cal_file, 'r') as file:
         d = yaml.safe_load(file)
 
-    d['general']['workdir']   = os.path.dirname(os.path.dirname(gpkg_file))
+    d['general']['workdir']    = os.path.dirname(os.path.dirname(gpkg_file))
 
     d['model']['binary']      = os.path.join(ngen_dir, "cmake_build/ngen")
     d['model']['realization'] = realz_file
     d['model']['hydrofabric'] = gpkg_file
-    d['model']['routing_output'] = troute_output_file
-    d['model']['nexus_output']   = os.path.join(os.path.dirname(os.path.dirname(gpkg_file)), "outputs/div")
+    d['model']['routing_output'] = "./flowveldepth_gage_01052500.csv" #"./troute_output_201010010000.csv" # in the ngen-cal created directory named {current_time}_ngen_{random stuff}_worker
+    #d['model']['routing_output'] = troute_output_file # if in the outputs/troute directory
     
     try:
         gdf_fp_attr = gpd.read_file(gpkg_file, layer='flowpath-attributes')
@@ -851,6 +867,7 @@ def main():
         parser.add_argument("-v",      dest="verbosity", type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
         parser.add_argument("-json",   dest="json_dir",  type=str, required=True,  help="realization files directory")
         parser.add_argument("-sout",   dest="sim_output_dir",  type=str, required=True,  help="ngen runs output directory")
+        parser.add_argument("-c",      dest="calib",     type=str, required=False, default=False, help="option for calibration")
     except:
         parser.print_help()
         sys.exit(1)
@@ -966,7 +983,7 @@ def main():
 
     if (args.troute):
         write_troute_input_files(args.gpkg_file, args.ngen_dir, args.output_dir, args.time,
-                                 sim_output_dir = args.sim_output_dir)
+                                 sim_output_dir = args.sim_output_dir, is_calib = args.calib)
 
     #if (args.calib):
     #    real_file = os.path.join(args.json_dir, "realization_%s.json"%args.models_option)
