@@ -13,9 +13,13 @@ and executing them within the NextGen framework.
 ### Setup configuration files
 The workflow needs two configuration files, provided [here](https://github.com/ajkhattak/basin_workflow/blob/master/basin_workflow/configs/). Workflow setup and model options and paths need to be adjusted to local settings. Please see the configuration files for further details.
 
+### Install Plugins
+```
+pip install -e ./ngen_cal_plugins
+```
 ### Running the workflow
 ```
-Run: python /Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/main.py OPTIONS = [-gpkg -conf -run]
+python /Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/main.py OPTIONS = [-gpkg -conf -run]
 ```
 Note: These options can be run individually or all together by `path_to/main.py -gpkg -conf -run`. The `-gpkg` is an expensive step, should be run once to get the desired basin geopacakge.
 
