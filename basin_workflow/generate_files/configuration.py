@@ -712,7 +712,7 @@ def write_troute_input_files(gpkg_file, ngen_dir, troute_dir, simulation_time,
     
     #start_time = pd.Timestamp(simulation_time['start_time']).strftime("%Y-%m-%d_%H:%M:%S")
     start_time = pd.Timestamp(simulation_time['start_time'])
-    end_time = pd.Timestamp(simulation_time['end_time'])    
+    end_time   = pd.Timestamp(simulation_time['end_time'])    
     
     diff_time = (end_time - start_time).total_seconds()
     
@@ -768,13 +768,15 @@ def write_troute_input_files(gpkg_file, ngen_dir, troute_dir, simulation_time,
 # @param gpkg_file      : basin geopackage file
 # @param real_file      : realization file
 #############################################################################
-def write_calib_input_files(gpkg_file, ngen_dir, cal_dir, realz_file, realz_file_par,
-                            troute_output_file, ngen_cal_file, num_proc = 1):
+def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_file_par,
+                            troute_output_file, ngen_cal_basefile, num_proc = 1):
 
-    if (not os.path.exists(ngen_cal_file)):
-        sys.exit("Sample calib yaml file does not exist, provided is " + ngen_cal_file)
+    if (not os.path.exists(ngen_cal_basefile)):
+        sys.exit("Sample calib yaml file does not exist, provided is " + ngen_cal_basefile)
+
+    basin_workflow_dir = os.path.dirname(os.path.dirname(ngen_cal_basefile))
     
-    with open(ngen_cal_file, 'r') as file:
+    with open(ngen_cal_basefile, 'r') as file:
         d = yaml.safe_load(file)
 
     d['general']['workdir']    = os.path.dirname(os.path.dirname(gpkg_file))
@@ -784,7 +786,8 @@ def write_calib_input_files(gpkg_file, ngen_dir, cal_dir, realz_file, realz_file
     d['model']['hydrofabric'] = gpkg_file
     d['model']['routing_output'] = "./flowveldepth_gage_01052500.csv" #"./troute_output_201010010000.csv" # in the ngen-cal created directory named {current_time}_ngen_{random stuff}_worker
     #d['model']['routing_output'] = troute_output_file # if in the outputs/troute directory
-    
+
+
     try:
         gdf_fp_attr = gpd.read_file(gpkg_file, layer='flowpath-attributes')
     except:
@@ -822,7 +825,7 @@ def write_calib_input_files(gpkg_file, ngen_dir, cal_dir, realz_file, realz_file
     else:
         d['model']['binary'] = os.path.join(ngen_dir, "cmake_build/ngen")
     
-    with open(os.path.join(cal_dir,"calib_config.yaml"), 'w') as file:
+    with open(os.path.join(conf_dir,"calib_config.yaml"), 'w') as file:
         yaml.dump(d,file, default_flow_style=False, sort_keys=False)
 
         

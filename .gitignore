@@ -75,3 +75,6 @@ bower_components/
 .grunt/
 src/vendor/
 dist/
+
+#plugins
+basin_workflow/ngen_cal_plugins/build

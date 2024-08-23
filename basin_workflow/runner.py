@@ -80,7 +80,7 @@ def run_ngen_with_calibration():
     indata = pd.read_csv(infile, dtype=str)
    
     path = Path(sys.argv[0]).resolve() # get the absolute path
-    ngen_cal_file = os.path.join(path.parent, "configs", "input_calib.yaml")
+    ngen_cal_basefile = os.path.join(path.parent, "configs", "input_calib.yaml")
     
     for id, ncats in zip(indata["basin_id"], indata['n_cats']):
 
@@ -97,7 +97,7 @@ def run_ngen_with_calibration():
         
         #troute_output_file = os.path.join(dir, "outputs/troute", "troute_output_{}.csv".format(start_time))
         troute_output_file = os.path.join(dir, "outputs/troute", "flowveldepth_{}.csv".format(gpkg_name))
-        cal_dir = os.path.join(dir,"configs")
+        conf_dir = os.path.join(dir,"configs")
 
         file_par = ""
         if (nproc_local > 1):
@@ -113,10 +113,10 @@ def run_ngen_with_calibration():
 
         configuration.write_calib_input_files(gpkg_file = gpkg_file,
                                               ngen_dir = ngen_dir,
-                                              cal_dir = cal_dir,
+                                              conf_dir = conf_dir,
                                               realz_file = realization,
                                               realz_file_par = file_par,
-                                              ngen_cal_file = ngen_cal_file,
+                                              ngen_cal_basefile = ngen_cal_basefile,
                                               num_proc = nproc_local,
                                               troute_output_file = troute_output_file)
         #quit()

@@ -44,7 +44,7 @@ model:
     type: ngen
     # NOTE: you may need to adjust this to the location of your NextGen installation
     # A binary in $PATH or a qualified path to the binary to run
-    binary: "/Users/nelsfrazier/workspace/demo/camels_calibration/ngen/cmake_build/ngen"
+    binary: "./ngen/cmake_build/ngen"
     realization: ./realization.json
     # Required path to catchment hydrofabirc file
     hydrofabric: ./Gage_1022500.gpkg
@@ -57,3 +57,6 @@ model:
     eval_params:
       # choices are "kling_gupta", "nnse", "custom", "single_peak", "volume"
       objective: "kling_gupta"
+    plugins:
+      - "ngen_cal_save_iteration_output_plugin.NgenSaveOutput" # saves cat_*.csv or nex-*.csv to "output_iteration" directory
+      - "ngen_cal_save_sim_obs_plugin.SaveOutput"              # saves simulated and observed discharge at the outlet
