@@ -9,6 +9,7 @@ driver_given_gage_IDs <- function(gage_ids,
                                   output_dir,
                                   hf_source = NULL,
                                   failed_dir = "failed_cats",
+                                  write_attr_parquet = FALSE,
                                   nproc = 1) {
   
   # create directory to stored catchment geopackage in case of errors or missing data
@@ -28,6 +29,7 @@ driver_given_gage_IDs <- function(gage_ids,
                                 "libraries_lst", 
                                 "output_dir", 
                                 "failed_dir",
+                                "write_attr_parquet",
                                 "hf_source",
                                 "as_sqlite"),
                 envir = environment())
@@ -111,10 +113,11 @@ process_gpkg <- function(gfile, failed_dir) {
   cats_failed <- numeric(0)
   
   # uncomment for debugging, it puts screen outputs to a file
-  #log_file <- file("output.log", open = "at")
-  #sink(log_file, type = "output")
-  
-  id = as.integer(unlist(strsplit(gfile, split = '[_&.]+'))[2])
+  log_file <- file("output.log", open = "at")
+  sink(log_file, type = "output")
+
+  id <- as.integer(sub(".*_(.*?)\\..*", "\\1", gfile))
+  #id = as.integer(unlist(strsplit(gfile, split = '[_&.]+'))[2])
   
   # check if gage ID is missing a leading zero, does not happens most of the times, but good to check
   #if (as.integer(nchar(id)/2) %% 2 == 1) {
@@ -132,17 +135,19 @@ process_gpkg <- function(gfile, failed_dir) {
   dem_dir = "dem"
   dir.create(dem_dir, recursive = TRUE, showWarnings = FALSE)
   dir.create("data", recursive = TRUE, showWarnings = FALSE)
-  file.copy(glue("{gpkg_dir}/{gfile}"), "data")
-  #file.rename(glue("data/{gfile}"), glue("data/Gage_{id}.gpkg"))
+  #file.copy(glue("{gpkg_dir}/{gfile}"), "data")
     
   failed <- TRUE
   
   tryCatch({
     cat ("Running ", id, "\n")
 
+    local_gpkg_file = gfile #glue("{cat_dir}/data/{gfile}")
     run_driver(is_gpkg_provided = TRUE, 
-               loc_gpkg_file = glue("{cat_dir}/data/{gfile}"), 
-               dem_output_dir = dem_dir)
+               loc_gpkg_file = local_gpkg_file,
+               dem_output_dir = dem_dir,
+               write_attr_parquet = TRUE
+               )
       
     failed <- FALSE
       
@@ -159,8 +164,9 @@ process_gpkg <- function(gfile, failed_dir) {
       cat ("Cat passed:", id, "\n")
     }
   
-  #sink(type = "output")
-  #close(log_file)
+  sink(type = "output")
+  close(log_file)
+  
   return(cats_failed)
 
 }
@@ -193,7 +199,12 @@ process_catchment_id <- function(id, failed_dir) {
 
   tryCatch({
     cat ("Running ", id, "\n")
-    run_driver(gage_id = id, dem_output_dir = dem_dir, hf_source = hf_source)
+    run_driver(gage_id = id, 
+               dem_output_dir = dem_dir, 
+               hf_source = hf_source,
+               write_attr_parquet = write_attr_parquet
+               )
+    
     failed <- FALSE
   }, error = function(e) {
     failed <- TRUE
@@ -228,8 +239,9 @@ run_driver <- function(gage_id = NULL,
                        dem_output_dir,
                        hf_source = NULL,
                        loc_gpkg_file = "",
-                       twi_pre_computed_option = FALSE) {
-  
+                       twi_pre_computed_option = FALSE,
+                       write_attr_parquet = FALSE) {
+
   start.time <- Sys.time()
   outfile <- " "
   if(!is_gpkg_provided) {
@@ -282,7 +294,8 @@ run_driver <- function(gage_id = NULL,
     #print (layers_before_cfe_attr$name)
     start.time <- Sys.time()
 
-    m_attr <- add_model_attributes(div_infile = outfile)
+    m_attr <- add_model_attributes(div_infile = outfile, 
+                                   write_attr_parquet = write_attr_parquet)
     
     time.taken <- as.numeric(Sys.time() - start.time, units = "secs") #end.time - start.time
     print (paste0("Time (model attrs) = ", time.taken))    
@@ -382,9 +395,16 @@ run_driver <- function(gage_id = NULL,
   m_attr$N_nash_surface <- nash_params_surface$N_nash
   m_attr$K_nash_surface <- nash_params_surface$K_nash
   
-  sf::st_write(m_attr, outfile,layer = "model-attributes", append = FALSE)
+  if (!write_attr_parquet) {
+    sf::st_write(m_attr, outfile,layer = "model-attributes", append = FALSE)  
+  }
+  else {
+    #var = strsplit(outfile, "\\.")[[1]][1]
+    var = glue("{getwd()}/data")
+    attr_par_dir = glue("{var}/model-attributes.parquet")
+    arrow::write_parquet(m_attr,attr_par_dir)
+  }
+
   
 }
-
-
 

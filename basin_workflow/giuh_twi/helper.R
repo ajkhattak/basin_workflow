@@ -46,7 +46,7 @@ fun_crop_upper <- function(values, coverage_fraction) {
 
 
 # Add model attribtes to the geopackage
-add_model_attributes <- function(div_infile, hf_version = 'v2.1.1') {
+add_model_attributes <- function(div_infile, hf_version = 'v2.1.1', write_attr_parquet = FALSE) {
   
   base = 's3://lynker-spatial/hydrofabric/v2.1.1/nextgen/conus'
 
@@ -67,9 +67,17 @@ add_model_attributes <- function(div_infile, hf_version = 'v2.1.1') {
   stopifnot(nrow(flowpath_attr) > 0)
   
   # Write the attributes to a new table in the hydrofabric subset GPKG
-  sf::st_write(model_attr, div_infile, layer = "model-attributes", append = FALSE)
-  
-  sf::st_write(flowpath_attr, div_infile, layer = "flowpath-attributes", append = FALSE)
+  if (!write_attr_parquet) {
+    sf::st_write(model_attr, div_infile, layer = "model-attributes", append = FALSE)
+    sf::st_write(flowpath_attr, div_infile, layer = "flowpath-attributes", append = FALSE)    
+  }
+  else {
+    #var = strsplit(div_infile, "\\.")[[1]][1]
+    var = glue("{getwd()}/data")
+    attr_par_dir = glue("{var}/flowpath-attributes.parquet")
+    arrow::write_parquet(flowpath_attr,attr_par_dir)
+  }
+
   
   return(model_attr)
   

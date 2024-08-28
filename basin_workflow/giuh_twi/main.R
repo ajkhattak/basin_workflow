@@ -65,6 +65,7 @@ setup <-function() {
   reinstall_arrow   <<- inputs$gpkg_model_params$reinstall_arrow
   nproc             <<- inputs$gpkg_model_params$number_processors
   reinstall_hydrofabric <<- inputs$gpkg_model_params$reinstall_hydrofabric
+  write_attr_parquet    <<- inputs$gpkg_model_params$write_attributes_parquet
   
   source(paste0(workflow_dir, "/giuh_twi/install_load_libs.R"))
   source(glue("{workflow_dir}/giuh_twi/custom_functions.R"))
@@ -136,7 +137,7 @@ if (use_gage_id == TRUE) {
                                        )
 } else if (use_gpkg == TRUE) {
 
-  gage_files = list.files(gpkg_dir, full.names = FALSE, pattern = pattern)
+  gage_files = list.files(gpkg_dir, full.names = TRUE, pattern = pattern)
   
   cats_failed <- driver_given_gpkg(gage_files = gage_files, 
                                    gpkg_dir = gpkg_dir, 

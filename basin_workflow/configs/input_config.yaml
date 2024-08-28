@@ -9,15 +9,16 @@ output_dir    : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_c
 
 
 gpkg_model_params :
-  hf_source             : "/Users/ahmadjan/Core/SimulationsData/preprocessing/hydrofabricS3"
-  number_processors     : 2
-  reinstall_hydrofabric : FALSE
-  reinstall_arrow       : FALSE
+  hf_source                : "/Users/ahmadjan/Core/SimulationsData/preprocessing/hydrofabric_synced"
+  number_processors        : 1
+  write_attributes_parquet : FALSE
+  reinstall_hydrofabric    : FALSE
+  reinstall_arrow          : FALSE
 
   options :
     use_gage_id :
       use_gage_id : TRUE
-      gage_ids    : "01052500"
+      gage_ids    :  "03366500"
       #gage_ids    : ["04115265", "07301410", "04063700", "12488500"]
       
     use_gage_file :
@@ -27,7 +28,7 @@ gpkg_model_params :
 
     use_gpkg :
       use_gpkg  : FALSE
-      gpkg_dir  : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/test/test_gpkg"
+      #gpkg_dir  : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/test/test_gpkg"
       pattern   :  "Gage_"
       
 ###############
@@ -36,7 +37,7 @@ simulations :
   is_netcdf_forcing  : True
   nc_forcing_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/forcings"
 
-  simulation_time            : '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2010-10-02 00:00:00"}' 
+  simulation_time            : '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2010-10-02 00:00:00"}'
   model_option               : "NCP"
   precip_partitioning_scheme : 'Schaake'
   surface_runoff_scheme      : 'NASH_CASCADE' # 'GIUH' for cfe1.0
