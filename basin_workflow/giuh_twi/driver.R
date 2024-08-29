@@ -1,15 +1,16 @@
-######################### DOWNLOAD GEOPACKAGE ##################################
+#----------------------- DOWNLOAD GEOPACKAGE ----------------------------------#
 # STEP #3: provide USGS gauge id or your own geopackage (single or multiple)
-################################################################################
+#------------------------------------------------------------------------------#
 
 
-###############################################################################
+############################ DRIVER_GIVEN_GAGE_ID ##############################
 # main script that loops over all the gage IDs and computes giuh/twi etc.
 driver_given_gage_IDs <- function(gage_ids, 
                                   output_dir,
                                   hf_source = NULL,
                                   failed_dir = "failed_cats",
                                   write_attr_parquet = FALSE,
+                                  dem_output_dir = "",
                                   nproc = 1) {
   
   # create directory to stored catchment geopackage in case of errors or missing data
@@ -30,6 +31,7 @@ driver_given_gage_IDs <- function(gage_ids,
                                 "output_dir", 
                                 "failed_dir",
                                 "write_attr_parquet",
+                                "dem_output_dir",
                                 "hf_source",
                                 "as_sqlite"),
                 envir = environment())
@@ -57,13 +59,79 @@ driver_given_gage_IDs <- function(gage_ids,
   return(cats_failed)
 }
 
-###############################################################################
+#-----------------------------------------------------------------------------#
+# Function called by pblapply for parallel processing by each worker/node
+# for each catchemnt id
+# it calls run_driver for each gage id and computes giuh/twi etc.
+
+process_catchment_id <- function(id, failed_dir) {
+  
+  # vector contains ID of basins that failed for some reason
+  cats_failed <- numeric(0)
+  
+  # uncomment for debugging, it puts screen outputs to a file
+  log_file <- file("output.log", open = "at")
+  sink(log_file, type = "output")
+  
+  cat_dir = glue("{output_dir}/{id}")
+  dir.create(cat_dir, recursive = TRUE, showWarnings = FALSE)
+  
+  setwd(cat_dir)
+  wbt_wd(getwd())
+  
+  # DEM and related files (such as projected/corrected DEMs, and specific contributing area rasters are stored here)
+  dem_dir = "dem"
+  dir.create(dem_dir, recursive = TRUE, showWarnings = FALSE)
+  dir.create("data", recursive = TRUE, showWarnings = FALSE)
+  
+  failed <- TRUE
+  
+  tryCatch({
+    cat ("Running ", id, "\n")
+    run_driver(gage_id = id, 
+               dem_output_dir = dem_dir, 
+               hf_source = hf_source,
+               write_attr_parquet = write_attr_parquet
+    )
+    
+    failed <- FALSE
+  }, error = function(e) {
+    failed <- TRUE
+  })
+  
+  # move (or delete) dem output directory out of the main output directory
+  clean_move_dem_dir(id = id, output_dir = output_dir, dem_output_dir = dem_output_dir)
+  
+  if (failed) {
+    cat ("Cat failed:", id, "\n")
+    cats_failed <- id
+    cat_failed_dir = glue("{output_dir}/{failed_dir}/{id}")
+    
+    if (file.exists(cat_failed_dir) ) {
+      unlink(cat_failed_dir, recursive = TRUE)
+    }
+    
+    file.rename(cat_dir, cat_failed_dir)
+    
+  }
+  else {
+    cat ("Cat passed:", id, "\n")
+  }
+  
+  sink(type = "output")
+  close(log_file)
+  
+  return(cats_failed)
+}
+
+############################ DRIVER_GIVEN_GPKG #################################
 # main script that loops over all the geopackages and computes giuh/twi etc.
 driver_given_gpkg <- function(gage_files, 
                               gpkg_dir, 
                               output_dir,
                               hf_source = NULL,
                               failed_dir = "failed_cats",
+                              dem_output_dir = "",
                               nproc = 1) {
   
   # create directory to stored catchment geopackage in case of errors or missing data
@@ -85,7 +153,8 @@ driver_given_gpkg <- function(gage_files,
                                 "failed_dir",
                                 "hf_source",
                                 "gpkg_dir",
-                                "as_sqlite"),
+                                "as_sqlite",
+                                "dem_output_dir"),
                 envir = environment())
   
   #evaluate an expression on in the global environment each node of the cluster; here loading packages
@@ -154,73 +223,14 @@ process_gpkg <- function(gfile, failed_dir) {
     }, error = function(e) {
       failed <- TRUE
     })
-    
-    if (failed) {
-      cat ("Cat failed:", id, "\n")
-      cats_failed <- append(cats_failed, id)
-      file.rename(cat_dir, glue("{output_dir}/{failed_dir}/{id}"))
-    }
-    else {
-      cat ("Cat passed:", id, "\n")
-    }
   
-  sink(type = "output")
-  close(log_file)
-  
-  return(cats_failed)
-
-}
-###############################################################################
-# Function called by pblapply for parallel processing by each worker/node
-# for each catchemnt id
-# it calls run_driver for each gage id and computes giuh/twi etc.
-
-process_catchment_id <- function(id, failed_dir) {
-  
-  # vector contains ID of basins that failed for some reason
-  cats_failed <- numeric(0)
-
-  # uncomment for debugging, it puts screen outputs to a file
-  log_file <- file("output.log", open = "at")
-  sink(log_file, type = "output")
-  
-  cat_dir = glue("{output_dir}/{id}")
-  dir.create(cat_dir, recursive = TRUE, showWarnings = FALSE)
-  
-  setwd(cat_dir)
-  wbt_wd(getwd())
-  
-  # DEM and related files (such as projected/corrected DEMs, and specific contributing area rasters are stored here)
-  dem_dir = "dem"
-  dir.create(dem_dir, recursive = TRUE, showWarnings = FALSE)
-  dir.create("data", recursive = TRUE, showWarnings = FALSE)
-  
-  failed <- TRUE
-
-  tryCatch({
-    cat ("Running ", id, "\n")
-    run_driver(gage_id = id, 
-               dem_output_dir = dem_dir, 
-               hf_source = hf_source,
-               write_attr_parquet = write_attr_parquet
-               )
-    
-    failed <- FALSE
-  }, error = function(e) {
-    failed <- TRUE
-  })
+  # move (or delete) dem output directory out of the main output directory
+  clean_move_dem_dir(id = id, output_dir = output_dir, dem_output_dir = dem_output_dir)
   
   if (failed) {
     cat ("Cat failed:", id, "\n")
-    cats_failed <- id
-    cat_failed_dir = glue("{output_dir}/{failed_dir}/{id}")
-    
-    if (file.exists(cat_failed_dir) ) {
-      unlink(cat_failed_dir, recursive = TRUE)
-    }
-    
-    file.rename(cat_dir, cat_failed_dir)
-    
+    cats_failed <- append(cats_failed, id)
+    file.rename(cat_dir, glue("{output_dir}/{failed_dir}/{id}"))
   }
   else {
     cat ("Cat passed:", id, "\n")
@@ -230,8 +240,10 @@ process_catchment_id <- function(id, failed_dir) {
   close(log_file)
   
   return(cats_failed)
+
 }
 
+############################# RUN_DRIVER ######################################
 # main runner function
 run_driver <- function(gage_id = NULL, 
                        is_gpkg_provided = FALSE, 
@@ -286,8 +298,8 @@ run_driver <- function(gage_id = NULL,
 
   ########################## MODELS' ATTRIBUTES ##################################
   # STEP #4: Add models' attributes from the parquet file to the geopackage
-  ################################################################################
   # this TRUE will be changed once synchronized HF bugs are fixed
+  
   if(is.null(hf_source) | TRUE) {
     # print layers before appending model attributes
     layers_before_cfe_attr <- sf::st_layers(outfile)
@@ -309,7 +321,7 @@ run_driver <- function(gage_id = NULL,
   ############################### GENERATE TWI ##################################
   # STEP #5: Generate TWI and width function and write to the geopackage
   # Note: The default distribution = 'quantiles'
-  ###############################################################################
+  
   start.time <- Sys.time()
   dem_function(div_infile = outfile, dem_infile, dem_output_dir)
 
@@ -347,9 +359,8 @@ run_driver <- function(gage_id = NULL,
   time.taken <- as.numeric(Sys.time() - start.time, units = "secs")
   print (paste0("Time (twi func) = ", time.taken))
   
-  ############################### GENERATE GIUH ##################################
+  ############################### GENERATE GIUH ################################
   # STEP #6: Generate GIUH and write to the geopackage
-  ################################################################################
   # There are many "model" options to specify the velocity.
   # Here we are using a simple approach: constant velocity as a function of upstream drainage area.
   print("STEP: Computing GIUH.................")
@@ -374,9 +385,9 @@ run_driver <- function(gage_id = NULL,
   time.taken <- as.numeric(Sys.time() - start.time, units = "secs")
   print (paste0("Time (giuh ftn) = ", time.taken))
   
-  ############################### GENERATE GIUH ##################################
+  ############################### GENERATE GIUH ################################
   # STEP #7: Generate Nash cascade parameters for surface runoff
-  ################################################################################
+ 
   print("STEP: Computing Nash Cascade parameters .............")
   start.time <- Sys.time()
   nash_params_surface <- get_nash_params(giuh_dat_values, calib_n_k = FALSE)
@@ -384,10 +395,10 @@ run_driver <- function(gage_id = NULL,
   time.taken <- as.numeric(Sys.time() - start.time, units = "secs") #end.time - start.time
   print (paste0("Time (nash func) = ", time.taken))
   
-  ################################################################################
+  ####################### WRITE MODEL ATTRIBUTE FILE ###########################
   # STEP #8: Append GIUH, TWI, width function, and Nash cascade N and K parameters
   # to model attributes layers
-  ################################################################################
+  
   
   m_attr$giuh <- giuh_dat_values$giuh             # append GIUH column to the model attributes layer
   m_attr$twi  <- twi_dat_values$twi               # append TWI column to the model attributes layer
@@ -407,4 +418,22 @@ run_driver <- function(gage_id = NULL,
 
   
 }
+
+
+clean_move_dem_dir <- function(id = id, 
+                               output_dir = output_dir,
+                               dem_output_dir = dem_output_dir) {
+  
+  if (dir.exists(dem_output_dir) ) {
+    if (dir.exists(glue("{dem_output_dir}/{id}"))) {
+      unlink(glue("{dem_output_dir}/{id}"), recursive = TRUE)
+    }
+    dir.create(glue("{dem_output_dir}/{id}"), recursive = TRUE, showWarnings = FALSE)
+    file.rename(glue("{output_dir}/{id}/dem"), glue("{dem_output_dir}/{id}"))
+  }
+  else {
+    unlink(glue("{output_dir}/{id}/dem"), recursive = TRUE)
+  }  
+}
+
 

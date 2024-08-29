@@ -13,9 +13,11 @@ if(!requireNamespace("curl", quietly=TRUE))
 if(!requireNamespace("usethis", quietly=TRUE))
   install.packages("usethis")
 
-library(curl)
-library(usethis)
-library(devtools)
+suppressPackageStartupMessages({
+  library(curl)
+  library(usethis)
+  library(devtools)
+})
 
 if(!requireNamespace("hydrofabric3D", quietly=TRUE) || reinstall_hydrofabric)
   devtools::install_github("mikejohnson51/hydrofabric3D")
@@ -88,7 +90,7 @@ if(!requireNamespace("arrow", quietly=TRUE) || reinstall_arrow) {
 }
  
 
-library(hydrofabric)
+#library(hydrofabric)
 suppressPackageStartupMessages(library(hydrofabric))
 library(climateR)
 library(zonal)
@@ -96,32 +98,31 @@ library(whitebox)
 library(sf)
 library(terra)
 library(dplyr)
-library(glue)
+suppressPackageStartupMessages(library(glue))
 #library(raster)
 suppressPackageStartupMessages(library(raster))
 library(jsonlite)
 library(ggplot2)
 library(Metrics)
-library(arrow)
+suppressPackageStartupMessages(library(arrow))
 library(pbapply)
 library(parallel)
 library(yaml)
 
 # put all packages in a list for the use in parallel execution
-libraries_lst <- c(library(hydrofabric),
-                   suppressPackageStartupMessages(library(hydrofabric)),
+libraries_lst <- c(suppressPackageStartupMessages(library(hydrofabric)),
                    library(climateR),
                    library(zonal),
                    library(whitebox),
                    library(sf),
                    library(terra),
                    library(dplyr),
-                   library(glue),
+                   suppressPackageStartupMessages(library(glue)),
                    suppressPackageStartupMessages(library(raster)),
                    library(jsonlite),
                    library(ggplot2),
                    library(Metrics),
-                   library(arrow),
+                   suppressPackageStartupMessages(library(arrow)),
                    library(RSQLite),
                    library(DBI),
                    library(pbapply),

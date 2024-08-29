@@ -10,6 +10,7 @@ output_dir    : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_c
 
 gpkg_model_params :
   hf_source                : "/Users/ahmadjan/Core/SimulationsData/preprocessing/hydrofabric_synced"
+  dem_output_dir           : ""
   number_processors        : 1
   write_attributes_parquet : FALSE
   reinstall_hydrofabric    : FALSE
@@ -48,7 +49,7 @@ simulations :
   setup_simulation           : True
   verbosity                  : 0
 
-  num_processors_sim         : 2
+  num_processors_sim         : 1
   num_processors_adaptive    : False
   num_processors_config      : 1
 

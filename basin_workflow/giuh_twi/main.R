@@ -66,10 +66,13 @@ setup <-function() {
   nproc             <<- inputs$gpkg_model_params$number_processors
   reinstall_hydrofabric <<- inputs$gpkg_model_params$reinstall_hydrofabric
   write_attr_parquet    <<- inputs$gpkg_model_params$write_attributes_parquet
+  #dem_output_dir        <<- inputs$gpkg_model_params$dem_output_dir
   
   source(paste0(workflow_dir, "/giuh_twi/install_load_libs.R"))
   source(glue("{workflow_dir}/giuh_twi/custom_functions.R"))
-
+  
+  dem_output_dir        <<- get_param(inputs, "gpkg_model_params$dem_output_dir", "")
+  
   use_gage_id   <<- get_param(inputs, "gpkg_model_params$options$use_gage_id$use_gage_id", FALSE)
   gage_ids      <<- get_param(inputs, "gpkg_model_params$options$use_gage_id$gage_ids", NULL)
   
@@ -119,7 +122,9 @@ if (use_gage_id == TRUE) {
   cats_failed <- driver_given_gage_IDs(gage_id = gage_ids, 
                                        output_dir = output_dir, 
                                        hf_source = hf_source,
-                                       nproc = nproc
+                                       nproc = nproc,
+                                       write_attr_parquet = write_attr_parquet,
+                                       dem_output_dir = dem_output_dir
                                        )
   
   
@@ -127,13 +132,13 @@ if (use_gage_id == TRUE) {
   
   d = read.csv(gage_file,colClasses = c("character")) 
   gage_ids <- d[[column_name]]
-  print(paste0("gage_file ", gage_file))
-  print (gage_ids)
   
   cats_failed <- driver_given_gage_IDs(gage_id = gage_ids, 
                                        output_dir = output_dir, 
                                        hf_source = hf_source,
-                                       nproc = nproc 
+                                       nproc = nproc,
+                                       write_attr_parquet = write_attr_parquet,
+                                       dem_output_dir = dem_output_dir
                                        )
 } else if (use_gpkg == TRUE) {
 
@@ -143,7 +148,8 @@ if (use_gage_id == TRUE) {
                                    gpkg_dir = gpkg_dir, 
                                    output_dir = output_dir,
                                    hf_source = NULL,
-                                   nproc = nproc
+                                   nproc = nproc,
+                                   dem_output_dir = dem_output_dir
                                    )
   
 }
