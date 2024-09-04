@@ -10,16 +10,21 @@ and executing them within the NextGen framework.
   NextGen realization file. Detailed instruction can be found [here](https://github.com/ajkhattak/SoilMoistureProfiles/tree/ajk/auto_py_script/basin_workflow/generate_files/main.py)
 
 
+### Configuration steps
+  - `git clone https://github.com/ajkhattak/basin_workflow`
+  - `git submodule update --init`
+  - `cd extern/ngen-cal` (inside basin_workflow base directory)
+    - `pip install 'python/ngen_cal[netcdf]'`
+    - `pip install python/ngen_config_gen`
+    - `pip install hydrotools.events`
+  - `pip install -e ./ngen_cal_plugins` (inside basin_workflow base directory)
+
 ### Setup configuration files
 The workflow needs two configuration files, provided [here](https://github.com/ajkhattak/basin_workflow/blob/master/basin_workflow/configs/). Workflow setup and model options and paths need to be adjusted to local settings. Please see the configuration files for further details.
 
-### Install Plugins
-```
-pip install -e ./ngen_cal_plugins
-```
 ### Running the workflow
 ```
-python /Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/main.py OPTIONS = [-gpkg -conf -run]
+python /Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/main.py OPTIONS = [-gpkg -force -conf -run]
 ```
 Note: These options can be run individually or all together by `path_to/main.py -gpkg -conf -run`. The `-gpkg` is an expensive step, should be run once to get the desired basin geopacakge.
 
