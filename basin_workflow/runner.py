@@ -80,7 +80,7 @@ def run_ngen_with_calibration():
     indata = pd.read_csv(infile, dtype=str)
    
     path = Path(sys.argv[0]).resolve() # get the absolute path
-    ngen_cal_basefile = os.path.join(path.parent, "configs", "input_calib.yaml")
+    ngen_cal_basefile = os.path.join(path.parent, "configs", "config_calib.yaml")
     
     for id, ncats in zip(indata["basin_id"], indata['n_cats']):
 

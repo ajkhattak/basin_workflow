@@ -18,8 +18,18 @@ def runner():
     
     if (args.gpkg):
         print ("Generating geopackages...")
-        generate_gpkg = f"Rscript {workflow_dir}/giuh_twi/main.R {workflow_dir}/configs/input_config.yaml"
+        generate_gpkg = f"Rscript {workflow_dir}/giuh_twi/main.R {workflow_dir}/configs/config_workflow.yaml"
         status = subprocess.call(generate_gpkg,shell=True)
+
+        if (status):
+            sys.exit("Failed during generating geopackge(s) step...")
+        else:
+            print ("DONE \u2713")
+
+    if (args.forc):
+        print ("Generating forcing data...")
+        generate_forcing = f"python {workflow_dir}/generate_files/forcing.py {workflow_dir}/configs/config_workflow.yaml"
+        status = subprocess.call(generate_forcing,shell=True)
 
         if (status):
             sys.exit("Failed during generating geopackge(s) step...")
@@ -28,7 +38,7 @@ def runner():
 
     if (args.conf):
         print ("Generating config files...")
-        generate_configs = f"python {workflow_dir}/generate_files/main.py {workflow_dir}/configs/input_config.yaml"
+        generate_configs = f"python {workflow_dir}/generate_files/main.py {workflow_dir}/configs/config_workflow.yaml"
         status = subprocess.call(generate_configs,shell=True)
 
         if (status):
@@ -38,12 +48,12 @@ def runner():
         
     if (args.run):
         print ("Calling Runner ...")
-        infile = f"{workflow_dir}/configs/input_config.yaml"
+        infile = f"{workflow_dir}/configs/config_workflow.yaml"
         
         with open(infile, 'r') as file:
             d = yaml.safe_load(file)
 
-        run_command = f"python {workflow_dir}/runner.py {workflow_dir}/configs/input_config.yaml"
+        run_command = f"python {workflow_dir}/runner.py {workflow_dir}/configs/config_workflow.yaml"
         status = subprocess.call(run_command,shell=True)
 
         if (status):
@@ -60,9 +70,9 @@ if __name__ == "__main__":
     try:
         parser = argparse.ArgumentParser()
         parser.add_argument("-gpkg", action='store_true', help="generate gpkg files")
+        parser.add_argument("-forc", action='store_true', help="generate forcing data")
         parser.add_argument("-conf", action='store_true', help="generate config files")
         parser.add_argument("-run",  action='store_true', help="run nextgen without caliberation")
-        #parser.add_argument("-cal",  action='store_true', help="run nextgen with caliberation")
         
         args = parser.parse_args()
     except:

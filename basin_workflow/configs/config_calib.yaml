@@ -58,5 +58,5 @@ model:
       # choices are "kling_gupta", "nnse", "custom", "single_peak", "volume"
       objective: "kling_gupta"
     plugins:
-      - "ngen_cal_save_iteration_output_plugin.NgenSaveOutput" # saves cat_*.csv or nex-*.csv to "output_iteration" directory
-      - "ngen_cal_save_sim_obs_plugin.SaveOutput"              # saves simulated and observed discharge at the outlet
+      - "ngen_cal_user_plugins.ngen_cal_save_iteration_output_plugin.NgenSaveOutput" # saves cat_*.csv or nex-*.csv to "output_iteration" directory
+      - "ngen_cal_user_plugins.ngen_cal_save_sim_obs_plugin.SaveOutput"              # saves simulated and observed discharge at the outlet

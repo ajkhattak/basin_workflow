@@ -828,7 +828,45 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
     with open(os.path.join(conf_dir,"calib_config.yaml"), 'w') as file:
         yaml.dump(d,file, default_flow_style=False, sort_keys=False)
 
-        
+
+#############################################################################
+# The function generates configuration file for forcing data downlaoder
+# @param catids         : array/list of integers contain catchment ids
+# @ngen_dir             : ngen directory
+# @param gpkg_file      : basin geopackage file
+# @param real_file      : realization file
+#############################################################################
+def write_forcing_input_files(forcing_basefile, gpkg_file, time):
+
+    if (not os.path.exists(forcing_basefile)):
+        sys.exit("Sample forcing yaml file does not exist, provided is " + forcing_basefile)
+
+    
+    with open(forcing_basefile, 'r') as file:
+        d = yaml.safe_load(file)
+    time_sim = json.loads(time)
+
+    print ("T: ", time_sim)
+    
+    start_yr = pd.Timestamp(time_sim['start_time']).year #strftime("%Y")
+    end_yr = pd.Timestamp(time_sim['end_time']).year #strftime("%Y")
+
+    if (start_yr <= end_yr):
+        print (start_yr, end_yr)
+        end_yr = start_yr + 1
+
+    d['gpkg']  = gpkg_file
+    d["years"] = [start_yr, end_yr]
+    d["out_dir"] = os.path.join(os.path.dirname(gpkg_file), "forcing")
+
+    if (not os.path.exists(d["out_dir"])):
+        os.makedirs("data/forcing")
+    
+    with open(os.path.join(d["out_dir"],"forcing_config.yaml"), 'w') as file:
+        yaml.dump(d,file, default_flow_style=False, sort_keys=False)
+
+    return os.path.join(d["out_dir"],"forcing_config.yaml")
+
 #############################################################################
 #############################################################################
 def create_directory(dir_name):

@@ -420,7 +420,8 @@ run_driver <- function(gage_id = NULL,
 }
 
 
-clean_move_dem_dir <- function(id = id,output_dir = output_dir,
+clean_move_dem_dir <- function(id = id,
+                               output_dir = output_dir,
                                dem_output_dir = dem_output_dir) {
   
   if (dir.exists(dem_output_dir) ) {

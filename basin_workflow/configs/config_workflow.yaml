@@ -5,12 +5,12 @@
 # make sure to install yaml package using install.packages("yaml") if not installed already
 
 workflow_dir  : "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/"
-output_dir    : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/basins516_model_attr"
-
+#output_dir    : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/basins516_model_attr"
+output_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/test"
 
 gpkg_model_params :
   hf_source                : "/Users/ahmadjan/Core/SimulationsData/preprocessing/hydrofabric_synced"
-  dem_output_dir           : ""
+  dem_output_dir           : "/Users/ahmadjan/Core/SimulationsData/projects/ngen-bm/dem"
   number_processors        : 1
   write_attributes_parquet : FALSE
   reinstall_hydrofabric    : FALSE
@@ -35,8 +35,10 @@ gpkg_model_params :
 ###############
 simulations :
   ngen_dir           : "/Users/ahmadjan/codes/ngen/ngen"
-  is_netcdf_forcing  : True
-  nc_forcing_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/forcings"
+  is_netcdf_forcing  : False
+  #forcing_source     : "local" #"Nels_forcing_prep"
+  forcing_source     : "Nels_forcing_prep" # if forcing data are downloaded using Nels tools 'forcing_prep'
+  forcing_dir        : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/forcingsX/{*}"
 
   simulation_time            : '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2010-10-02 00:00:00"}'
   model_option               : "NCP"
@@ -47,11 +49,10 @@ simulations :
 
   clean                      : ['existing']
   setup_simulation           : True
-  verbosity                  : 0
+  verbosity                  : 3
 
   num_processors_sim         : 1
   num_processors_adaptive    : False
   num_processors_config      : 1
 
   rename_existing_simulation : ""
-

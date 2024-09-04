@@ -18,6 +18,8 @@ import multiprocessing
 from functools import partial # used for partially applied function which allows to create new functions with arguments
 import time
 import argparse
+import json
+from pathlib import Path
 
 import helper
 # Note #1: from the command line just run 'python path_to/main.py'
@@ -94,7 +96,6 @@ simulation_time            = dsim["simulation_time"]
 model_option               = dsim['model_option']
 precip_partitioning_scheme = dsim['precip_partitioning_scheme']
 surface_runoff_scheme      = dsim['surface_runoff_scheme']
-is_netcdf_forcing          = dsim.get('is_netcdf_forcing', True)
 clean                      = dsim.get('clean', "none")
 is_routing                 = dsim.get('is_routing', False)
 verbosity                  = dsim.get('verbosity', 0)
@@ -103,6 +104,9 @@ num_processors_sim         = dsim.get('num_processors_sim', 1)
 setup_simulation           = dsim.get('setup_simulation', True)
 rename_existing_simulation = dsim.get('rename_existing_simulation', "")
 is_calibration             = dsim.get('is_calibration', False)
+is_netcdf_forcing          = dsim.get('is_netcdf_forcing', True)
+forcing_source             = dsim.get('forcing_source', "")
+forcing_dir                = dsim.get('forcing_dir', "")
 
 def process_clean_input_param():
     clean_lst = []
@@ -140,37 +144,55 @@ def generate_catchment_files(dir, forcing_files):
         if verbosity >=1:
             print(filled_dot, gpkg_name, end="")
 
-        
+        id = int(gpkg_name[:-5].split("_")[1])
+
         if len(forcing_files) > 0:
-            id = int(gpkg_name[:-5].split("_")[1])
+
             forcing_file = [f for f in forcing_files if str(id) in f]
             if len(forcing_file) == 1:
-                forcing_dir = forcing_file[0]
+                div_forcing_dir = forcing_file[0]
             else:
                 if verbosity >=2:
-                    print("Forcing file .nc does not exist for this gpkg, continuing to the next gpkg")
+                    print(" Forcing file .nc does not exist for this gpkg, continuing to the next gpkg")
                 if verbosity >=1:
                     print (colors.RED + "  Failed " + colors.END )
                 return
-        elif is_netcdf_forcing:
-            try:
-                forcing_dir = glob.glob("data/forcing/*.nc")[0]
-            except:
-                if verbosity >=2:
-                    print("Forcing file does not exist under data/forcing, continuing to the next gpkg")
-                if verbosity >=1:
-                    print (colors.RED + "  Failed " + colors.END )
-                return
-        else:
-            forcing_dir = "data/forcing"
-            if (not os.path.exists(forcing_dir)):
-                if verbosity >=2:
-                    print(f"Forcing file does not exist under {forcing_dir}, continuing to the next gpkg")
-                if verbosity >=1:
-                    print (colors.RED + "  Failed " + colors.END )
-                return
+        
+        elif (forcing_source == "Nels_forcing_prep"):
+            sim_time = json.loads(simulation_time)
+            start_yr = pd.Timestamp(sim_time['start_time']).year 
+            end_yr   = pd.Timestamp(sim_time['end_time']).year 
 
-        assert os.path.exists(forcing_dir)
+            if (start_yr <= end_yr):
+                end_yr = start_yr + 1
+
+            if (is_netcdf_forcing):
+                name_without_ext = gpkg_name.split(".")[0]
+                div_forcing_dir = os.path.join(dir, f"data/forcing/{start_yr}_to_{end_yr}/{name_without_ext}_{start_yr}_to_{end_yr}.nc")
+            else:
+                div_forcing_dir = os.path.join(dir, f"data/forcing/{start_yr}_to_{end_yr}")
+                
+            if (not os.path.exists(div_forcing_dir)):
+                if verbosity >=2:
+                    print(f" Forcing file does not exist under {div_forcing_dir}, continuing to the next gpkg")
+                if verbosity >=1:
+                    print (colors.RED + "  Failed " + colors.END )
+                return
+        elif (forcing_source == "local"):
+            if is_netcdf_forcing:
+                try:
+                    div_forcing_dir = forcing_dir.replace("{*}", Path(dir).name)
+                    div_forcing_dir = glob.glob(f"{div_forcing_dir}/*.nc")[0]
+                except:
+                    if verbosity >=2:
+                        print(f" \nForcing file does not exist under {div_forcing_dir}, continuing to the next gpkg")
+                        if verbosity >=1:
+                            print (colors.RED + "  Failed " + colors.END )
+                    return
+            else:
+                div_forcing_dir = forcing_dir.replace("{*}", Path(dir).name)
+
+        assert os.path.exists(div_forcing_dir)
 
     config_dir = os.path.join(dir,"configs")
     json_dir   = os.path.join(dir, "json")
@@ -185,7 +207,7 @@ def generate_catchment_files(dir, forcing_files):
 
     workflow_driver = os.path.join(workflow_dir, "generate_files/driver.py")
 
-    driver = f'python {workflow_driver} -gpkg {gpkg_dir} -ngen {ngen_dir} -f {forcing_dir} \
+    driver = f'python {workflow_driver} -gpkg {gpkg_dir} -ngen {ngen_dir} -f {div_forcing_dir} \
     -o {config_dir} -m {model_option} -p {precip_partitioning_scheme} -r {surface_runoff_scheme} -t \'{simulation_time}\' \
     -netcdf {is_netcdf_forcing} -troute {is_routing} -json {json_dir} -v {verbosity} -c {is_calibration} \
     -sout {sim_output_dir}'
@@ -207,13 +229,26 @@ def generate_catchment_files(dir, forcing_files):
 
 ############################### MAIN LOOP #######################################
 
-def main(forcing_files, nproc = 4):
+def main(nproc = 4):
     
     basins_passed = os.path.join(output_dir,"basins_passed.csv")
     
     if (os.path.exists(basins_passed)):
         os.remove(basins_passed)
 
+    # check if all forcing files (.nc) are stored in one directory, read in serial
+    forcing_files = []
+    if (is_netcdf_forcing):
+        try:
+            nc_forcing_dir  = dsim['forcing_dir']
+            if (not os.path.exists(forcing_dir)):
+                sys.exit(f"Forcing directory does not exist. Provided: {forcing_dir}")
+
+            forcing_files = glob.glob(os.path.join(nc_forcing_dir, "*.nc"), recursive = True)
+            assert (len(forcing_files) > 0)
+        except:
+            pass
+                
     basin_ids = []
     num_cats  = []
 
@@ -270,21 +305,8 @@ if __name__ == "__main__":
 
     all_dirs = glob.glob(output_dir + "/*/", recursive = True)
     gpkg_dirs = [g for g in all_dirs if "failed_cats" not in g] # remove the failed_cats directory
- 
-    forcing_files = []
-    if (is_netcdf_forcing):
-        try:
-            nc_forcing_dir  = dsim['nc_forcing_dir']
-            if (not os.path.exists(nc_forcing_dir)):
-                sys.exit(f"Forcing directory does not exist. Provided: {nc_forcing_dir}")
-
-            forcing_files = glob.glob(os.path.join(nc_forcing_dir, "*.nc"), recursive = True)
-            assert (len(forcing_files) > 0)
-        except:
-            if (verbosity >=2):
-                print ("Forcing stored in the local sub directory (data/forcing)")
             
-    success_ncats = main(forcing_files, nproc = num_processors_config)
+    success_ncats = main(nproc = num_processors_config)
 
     end_time = time.time()
     total_time = end_time - start_time # in seconds

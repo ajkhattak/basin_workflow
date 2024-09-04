@@ -49,6 +49,16 @@ def get_pet_block(model_exe, config_dir):
 # module for NOAH-OWP-Modular (NOM) block in the nextgen realization file 
 # @param config_dir : input directory of the NOM config files
 # @param model_exe : path to NOM executable
+# Units and different forcing variables names and their mapping
+# Nels script                Jason Ducker script       Luciana's script
+# APCP_surface [kg/m2/sec]   <-> RAINRATE [mm/sec] <-> PRCPNONC [mm/sec]
+# DLWRF_surface [W m-2]      <-> LWDOWN [W m-2]    <-> LWDN [W m-2]
+# DSWRF_surface [W m-2]      <-> SWDOWN [W m-2]    <-> SOLDN [W m-2]
+# TMP_2maboveground [K]      <-> T2D [K]           <-> SFCTMP
+# UGRD_10maboveground [m/s]  <-> U2D [m s-1]       <-> UU [m/s]
+# VGRD_10maboveground [m/s]  <-> V2D [m s-1]       <-> VV [m/s]
+ # PRES_surface [Pa]         <-> PSFC [Pa]         <-> SFCPRS [Pa]
+# SPFH_2maboveground [kg/kg] <-> Q2D [kg kg^-1]    <-> Q2 [kg/kg]
 #############################################################################
 def get_noah_owp_modular_block(model_exe, config_dir):
     block = {
@@ -74,7 +84,19 @@ def get_noah_owp_modular_block(model_exe, config_dir):
             }
         }
     }
-    
+
+    # update mapping block for the use with Nels focing data script
+    block['params']['variables_names_map'] = {
+        "PRCPNONC" : "APCP_surface",
+	"Q2"       : "SPFH_2maboveground",
+	"SFCTMP"   : "TMP_2maboveground",
+	"UU"       : "UGRD_10maboveground",
+	"VV"       : "VGRD_10maboveground",
+	"LWDN"     : "DLWRF_surface",
+	"SOLDN"    : "DSWRF_surface",
+	"SFCPRS"   : "PRES_surface"
+    }
+
     return block
 
 #############################################################################
