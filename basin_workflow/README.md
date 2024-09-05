@@ -12,12 +12,19 @@ and executing them within the NextGen framework.
 
 ### Configuration steps
   - `git clone https://github.com/ajkhattak/basin_workflow`
+  - cd basin_workflow/basin_workflow
   - `git submodule update --init`
-  - `cd extern/ngen-cal` (inside basin_workflow base directory)
-    - `pip install 'python/ngen_cal[netcdf]'`
-    - `pip install python/ngen_config_gen`
-    - `pip install hydrotools.events`
-  - `pip install -e ./ngen_cal_plugins` (inside basin_workflow base directory)
+  - `pip install 'extern/ngen-cal/python/ngen_cal[netcdf]'`
+  - `pip install extern/ngen-cal/python/ngen_config_gen`
+  - `pip install hydrotools.events`
+  - `pip install -e ./extern/ngen_cal_plugins`
+    
+#### Forcing data downloaders
+  - Currently supports Nels and Jonathan tools available [here](https://github.com/ajkhattak/CIROH_DL_NextGen)
+  - `mkdir ~/.venv_forcing` (preferably in your home directory and don't change the name of the env othewise it needs to be explicitly provided in the config file)
+  - `python -m venv ~/.venv_forcing`
+  - `source ~/.venv_forcing/bin/activate`
+  - `pip install -r extern/CIROH_DL_NextGen/forcing_prep/requirements.txt`
 
 ### Setup configuration files
 The workflow needs two configuration files, provided [here](https://github.com/ajkhattak/basin_workflow/blob/master/basin_workflow/configs/). Workflow setup and model options and paths need to be adjusted to local settings. Please see the configuration files for further details.
