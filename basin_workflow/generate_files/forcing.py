@@ -23,7 +23,7 @@ simulation_time       = dsim["simulation_time"]
 is_netcdf_forcing     = dsim.get('is_netcdf_forcing', True)
 verbosity             = dsim.get('verbosity', 0)
 num_processors_forcing  = 1
-forcing_venv_dir      = "~/.ngen_forcing"
+forcing_venv_dir      = "~/.venv_forcing"
 
 
 def activate_venv(forcing_venv_dir):
