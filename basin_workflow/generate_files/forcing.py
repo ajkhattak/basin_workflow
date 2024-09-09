@@ -25,18 +25,6 @@ verbosity             = dsim.get('verbosity', 0)
 num_processors_forcing  = 1
 forcing_venv_dir      = "~/.venv_forcing"
 
-
-def activate_venv(forcing_venv_dir):
-    venv_path = os.getenv('VIRTUAL_ENV')
-    if venv_path:
-        result = subprocess.call("deactivate",shell=True)
-    # store the existing evn and return
-    activate = os.path.join(forcing_venv_dir, "bin", "activate")
-    run_cmd = f'source {activate}'
-        
-    print (f"Active python venv for forcing : {run_cmd} ", flush = True)
-    result = subprocess.call(run_cmd,shell=True)
-    print ("EVN1 = ",  os.getenv('VIRTUAL_ENV'))
         
 def forcing_generate_catchment(dir):
 
@@ -59,7 +47,7 @@ def forcing_generate_catchment(dir):
     env = os.environ.copy()
     env['PATH'] = f"{venv_bin}:{env['PATH']}"
 
-    result = subprocess.call(run_cmd,shell=True,  env = env)
+    result = subprocess.call(run_cmd, shell=True, env = env)
     
 def forcing(nproc = 1):
 
@@ -101,5 +89,4 @@ if __name__ == "__main__":
     all_dirs = glob.glob(output_dir + "/*/", recursive = True)
     gpkg_dirs = [g for g in all_dirs if "failed_cats" not in g] # remove the failed_cats directory
 
-    activate_venv(forcing_venv_dir)
     forcing(nproc = num_processors_forcing)
