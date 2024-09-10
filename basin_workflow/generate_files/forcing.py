@@ -17,15 +17,15 @@ with open(infile, 'r') as file:
     d = yaml.safe_load(file)
 
 dsim = d['simulations']
-workflow_dir          = d["workflow_dir"]
-output_dir            = d["output_dir"]
-simulation_time       = dsim["simulation_time"]
-is_netcdf_forcing     = dsim.get('is_netcdf_forcing', True)
-verbosity             = dsim.get('verbosity', 0)
+workflow_dir        = d["workflow_dir"]
+output_dir          = d["output_dir"]
+simulation_time     = dsim["simulation_time"]
+is_netcdf_forcing   = dsim.get('is_netcdf_forcing', True)
+verbosity           = dsim.get('verbosity', 0)
+forcing_venv_dir    = dsim.get('forcing_venv_dir', "~/venv_forcing")
+#forcing_venv_dir   = "/home/ec2-user/venv_forcing"
 num_processors_forcing  = 1
-forcing_venv_dir      = "~/.venv_forcing"
 
-        
 def forcing_generate_catchment(dir):
 
     os.chdir(dir)
@@ -44,10 +44,14 @@ def forcing_generate_catchment(dir):
     run_cmd = f'python {workflow_dir}/extern/CIROH_DL_NextGen/forcing_prep/generate.py {forcing_config}'
 
     venv_bin = os.path.join(forcing_venv_dir, 'bin')
+
+    if (not os.path.exists(venv_bin)):
+        sys.exit("venv for forcing does not exist...")
+
     env = os.environ.copy()
     env['PATH'] = f"{venv_bin}:{env['PATH']}"
-
     result = subprocess.call(run_cmd, shell=True, env = env)
+
     
 def forcing(nproc = 1):
 
