@@ -50,6 +50,7 @@ build_troute()
     python3.11 -m venv ~/ngen_venv_pip24
     source ~/vevn_ngen_py3.11/bin/activate
     pip install -U pip==24.0
+    sed -i 's/netcdf4/netcdf4<=1.6.3/g' extern/t-route/requirements.txt
     pip install -r extern/t-route/requirements.txt 
     #hot patch nc config to nf config
     sed -i 's/nc-config/nf-config/g' src/kernel/reservoir/makefile
