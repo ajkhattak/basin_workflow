@@ -775,6 +775,8 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
         sys.exit("Sample calib yaml file does not exist, provided is " + ngen_cal_basefile)
 
     basin_workflow_dir = os.path.dirname(os.path.dirname(ngen_cal_basefile))
+
+    gpkg_name  = os.path.basename(gpkg_file).split(".")[0]
     
     with open(ngen_cal_basefile, 'r') as file:
         d = yaml.safe_load(file)
@@ -784,7 +786,8 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
     d['model']['binary']      = os.path.join(ngen_dir, "cmake_build/ngen")
     d['model']['realization'] = realz_file
     d['model']['hydrofabric'] = gpkg_file
-    d['model']['routing_output'] = "./flowveldepth_gage_01052500.csv" #"./troute_output_201010010000.csv" # in the ngen-cal created directory named {current_time}_ngen_{random stuff}_worker
+    d['model']['routing_output'] = f'./flowveldepth_{gpkg_name}.csv' # this gpkg_name should be consistent with title_string in troute
+    #"./troute_output_201010010000.csv" # in the ngen-cal created directory named {current_time}_ngen_{random stuff}_worker
     #d['model']['routing_output'] = troute_output_file # if in the outputs/troute directory
 
 
@@ -803,6 +806,7 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
     rl_gages = gdf_fp_cols[gdf_fp_cols['rl_gages'].notna()]
 
     ids = rl_gages['id'].tolist()
+
     
     if (len(ids) == 1):
         d['model']['eval_feature'] = ids[0]
@@ -815,6 +819,17 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
         idmax = df['tot_drainage_areasqkm'].idxmax() # maximum drainage area catchment ID; downstream outlet
         d['model']['eval_feature'] = idmax
         #sys.exit(1)
+
+    # 2nd strategy: using total drainage area to locate the basin outlet gage ID
+    """
+    div = gpd.read_file(gpkg_file, layer='divides')
+    df = div[['divide_id', 'tot_drainage_areasqkm', 'toid']]
+    index = df['toid'].map(lambda x: 'wb-'+str(x.split("-")[1]))
+    df.set_index(index, inplace=True)
+    df.index.name = 'wb_id'  # index name
+    idmax = df['tot_drainage_areasqkm'].idxmax() # maximum drainage area catchment ID; downstream outlet
+    d['model']['eval_feature'] = idmax
+    """
 
     if (num_proc > 1):
         d['model']['parallel'] = num_proc
