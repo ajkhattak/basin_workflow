@@ -31,7 +31,7 @@ The workflow needs two configuration files, provided [here](https://github.com/a
 
 ### Running the workflow
 ```
-python /Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/main.py OPTIONS = [-gpkg -force -conf -run]
+python /Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/main.py OPTIONS = [-gpkg -forc -conf -run]
 ```
 Note: These options can be run individually or all together by `path_to/main.py -gpkg -conf -run`. The `-gpkg` is an expensive step, should be run once to get the desired basin geopacakge.
 
