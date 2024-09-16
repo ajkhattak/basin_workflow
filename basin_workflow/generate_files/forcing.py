@@ -46,7 +46,8 @@ def forcing_generate_catchment(dir):
     venv_bin = os.path.join(forcing_venv_dir, 'bin')
 
     if (not os.path.exists(venv_bin)):
-        sys.exit("venv for forcing does not exist...")
+        msg = f"Python venv for forcing does not exist. Provided {forcing_venv_dir}"
+        sys.exit(msg)
 
     env = os.environ.copy()
     env['PATH'] = f"{venv_bin}:{env['PATH']}"

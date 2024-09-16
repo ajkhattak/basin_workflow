@@ -4,8 +4,9 @@
 # See main.R for further details
 # make sure to install yaml package using install.packages("yaml") if not installed already
 
-workflow_dir  : "/home/ec2-user/codes/workflows/basin_workflow/basin_workflow"
-output_dir     : "/home/ec2-user/simulations/cfe_camas_evaluation/test"
+workflow_dir  : "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/"
+output_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/testXX"
+
 
 gpkg_model_params :
   hf_source                : "/Users/ahmadjan/Core/SimulationsData/preprocessing/hydrofabric_synced"
@@ -18,7 +19,7 @@ gpkg_model_params :
   options :
     use_gage_id :
       use_gage_id : TRUE
-      gage_ids    :  "03366500"
+      gage_ids    :  "10154200" #"03366500"
       #gage_ids    : ["04115265", "07301410", "04063700", "12488500"]
       
     use_gage_file :
@@ -33,11 +34,11 @@ gpkg_model_params :
       
 ###############
 simulations :
-  ngen_dir           : "/home/ec2-user/codes/ngen/ngen"
+  ngen_dir           : "/Users/ahmadjan/codes/ngen/ngen"
   is_netcdf_forcing  : True
-  #forcing_source     : "local" #"Nels_forcing_prep"
+  #forcing_source     : "local"
   forcing_source     : "Nels_forcing_prep" # if forcing data are downloaded using Nels tools 'forcing_prep'
-  forcing_dir        : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/forcingsX/{*}"
+  #forcing_dir        : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/forcingsX/{*}"
   forcing_venv_dir   : "/home/ec2-user/venv_forcing" # provide only when using forcing data downloaders
   
   simulation_time            : '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2010-10-02 00:00:00"}'
@@ -49,7 +50,7 @@ simulations :
 
   clean                      : ['existing']
   setup_simulation           : True
-  verbosity                  : 3
+  verbosity                  : 0
 
   num_processors_sim         : 1
   num_processors_adaptive    : False
