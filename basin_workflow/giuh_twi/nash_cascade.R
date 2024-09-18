@@ -83,7 +83,12 @@ get_nash_params <- function(giuh_dat_values, calib_n_k = FALSE) {
       
     d = fromJSON(giuh_dat_values$giuh[ncat]) 
     cat_giuh_ordinates = d$frequency
-    
+
+    if (is.null(cat_giuh_ordinates) ) {
+       N_vector[ncat] = N
+       K_vector[ncat] = ksub
+       next
+    }
     runoff_giuh <- vector(mode = "numeric", length = length(cat_giuh_ordinates))
     time_h = length(cat_giuh_ordinates) # simulation time in hours for the total runoff
       

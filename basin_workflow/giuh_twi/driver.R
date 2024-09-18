@@ -70,7 +70,7 @@ process_catchment_id <- function(id, failed_dir) {
   cats_failed <- numeric(0)
   
   # uncomment for debugging, it puts screen outputs to a file
-  log_file <- file("output.log", open = "at")
+  log_file <- file("output.log", open = "wt")
   sink(log_file, type = "output")
   
   cat_dir = glue("{output_dir}/{id}")
@@ -132,10 +132,14 @@ driver_given_gpkg <- function(gage_files,
                               hf_source = NULL,
                               failed_dir = "failed_cats",
                               dem_output_dir = "",
+			      write_attr_parquet = FALSE,
                               nproc = 1) {
   
   # create directory to stored catchment geopackage in case of errors or missing data
   failed_dir = "failed_cats"
+  if (dir.exists(failed_dir)) {
+    unlink(failed_dir, recursive = TRUE)
+  }
   dir.create(failed_dir, recursive = TRUE, showWarnings = FALSE)
   
   if (nproc > parallel::detectCores()) {
@@ -154,6 +158,7 @@ driver_given_gpkg <- function(gage_files,
                                 "hf_source",
                                 "gpkg_dir",
                                 "as_sqlite",
+				"write_attr_parquet",
                                 "dem_output_dir"),
                 envir = environment())
   
@@ -167,7 +172,7 @@ driver_given_gpkg <- function(gage_files,
   
   
   # Initialize and call pb (progress bar)
-  
+
   cats_failed <- pblapply(X = gage_files, FUN = process_gpkg, cl = cl, failed_dir)
   
   #cats_failed <- lapply(X = gage_files, FUN = process_gpkg, failed_dir)
@@ -180,19 +185,21 @@ process_gpkg <- function(gfile, failed_dir) {
 
   # vector contains ID of basins that failed for some reason
   cats_failed <- numeric(0)
-  
+
   # uncomment for debugging, it puts screen outputs to a file
-  log_file <- file("output.log", open = "at")
+  log_file <- file("output.log", open = "wt")
   sink(log_file, type = "output")
 
   id <- as.integer(sub(".*_(.*?)\\..*", "\\1", gfile))
-  #id = as.integer(unlist(strsplit(gfile, split = '[_&.]+'))[2])
+  if (is.na(id)) {
+     id <- 11111
+  }
   
   # check if gage ID is missing a leading zero, does not happens most of the times, but good to check
   #if (as.integer(nchar(id)/2) %% 2 == 1) {
   #  id <- paste(0,id, sep = "")
   #  }
-  
+
   cat_dir = glue("{output_dir}/{id}")
   dir.create(cat_dir, recursive = TRUE, showWarnings = FALSE)
   
@@ -204,18 +211,22 @@ process_gpkg <- function(gfile, failed_dir) {
   dem_dir = "dem"
   dir.create(dem_dir, recursive = TRUE, showWarnings = FALSE)
   dir.create("data", recursive = TRUE, showWarnings = FALSE)
-  #file.copy(glue("{gpkg_dir}/{gfile}"), "data")
-    
+  file.copy(gfile, "data")
+
   failed <- TRUE
   
   tryCatch({
     cat ("Running ", id, "\n")
 
-    local_gpkg_file = gfile #glue("{cat_dir}/data/{gfile}")
-    run_driver(is_gpkg_provided = TRUE, 
+    #local_gpkg_file = gfile # point to original file
+    gpkg_name = basename(gfile)
+
+    local_gpkg_file = glue("{cat_dir}/data/{gpkg_name}")
+
+    run_driver(is_gpkg_provided = TRUE,
                loc_gpkg_file = local_gpkg_file,
                dem_output_dir = dem_dir,
-               write_attr_parquet = TRUE
+               write_attr_parquet = write_attr_parquet
                )
       
     failed <- FALSE
@@ -284,13 +295,16 @@ run_driver <- function(gage_id = NULL,
   } else { 
     outfile <- loc_gpkg_file
     }
-  
+
   time.taken <- as.numeric(Sys.time() - start.time, units = "secs") #end.time - start.time
   print (paste0("Time (geopackage) = ", time.taken))
   
   ## Stop if .gpkg does not exist
-  if (!file.exists(outfile))
-    stop(glue("FILE '{outfile}' DOES NOT EXIST!!"))
+
+  if (!file.exists(outfile)) {
+    print(glue("FILE '{outfile}' DOES NOT EXIST!!"))
+    stop()
+    }
 
   div <- read_sf(outfile, 'divides')
   nexus <- read_sf(outfile, 'nexus')
@@ -299,8 +313,9 @@ run_driver <- function(gage_id = NULL,
   ########################## MODELS' ATTRIBUTES ##################################
   # STEP #4: Add models' attributes from the parquet file to the geopackage
   # this TRUE will be changed once synchronized HF bugs are fixed
-  
-  if(is.null(hf_source) | TRUE) {
+
+  if(is.null(hf_source) & FALSE) {
+    print ("Adding model attributes")
     # print layers before appending model attributes
     layers_before_cfe_attr <- sf::st_layers(outfile)
     #print (layers_before_cfe_attr$name)
@@ -321,7 +336,7 @@ run_driver <- function(gage_id = NULL,
   ############################### GENERATE TWI ##################################
   # STEP #5: Generate TWI and width function and write to the geopackage
   # Note: The default distribution = 'quantiles'
-  
+  print ("Calling DEM function")
   start.time <- Sys.time()
   dem_function(div_infile = outfile, dem_infile, dem_output_dir)
 
@@ -380,7 +395,7 @@ run_driver <- function(gage_id = NULL,
   names(giuh_dat_values)
   colnames(giuh_dat_values) <- c('divide_id', 'giuh')
   names(giuh_dat_values)
-  
+
   #giuh_dat_values$giuh[1]
   time.taken <- as.numeric(Sys.time() - start.time, units = "secs")
   print (paste0("Time (giuh ftn) = ", time.taken))
@@ -405,7 +420,7 @@ run_driver <- function(gage_id = NULL,
   m_attr$width_dist <- twi_dat_values$width_dist  # append width distribution column to the model attributes layer
   m_attr$N_nash_surface <- nash_params_surface$N_nash
   m_attr$K_nash_surface <- nash_params_surface$K_nash
-  
+
   if (!write_attr_parquet) {
     sf::st_write(m_attr, outfile,layer = "model-attributes", append = FALSE)  
   }
@@ -416,7 +431,6 @@ run_driver <- function(gage_id = NULL,
     arrow::write_parquet(m_attr,attr_par_dir)
   }
 
-  
 }
 
 

@@ -49,7 +49,7 @@ setup <-function() {
   } else if (length(args) > 1) {
     stop("Please provide only one argument (input.yaml).")
   } else {
-    infile_config <- "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/configs/input_config.yaml"
+    infile_config <- "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/configs/config_workflow.yaml"
   }
 
   if (!file.exists(infile_config)) {
@@ -66,8 +66,7 @@ setup <-function() {
   nproc             <<- inputs$gpkg_model_params$number_processors
   reinstall_hydrofabric <<- inputs$gpkg_model_params$reinstall_hydrofabric
   write_attr_parquet    <<- inputs$gpkg_model_params$write_attributes_parquet
-  #dem_output_dir        <<- inputs$gpkg_model_params$dem_output_dir
-  
+
   source(paste0(workflow_dir, "/giuh_twi/install_load_libs.R"))
   source(glue("{workflow_dir}/giuh_twi/custom_functions.R"))
   
@@ -84,8 +83,8 @@ setup <-function() {
   gpkg_dir      <<- get_param(inputs, "gpkg_model_params$options$use_gpkg$gpkg_dir", NULL)
   pattern       <<- get_param(inputs, "gpkg_model_params$options$use_gpkg$pattern", "Gage_")
   
-  if (sum(use_gage_id, use_gage_file, use_gpkg) > 1){
-    print(glue("Only one condition needs to be TRUE, user provide: \n
+  if (sum(use_gage_id, use_gage_file, use_gpkg) != 1){
+    print(glue("setup error: one condition needs to be TRUE, user provided: \n
              use_gage_id   = {use_gage_id}, \n 
              use_gage_file = {use_gage_file}, \n 
              use_gpkg      = {use_gpkg}"))
@@ -143,7 +142,7 @@ if (use_gage_id == TRUE) {
 } else if (use_gpkg == TRUE) {
 
   gage_files = list.files(gpkg_dir, full.names = TRUE, pattern = pattern)
-  
+
   cats_failed <- driver_given_gpkg(gage_files = gage_files, 
                                    gpkg_dir = gpkg_dir, 
                                    output_dir = output_dir,
@@ -159,6 +158,6 @@ end_time <- Sys.time()
 time_taken <- as.numeric(end_time - start_time, units = "secs")
 print (paste0("Time total = ", time_taken))
 
-print(cats_failed)
+print(paste0("failed_cats ", cats_failed))
 
 ################################### DONE #######################################
