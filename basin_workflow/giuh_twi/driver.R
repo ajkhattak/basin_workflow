@@ -10,11 +10,12 @@ driver_given_gage_IDs <- function(gage_ids,
                                   hf_source = NULL,
                                   failed_dir = "failed_cats",
                                   write_attr_parquet = FALSE,
+                                  dem_input_file = NULL,
                                   dem_output_dir = "",
                                   nproc = 1) {
-  
+  print ("DRIVER GIVEN GAGE ID")
   # create directory to stored catchment geopackage in case of errors or missing data
-  failed_dir = "failed_cats"
+  #failed_dir = "failed_cats"
   dir.create(failed_dir, recursive = TRUE, showWarnings = FALSE)
   
   if (nproc > parallel::detectCores()) {
@@ -32,6 +33,7 @@ driver_given_gage_IDs <- function(gage_ids,
                                 "failed_dir",
                                 "write_attr_parquet",
                                 "dem_output_dir",
+                                "dem_input_file",
                                 "hf_source",
                                 "as_sqlite"),
                 envir = environment())
@@ -65,13 +67,13 @@ driver_given_gage_IDs <- function(gage_ids,
 # it calls run_driver for each gage id and computes giuh/twi etc.
 
 process_catchment_id <- function(id, failed_dir) {
-  
+  print ("PROCESS CATCHMENT ID FUNCTION")
   # vector contains ID of basins that failed for some reason
   cats_failed <- numeric(0)
   
   # uncomment for debugging, it puts screen outputs to a file
-  log_file <- file("output.log", open = "wt")
-  sink(log_file, type = "output")
+  #log_file <- file("output.log", open = "wt")
+  #sink(log_file, type = "output")
   
   cat_dir = glue("{output_dir}/{id}")
   dir.create(cat_dir, recursive = TRUE, showWarnings = FALSE)
@@ -87,8 +89,9 @@ process_catchment_id <- function(id, failed_dir) {
   failed <- TRUE
   
   tryCatch({
-    cat ("Running ", id, "\n")
-    run_driver(gage_id = id, 
+    cat ("Processing catchment: ", id, "\n")
+    run_driver(gage_id = id,
+               dem_input_file = dem_input_file,
                dem_output_dir = dem_dir, 
                hf_source = hf_source,
                write_attr_parquet = write_attr_parquet
@@ -118,8 +121,8 @@ process_catchment_id <- function(id, failed_dir) {
     cat ("Cat passed:", id, "\n")
   }
   
-  sink(type = "output")
-  close(log_file)
+  #sink(type = "output")
+  #close(log_file)
   
   return(cats_failed)
 }
@@ -132,11 +135,14 @@ driver_given_gpkg <- function(gage_files,
                               hf_source = NULL,
                               failed_dir = "failed_cats",
                               dem_output_dir = "",
-			      write_attr_parquet = FALSE,
+                              dem_input_file = NULL,
+			                        write_attr_parquet = FALSE,
                               nproc = 1) {
+  print ("DRIVER GIVEN GEOPACKGE FUNCTION")
   
   # create directory to stored catchment geopackage in case of errors or missing data
-  failed_dir = "failed_cats"
+  #failed_dir = "failed_cats"
+  
   if (dir.exists(failed_dir)) {
     unlink(failed_dir, recursive = TRUE)
   }
@@ -158,8 +164,9 @@ driver_given_gpkg <- function(gage_files,
                                 "hf_source",
                                 "gpkg_dir",
                                 "as_sqlite",
-				"write_attr_parquet",
-                                "dem_output_dir"),
+				                        "write_attr_parquet",
+                                "dem_output_dir",
+				                        "dem_input_file"),
                 envir = environment())
   
   #evaluate an expression on in the global environment each node of the cluster; here loading packages
@@ -172,7 +179,7 @@ driver_given_gpkg <- function(gage_files,
   
   
   # Initialize and call pb (progress bar)
-
+  
   cats_failed <- pblapply(X = gage_files, FUN = process_gpkg, cl = cl, failed_dir)
   
   #cats_failed <- lapply(X = gage_files, FUN = process_gpkg, failed_dir)
@@ -182,13 +189,15 @@ driver_given_gpkg <- function(gage_files,
 }
 
 process_gpkg <- function(gfile, failed_dir) {
+  
+  print ("PROCESS GPKG FUNCTION")
 
   # vector contains ID of basins that failed for some reason
   cats_failed <- numeric(0)
 
   # uncomment for debugging, it puts screen outputs to a file
-  log_file <- file("output.log", open = "wt")
-  sink(log_file, type = "output")
+  #log_file <- file("output.log", open = "wt")
+  #sink(log_file, type = "output")
 
   id <- as.integer(sub(".*_(.*?)\\..*", "\\1", gfile))
   if (is.na(id)) {
@@ -216,16 +225,17 @@ process_gpkg <- function(gfile, failed_dir) {
   failed <- TRUE
   
   tryCatch({
-    cat ("Running ", id, "\n")
+    cat ("Processing catchment: ", id, "\n")
 
     #local_gpkg_file = gfile # point to original file
     gpkg_name = basename(gfile)
 
     local_gpkg_file = glue("{cat_dir}/data/{gpkg_name}")
-
+    
     run_driver(is_gpkg_provided = TRUE,
                loc_gpkg_file = local_gpkg_file,
                dem_output_dir = dem_dir,
+               dem_input_file = dem_input_file,
                write_attr_parquet = write_attr_parquet
                )
       
@@ -247,8 +257,8 @@ process_gpkg <- function(gfile, failed_dir) {
     cat ("Cat passed:", id, "\n")
   }
   
-  sink(type = "output")
-  close(log_file)
+  #sink(type = "output")
+  #close(log_file)
   
   return(cats_failed)
 
@@ -258,13 +268,14 @@ process_gpkg <- function(gfile, failed_dir) {
 # main runner function
 run_driver <- function(gage_id = NULL, 
                        is_gpkg_provided = FALSE, 
-                       dem_infile = 's3://lynker-spatial/gridded-resources/dem.vrt', 
+                       dem_input_file = NULL,
                        dem_output_dir,
                        hf_source = NULL,
                        loc_gpkg_file = "",
                        twi_pre_computed_option = FALSE,
                        write_attr_parquet = FALSE) {
-
+  print ("RUN DRIVER FUNCTION")
+  
   start.time <- Sys.time()
   outfile <- " "
   if(!is_gpkg_provided) {
@@ -315,7 +326,6 @@ run_driver <- function(gage_id = NULL,
   # this TRUE will be changed once synchronized HF bugs are fixed
 
   if(is.null(hf_source) & FALSE) {
-    print ("Adding model attributes")
     # print layers before appending model attributes
     layers_before_cfe_attr <- sf::st_layers(outfile)
     #print (layers_before_cfe_attr$name)
@@ -336,9 +346,9 @@ run_driver <- function(gage_id = NULL,
   ############################### GENERATE TWI ##################################
   # STEP #5: Generate TWI and width function and write to the geopackage
   # Note: The default distribution = 'quantiles'
-  print ("Calling DEM function")
+  
   start.time <- Sys.time()
-  dem_function(div_infile = outfile, dem_infile, dem_output_dir)
+  dem_function(div_infile = outfile, dem_input_file, dem_output_dir)
 
   time.taken <- as.numeric(Sys.time() - start.time, units = "secs") #end.time - start.time
   print (paste0("Time (dem func) = ", time.taken))

@@ -4,10 +4,11 @@
 
 # Get the DEM
 dem_function <- function(div_infile,
-                         dem_infile = "/vsicurl/https://lynker-spatial.s3.amazonaws.com/gridded-resources/dem.vrt",
+                         dem_input_file = NULL,
                          dem_output_dir) {
+  print ("DEM FUNCTION")
   
-  elev <- rast(dem_infile)
+  elev <- rast(dem_input_file)
   
   # Get the catchment geopackage
   div <- read_sf(div_infile, 'divides')
@@ -47,6 +48,7 @@ fun_crop_upper <- function(values, coverage_fraction) {
 
 # Add model attribtes to the geopackage
 add_model_attributes <- function(div_infile, hf_version = 'v2.1.1', write_attr_parquet = FALSE) {
+  print ("ADD MODEL ATTRIBUTES FUNCTION")
   
   base = 's3://lynker-spatial/hydrofabric/v2.1.1/nextgen/conus'
 

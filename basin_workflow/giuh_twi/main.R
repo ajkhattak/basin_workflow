@@ -58,7 +58,7 @@ setup <-function() {
   }
   
   inputs = yaml.load_file(infile_config)
-
+  
   workflow_dir      <<- inputs$workflow_dir
   output_dir        <<- inputs$output_dir
   hf_source         <<- inputs$gpkg_model_params$hf_source
@@ -70,6 +70,7 @@ setup <-function() {
   source(paste0(workflow_dir, "/giuh_twi/install_load_libs.R"))
   source(glue("{workflow_dir}/giuh_twi/custom_functions.R"))
   
+  dem_input_file        <<- get_param(inputs, "gpkg_model_params$dem_input_file", "/vsicurl/https://lynker-spatial.s3.amazonaws.com/gridded-resources/dem.vrt")
   dem_output_dir        <<- get_param(inputs, "gpkg_model_params$dem_output_dir", "")
   
   use_gage_id   <<- get_param(inputs, "gpkg_model_params$options$use_gage_id$use_gage_id", FALSE)
@@ -104,8 +105,11 @@ setup <-function() {
 
 # call setup function to read parameters from config file
 result <- setup()
+
 if (result){
   stop("Setup failed!")
+} else {
+  print ("SETUP DONE!")
 }
 
 ################################ OPTIONS #######################################
@@ -123,7 +127,8 @@ if (use_gage_id == TRUE) {
                                        hf_source = hf_source,
                                        nproc = nproc,
                                        write_attr_parquet = write_attr_parquet,
-                                       dem_output_dir = dem_output_dir
+                                       dem_output_dir = dem_output_dir,
+                                       dem_infile = dem_input_file
                                        )
   
   
@@ -137,18 +142,20 @@ if (use_gage_id == TRUE) {
                                        hf_source = hf_source,
                                        nproc = nproc,
                                        write_attr_parquet = write_attr_parquet,
-                                       dem_output_dir = dem_output_dir
+                                       dem_output_dir = dem_output_dir,
+                                       dem_input_file = dem_input_file
                                        )
 } else if (use_gpkg == TRUE) {
 
   gage_files = list.files(gpkg_dir, full.names = TRUE, pattern = pattern)
-
+  
   cats_failed <- driver_given_gpkg(gage_files = gage_files, 
                                    gpkg_dir = gpkg_dir, 
                                    output_dir = output_dir,
                                    hf_source = NULL,
                                    nproc = nproc,
-                                   dem_output_dir = dem_output_dir
+                                   dem_output_dir = dem_output_dir,
+                                   dem_input_file = dem_input_file
                                    )
   
 }
