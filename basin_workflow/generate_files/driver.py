@@ -60,6 +60,7 @@ def main():
         parser.add_argument("-v",      dest="verbosity", type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
         parser.add_argument("-c",      dest="calib",     type=str, required=False, default=False, help="option for calibration")
         parser.add_argument("-sout",   dest="sim_output_dir",  type=str, required=True,  help="ngen runs output directory")
+        parser.add_argument("-schema", dest="schema",    type=str, required=False, default=False, help="gpkg schema type")
         args = parser.parse_args()
     except:
         parser.print_help()
@@ -102,7 +103,7 @@ def main():
         baseline_case = True
         coupled_models = coupled_models_options["NLSS"]
 
-
+    
     path_crf_gen_files = os.path.join(path_crf,"configuration.py")
 
     generate_config_files = f'python {path_crf_gen_files} -gpkg {args.gpkg_file} -ngen {args.ngen_dir} \
@@ -112,7 +113,8 @@ def main():
                               -t \'{args.time}\' -v {args.verbosity} \
                               -json {args.json_dir} \
                               -sout {args.sim_output_dir} \
-                              -c {args.calib}'
+                              -c {args.calib} \
+                              -schema {args.schema}'
 
     if (args.verbosity >=3):
         print ("*******************************************")

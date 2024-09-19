@@ -24,7 +24,9 @@ import fiona
 import yaml
 import platform
 
+import schema
 os_name = platform.system()
+
 
 #############################################################################
 # module reads NWM soil type file and returns a table
@@ -41,14 +43,15 @@ def get_soil_class_NWM(infile):
     return df
 
 
+
 #############################################################################
 # module reads hydrofabric geopackage file and retuns a dict containing parameters needed for our models
 # this is intended to be modified if more models are added or more soil parameters need to be extracted
 # @param infile : input file pointing to hydrofabric basin geopkacge
 # - returns     : geodataframe 
 #############################################################################
-def read_gpkg_file(infile, coupled_models, surface_runoff_scheme, verbosity):
-
+def read_gpkg_file(infile, coupled_models, surface_runoff_scheme, verbosity, schema_type='noaa-owp'):
+    
     try:
         gdf_soil = gpd.read_file(infile, layer='model-attributes')
     except:
@@ -60,70 +63,87 @@ def read_gpkg_file(infile, coupled_models, surface_runoff_scheme, verbosity):
     
     gdf_soil.set_index("divide_id", inplace=True)
     gdf_div = gpd.read_file(infile, layer='divides')
-    
+    gdf_div = gdf_div.to_crs("EPSG:4326") # change CRS to 4326
+   
     layers = fiona.listlayers(infile)
     if (verbosity >=3):
         print ("Geopackage layers: ", layers)
         print ("\n")
-    
-    gdf_soil['bexp_soil_layers_stag=1']   = gdf_soil['bexp_soil_layers_stag=1'].fillna(16)
-    gdf_soil['dksat_soil_layers_stag=1']  = gdf_soil['dksat_soil_layers_stag=1'].fillna(0.00000338)
-    gdf_soil['psisat_soil_layers_stag=1'] = gdf_soil['psisat_soil_layers_stag=1'].fillna(0.355)
-    gdf_soil['smcmax_soil_layers_stag=1'] = gdf_soil['smcmax_soil_layers_stag=1'].fillna(0.439)
-    gdf_soil['smcwlt_soil_layers_stag=1'] = gdf_soil['smcwlt_soil_layers_stag=1'].fillna(0.066)
-    gdf_soil['gw_Zmax']  = gdf_soil['gw_Zmax'].fillna(0.01)
-    gdf_soil['gw_Coeff'] = gdf_soil['gw_Coeff'].fillna(1.8e-05)
-    gdf_soil['gw_Expon'] = gdf_soil['gw_Expon'].fillna(6.0)
-    gdf_soil['slope']    = gdf_soil['slope'].fillna(1.0)
-    gdf_soil['ISLTYP']   = gdf_soil['ISLTYP'].fillna(1)
-    gdf_soil['IVGTYP']   = gdf_soil['IVGTYP'].fillna(1)
-    gdf_soil['elevation_mean'] = gdf_soil['elevation_mean'].fillna(4) # if nan, put 4 MASL
-    gdf_soil['gw_Zmax']        = gdf_soil['gw_Zmax']/1000.
-    gdf_soil['gw_Coeff']       = gdf_soil['gw_Coeff']*3600*pow(10,-6)
-    
-    
-    if('refkdt' in gdf_soil):
-        gdf_soil['refkdt'] = gdf_soil['refkdt'].fillna(3.0)
-    else:
-        gdf_soil['refkdt'] = 3.0
-    
-    # copy parameters needed
-    gdf = gpd.GeoDataFrame(pd.DataFrame(), geometry= gdf_div['geometry'], index=gdf_soil.index)
-    gdf['soil_params.b']       = gdf_soil['bexp_soil_layers_stag=1'].copy()
-    gdf['soil_params.satdk']   = gdf_soil['dksat_soil_layers_stag=1'].copy()
-    gdf['soil_params.satpsi']  = gdf_soil['psisat_soil_layers_stag=1'].copy()
-    gdf['soil_params.slop']    = gdf_soil['slope'].copy()
-    gdf['soil_params.smcmax']  = gdf_soil['smcmax_soil_layers_stag=1'].copy()
-    gdf['soil_params.wltsmc']  = gdf_soil['smcwlt_soil_layers_stag=1'].copy()
-    gdf['refkdt']              = gdf_soil['refkdt'].copy()
-    gdf['max_gw_storage']      = gdf_soil['gw_Zmax'].copy()
-    gdf['Cgw']                 = gdf_soil['gw_Coeff'].copy()
-    gdf['expon']               = gdf_soil['gw_Expon'].copy()
-    gdf['ISLTYP']              = gdf_soil['ISLTYP'].copy()
-    gdf['IVGTYP']              = gdf_soil['IVGTYP'].copy()
-    gdf['elevation_mean']      = gdf_soil['elevation_mean'].copy()
-    
-    # ensure parameter `b` is non-zero
-    mask = gdf['soil_params.b'].gt(0.0) # greater than or equal to
-    min_value = gdf['soil_params.b'][mask].min() # get the min value > 0.0
 
-    mask = gdf['soil_params.b'].le(0.0) # find all values <= 0.0
+    params = schema.get_schema(gdf_soil)
+   
+    #read_gpkg_schema()
+    gdf_soil['soil_b']      = gdf_soil[params['soil_b']].fillna(16)
+    gdf_soil['soil_dksat']  = gdf_soil[params['soil_dksat']].fillna(0.00000338)
+    gdf_soil['soil_psisat'] = gdf_soil[params['soil_psisat']].fillna(0.355)
+    gdf_soil['soil_smcmax'] = gdf_soil[params['soil_smcmax']].fillna(0.439)
+    gdf_soil['soil_smcwlt'] = gdf_soil[params['soil_smcwlt']].fillna(0.066)
+    gdf_soil['gw_Zmax']     = gdf_soil[params['gw_Zmax']].fillna(0.01)
+    gdf_soil['gw_Coeff']    = gdf_soil[params['gw_Coeff']].fillna(1.8e-05)
+    gdf_soil['gw_Expon']    = gdf_soil[params['gw_Expon']].fillna(6.0)
+    gdf_soil['soil_slope']  = gdf_soil[params['soil_slope']].fillna(1.0)
+    gdf_soil['ISLTYP']      = gdf_soil[params['ISLTYP']].fillna(1)
+    gdf_soil['IVGTYP']      = gdf_soil[params['IVGTYP']].fillna(1)
+    gdf_soil['gw_Zmax']     = gdf_soil['gw_Zmax']/1000.
+    gdf_soil['gw_Coeff']    = gdf_soil['gw_Coeff']*3600/(7.337700*1000*1000) # schema.py for more details
+    gdf_soil['elevation_mean'] = gdf_soil[params['elevation_mean']].fillna(4) # if nan, put 4 MASL
+    
+    
+    if (schema_type == 'dangermond'):
+        gdf_soil['elevation_mean'] = gdf_soil['elevation_mean']/100.0  # cm to m conversion
+        
+    if('refkdt' in gdf_soil):
+        gdf_soil['soil_refkdt'] = gdf_soil[params['soil_refkdt']].fillna(3.0)
+    else:
+        gdf_soil['soil_refkdt'] = 3.0
+
+    # copy parameters needed
+    #gdf = gpd.GeoDataFrame(pd.DataFrame(), geometry= gdf_div['geometry'], index=gdf_soil.index)
+    
+    gdf = gpd.GeoDataFrame(data={'geometry': gdf_div['geometry'].values},
+                           index=gdf_soil.index
+                           )
+    
+    gdf['soil_b']       = gdf_soil['soil_b'].copy()
+    gdf['soil_satdk']   = gdf_soil['soil_dksat'].copy()
+    gdf['soil_satpsi']  = gdf_soil['soil_psisat'].copy()
+    gdf['soil_slop']    = gdf_soil['soil_slope'].copy()
+    gdf['soil_smcmax']  = gdf_soil['soil_smcmax'].copy()
+    gdf['soil_wltsmc']  = gdf_soil['soil_smcwlt'].copy()
+    gdf['soil_refkdt']     = gdf_soil['soil_refkdt'].copy()
+    gdf['max_gw_storage']  = gdf_soil['gw_Zmax'].copy()
+    gdf['Cgw']             = gdf_soil['gw_Coeff'].copy()
+    gdf['gw_expon']        = gdf_soil['gw_Expon'].copy()
+    gdf['ISLTYP']          = gdf_soil['ISLTYP'].copy()
+    gdf['IVGTYP']          = gdf_soil['IVGTYP'].copy()
+    gdf['elevation_mean']  = gdf_soil['elevation_mean'].copy()
+
+    # ensure parameter `b` is non-zero
+    mask = gdf['soil_b'].gt(0.0) # greater than or equal to
+    min_value = gdf['soil_b'][mask].min() # get the min value > 0.0
+
+    mask = gdf['soil_b'].le(0.0) # find all values <= 0.0
     
     #df['soil_params.b'][mask] = min_value
-    gdf.loc[mask, 'soil_params.b'] = min_value
+    gdf.loc[mask, 'soil_b'] = min_value
 
+
+    # check if elevation is negative, specially near coastal areas
+    mask = gdf['elevation_mean'].le(0.0) # find all values <= 0.0
+    gdf.loc[mask, 'elevation_mean'] = 1.0
+    
     # TWI for topmodel
     if ("nom_topmodel" in coupled_models):
-        gdf['twi'] = gdf_soil['twi']
-        gdf['width_dist'] = gdf_soil['width_dist']
-        
+        gdf['twi'] = gdf_soil[params['twi']]
+        gdf['width_dist'] = gdf_soil[params['width_dist']]
+
     if ("cfe" in coupled_models or "lasam" in coupled_models):
         if (surface_runoff_scheme == "GIUH" or surface_runoff_scheme == 1):
-            gdf['giuh'] = gdf_soil['giuh']
+            gdf['giuh'] = gdf_soil[params['giuh']]
         elif (surface_runoff_scheme == "NASH_CASCADE" or surface_runoff_scheme == 2):
-            gdf['N_nash_surface'] = gdf_soil['N_nash_surface']
-            gdf['K_nash_surface'] = gdf_soil['K_nash_surface']
-    
+            gdf['N_nash_surface'] = gdf_soil[params['N_nash_surface']]
+            gdf['K_nash_surface'] = gdf_soil[params['K_nash_surface']]
+
     # get catchment ids -- for Shengting
     df_cats = gpd.read_file(infile, layer='divides')
     catids = [int(re.findall('[0-9]+',s)[0]) for s in df_cats['divide_id']]
@@ -156,27 +176,7 @@ def write_forcing_files(catids, infile):
 # @param simulation_time : dictionary contain start/end time of the simulation
 
 #############################################################################
-def write_nom_input_files(catids, nom_dir, forcing_dir, gpkg_file, simulation_time, verbosity):
-
-    try:
-        df_soil = gpd.read_file(gpkg_file, layer='model-attributes')
-    except:
-        try:
-            df_soil = gpd.read_file(gpkg_file, layer='model_attributes')
-        except:
-            print("layer 'model-attributes' or 'model_attributes' does not exist!'")
-            sys.exit(1)
-
-    df_cats = gpd.read_file(gpkg_file, layer='divides')
-    df_cats = df_cats.to_crs("EPSG:4326") # change CRS to 4326
-    
-    df_soil.set_index("divide_id", inplace=True)
-    df_cats.set_index("divide_id", inplace=True)
-
-    # get soil type and fill with 1 if nan
-    df_soil['ISLTYP'] = df_soil['ISLTYP'].fillna(1)
-    df_soil['IVGTYP'] = df_soil['IVGTYP'].fillna(1)
-    #df_soil['ISLTYP'].fillna(1,inplace=True)
+def write_nom_input_files(catids, nom_dir, forcing_dir, gdf_soil, simulation_time, verbosity):
 
     if (verbosity >=3):
         print ("NOM simulation time: ", simulation_time)
@@ -187,11 +187,11 @@ def write_nom_input_files(catids, nom_dir, forcing_dir, gpkg_file, simulation_ti
     for catID in catids:
         cat_name = 'cat-'+str(catID)
         
-        centroid_x = str(df_cats['geometry'][cat_name].centroid.x)
-        centroid_y = str(df_cats['geometry'][cat_name].centroid.y)
-
-        soil_type = str(df_soil.loc[cat_name]['ISLTYP'])
-        veg_type = str(df_soil.loc[cat_name]['IVGTYP'])
+        centroid_x = str(gdf_soil['geometry'][cat_name].centroid.x)
+        centroid_y = str(gdf_soil['geometry'][cat_name].centroid.y)
+        
+        soil_type = str(gdf_soil.loc[cat_name]['ISLTYP'])
+        veg_type  = str(gdf_soil.loc[cat_name]['IVGTYP'])
         
         timing = ["&timing                                   ! and input/output paths",
                   "  dt                 = 3600.0             ! timestep [seconds]",
@@ -274,7 +274,6 @@ def write_nom_input_files(catids, nom_dir, forcing_dir, gpkg_file, simulation_ti
         nom_file = os.path.join(nom_dir, fname_nom)
         with open(nom_file, "w") as f:
             f.writelines('\n'.join(nom_params))
-            
 
 #############################################################################
 # The function generates configuration file for CFE
@@ -309,21 +308,21 @@ def write_cfe_input_files(catids, precip_partitioning_scheme, surface_runoff_sch
                       'surface_water_partitioning_scheme=Schaake',
                       'surface_runoff_scheme=GIUH',
                       'soil_params.depth=2.0[m]',
-                      'soil_params.b='      + str(gdf_soil['soil_params.b'][cat_name])+'[]',
-                      'soil_params.satdk='  + str(gdf_soil['soil_params.satdk'][cat_name])+'[m s-1]', 
-                      'soil_params.satpsi=' + str(gdf_soil['soil_params.satpsi'][cat_name])+'[m]',
-                      'soil_params.slop='   + str(gdf_soil['soil_params.slop'][cat_name])+"[m/m]",
-                      'soil_params.smcmax=' + str(gdf_soil['soil_params.smcmax'][cat_name])+"[m/m]",
-                      'soil_params.wltsmc=' + str(gdf_soil['soil_params.wltsmc'][cat_name])+"[m/m]",
+                      'soil_params.b='      + str(gdf_soil['soil_b'][cat_name])+'[]',
+                      'soil_params.satdk='  + str(gdf_soil['soil_satdk'][cat_name])+'[m s-1]', 
+                      'soil_params.satpsi=' + str(gdf_soil['soil_satpsi'][cat_name])+'[m]',
+                      'soil_params.slop='   + str(gdf_soil['soil_slop'][cat_name])+"[m/m]",
+                      'soil_params.smcmax=' + str(gdf_soil['soil_smcmax'][cat_name])+"[m/m]",
+                      'soil_params.wltsmc=' + str(gdf_soil['soil_wltsmc'][cat_name])+"[m/m]",
                       'soil_params.expon=1.0[]',
                       'soil_params.expon_secondary=1.0[]',
-                      'refkdt='         + str(gdf_soil['refkdt'][cat_name]),
+                      'refkdt='         + str(gdf_soil['soil_refkdt'][cat_name]),
                       'max_gw_storage=' + str(gdf_soil['max_gw_storage'][cat_name])+'[m]',
                       'Cgw=' + str(gdf_soil['Cgw'][cat_name])+'[m h-1]',
-                      'expon=' + str(gdf_soil['expon'][cat_name])+'[]',
+                      'expon=' + str(gdf_soil['gw_expon'][cat_name])+'[]',
                       'gw_storage=0.05[m/m]',
                       'alpha_fc=0.33',
-                      'soil_storage=0.4[m/m]',
+                      'soil_storage=' + str(gdf_soil['soil_smcmax'][cat_name])+'[m/m]', # 50% reservoir filled
                       'K_nash_subsurface=0.03[]',
                       'N_nash_subsurface=2',
                       'K_lf=0.01[]',
@@ -333,8 +332,8 @@ def write_cfe_input_files(catids, precip_partitioning_scheme, surface_runoff_sch
                    ]
 
         
-        if (gdf_soil['soil_params.b'][cat_name] == 1.0):
-            cfe_list[3] = 1.1
+        if (gdf_soil['soil_b'][cat_name] == 1.0):
+            cfe_params[4] = 1.1
 
         # add giuh ordinates
         if (surface_runoff_scheme == "GIUH" or surface_runoff_scheme == 1):
@@ -924,6 +923,7 @@ def main():
         parser.add_argument("-json",   dest="json_dir",  type=str, required=True,  help="realization files directory")
         parser.add_argument("-sout",   dest="sim_output_dir",  type=str, required=True,  help="ngen runs output directory")
         parser.add_argument("-c",      dest="calib",     type=str, required=False, default=False, help="option for calibration")
+        parser.add_argument("-schema", dest="schema",    type=str, required=False, default=False, help="gpkg schema type")
     except:
         parser.print_help()
         sys.exit(1)
@@ -939,8 +939,16 @@ def main():
         str_msg = 'The forcing directory does not exist! %s'%args.forcing_dir
         sys.exit(str_msg)
 
-    gdf_soil, catids = read_gpkg_file(args.gpkg_file, args.models_option, args.surface_runoff_scheme, args.verbosity)
-    
+
+    try:
+        gdf_soil, catids = read_gpkg_file(args.gpkg_file,
+                                          args.models_option,
+                                          args.surface_runoff_scheme,
+                                          args.verbosity,
+                                          schema_type=args.schema)
+    except:
+        print("Couldn't read geopackage file for model-attributes successfully..")
+        sys.exit(1)        
     # doing it outside NOM as some of params from this file are also needed by CFE for Xinanjiang runoff scheme
     nom_params = os.path.join(args.ngen_dir,"extern/noah-owp-modular/noah-owp-modular/parameters")
     
@@ -954,7 +962,7 @@ def main():
         out=subprocess.call(str_sub,shell=True)
         nom_soil_file = os.path.join(nom_dir,"parameters/SOILPARM.TBL")
 
-        write_nom_input_files(catids, nom_dir, args.forcing_dir, args.gpkg_file, args.time, args.verbosity)
+        write_nom_input_files(catids, nom_dir, args.forcing_dir,  gdf_soil, args.time, args.verbosity)
     
     # *************** CFE  ********************
     if "cfe" in args.models_option:

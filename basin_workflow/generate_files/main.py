@@ -107,6 +107,7 @@ is_calibration             = dsim.get('is_calibration', False)
 is_netcdf_forcing          = dsim.get('is_netcdf_forcing', True)
 forcing_source             = dsim.get('forcing_source', "")
 forcing_dir                = dsim.get('forcing_dir', "")
+schema_type                = dsim.get('schema_type', "noaa-owp")
 
 def process_clean_input_param():
     clean_lst = []
@@ -142,9 +143,13 @@ def generate_catchment_files(dir, forcing_files):
     if (setup_simulation):
         
         if verbosity >=1:
-            print(filled_dot, gpkg_name, end="")
+            print(filled_dot, gpkg_name)#, end="")
 
-        id = int(gpkg_name[:-5].split("_")[1])
+        last_underscore_index = gpkg_name.rfind('_')
+        dot_index = gpkg_name.rfind('.')
+        id = gpkg_name[last_underscore_index + 1:dot_index]
+
+        #id = int(gpkg_name[:-5].rsplit("_")[1])
 
         if len(forcing_files) > 0:
 
@@ -210,7 +215,7 @@ def generate_catchment_files(dir, forcing_files):
     driver = f'python {workflow_driver} -gpkg {gpkg_dir} -ngen {ngen_dir} -f {div_forcing_dir} \
     -o {config_dir} -m {model_option} -p {precip_partitioning_scheme} -r {surface_runoff_scheme} -t \'{simulation_time}\' \
     -netcdf {is_netcdf_forcing} -troute {is_routing} -json {json_dir} -v {verbosity} -c {is_calibration} \
-    -sout {sim_output_dir}'
+    -sout {sim_output_dir} -schema {schema_type}'
 
     failed = subprocess.call(driver, shell=True)
 
@@ -303,9 +308,13 @@ if __name__ == "__main__":
     if (not os.path.exists(os.path.join(workflow_dir, "generate_files"))):
         sys.exit("check `workflow_dir`, it should be the parent directory of `generate_files` directory")
 
-    all_dirs = glob.glob(output_dir + "/*/", recursive = True)
-    gpkg_dirs = [g for g in all_dirs if "failed_cats" not in g] # remove the failed_cats directory
-            
+    all_dirs = glob.glob(os.path.join(output_dir, '*/'), recursive = True)
+
+    gpkg_dirs = [
+        g for g in all_dirs 
+        if os.path.exists(os.path.join(g, 'data')) and glob.glob(os.path.join(g, 'data', '*.gpkg'))
+    ]
+
     success_ncats = main(nproc = num_processors_config)
 
     end_time = time.time()
