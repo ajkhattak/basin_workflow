@@ -14,6 +14,7 @@ general:
   start_iteration: 0
   # The total number of search iterations to run
   iterations: 2
+  random_seed: 444
   workdir: ./
 
 # Define parameters to calibrate, their bounds, and initial values.
