@@ -14,11 +14,11 @@ path = Path(sys.argv[0]).resolve()
 workflow_dir = path.parent
 
 
-def runner():
+def runner(config_workflow):
     
     if (args.gpkg):
         print ("Generating geopackages...")
-        generate_gpkg = f"Rscript {workflow_dir}/giuh_twi/main.R {workflow_dir}/configs/config_workflow.yaml"
+        generate_gpkg = f"Rscript {workflow_dir}/giuh_twi/main.R {config_workflow}"
         status = subprocess.call(generate_gpkg,shell=True)
 
         if (status):
@@ -28,7 +28,7 @@ def runner():
 
     if (args.forc):
         print ("Generating forcing data...")
-        generate_forcing = f"python {workflow_dir}/generate_files/forcing.py {workflow_dir}/configs/config_workflow.yaml"
+        generate_forcing = f"python {workflow_dir}/generate_files/forcing.py {config_workflow}"
         status = subprocess.call(generate_forcing,shell=True)
 
         if (status):
@@ -38,7 +38,7 @@ def runner():
 
     if (args.conf):
         print ("Generating config files...")
-        generate_configs = f"python {workflow_dir}/generate_files/main.py {workflow_dir}/configs/config_workflow.yaml"
+        generate_configs = f"python {workflow_dir}/generate_files/main.py {config_workflow}"
         status = subprocess.call(generate_configs,shell=True)
 
         if (status):
@@ -53,7 +53,7 @@ def runner():
         with open(infile, 'r') as file:
             d = yaml.safe_load(file)
 
-        run_command = f"python {workflow_dir}/runner.py {workflow_dir}/configs/config_workflow.yaml"
+        run_command = f"python {workflow_dir}/runner.py {config_workflow}"
         status = subprocess.call(run_command,shell=True)
 
         if (status):
@@ -73,16 +73,24 @@ if __name__ == "__main__":
         parser.add_argument("-forc", action='store_true', help="generate forcing data")
         parser.add_argument("-conf", action='store_true', help="generate config files")
         parser.add_argument("-run",  action='store_true', help="run nextgen without caliberation")
-        
+        parser.add_argument("-i",    dest="infile",       type=str, required=False,  help="workflow config file")
         args = parser.parse_args()
     except:
         parser.print_help()
         sys.exit(0)
 
-
+    if (args.infile):
+        if (os.path.exists(args.infile)):
+            config_workflow = args.infile
+        else:
+            print ("workflow config file DOES NOT EXIST, provided: ", args.infile)
+            sys.exit(0)
+    else:
+        config_workflow = f"{workflow_dir}/configs/config_workflow.yaml"
+    
     if (len(sys.argv) < 2):
         print ("No arguments are provide, printing help()")
         parser.print_help()
         sys.exit(0)
 
-    runner()
+    runner(config_workflow)
