@@ -14,9 +14,10 @@ import json
 from pathlib import Path
 
 os_name = platform.system()
-infile  = sys.argv[1]
+workflow_infile   = sys.argv[1]
+ngen_cal_basefile = sys.argv[2]
 
-with open(infile, 'r') as file:
+with open(workflow_infile, 'r') as file:
     d = yaml.safe_load(file)
 
 dsim = d['simulations']
@@ -79,9 +80,10 @@ def run_ngen_with_calibration():
     infile = os.path.join(output_dir, "basins_passed.csv")
     indata = pd.read_csv(infile, dtype=str)
    
-    path = Path(sys.argv[0]).resolve() # get the absolute path
-    ngen_cal_basefile = os.path.join(path.parent, "configs", "config_calib.yaml")
+    #path = Path(sys.argv[0]).resolve() # get the absolute path
     
+    #ngen_cal_basefile = sys.argv[1] #os.path.join(path_arg1.parent,Path(sys.argv[1]).name)
+   
     for id, ncats in zip(indata["basin_id"], indata['n_cats']):
 
         ncats = int(ncats)
@@ -144,7 +146,7 @@ def generate_partition_basin_file(ncats, gpkg_file):
     return nproc_local, fpar
 
 if __name__ == "__main__":
-    
+
     if (nproc > 1 and not os.path.exists(f"{ngen_dir}/cmake_build/partitionGenerator")):
         sys.exit("Partitioning geopackage is requested but partitionGenerator does not exit! Quitting...")
 

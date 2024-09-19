@@ -24,7 +24,7 @@ import fiona
 import yaml
 import platform
 
-import schema
+from generate_files import schema
 os_name = platform.system()
 
 
