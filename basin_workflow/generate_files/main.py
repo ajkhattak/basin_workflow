@@ -220,9 +220,9 @@ def generate_catchment_files(dir, forcing_files):
     failed = subprocess.call(driver, shell=True)
 
     if (not failed):
-        id_full = str(gpkg_name[:-5].split("_")[1])
-        basin_ids.append(str(id_full))
-
+        #id_full = str(gpkg_name[:-5].split("_")[1])
+        #basin_ids.append(str(id_full))
+        basin_ids.append(id)
         x = gpd.read_file(gpkg_dir, layer="divides")
         num_cats.append(len(x["divide_id"]))
 
@@ -266,6 +266,7 @@ def main(nproc = 4):
 
     # map catchments to each processor
     results = pool.map(partial_generate_files_catchment, gpkg_dirs)
+
     results = [result for result in results if result is not None]
 
     # collect results from all processes
