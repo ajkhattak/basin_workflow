@@ -24,7 +24,10 @@ import fiona
 import yaml
 import platform
 
-from generate_files import schema
+try:
+    from generate_files import schema
+except:
+    import schema
 os_name = platform.system()
 
 
@@ -798,7 +801,7 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
         except:
             print("layer 'flowpath-attributes' or 'flowpath_attributes' does not exist!'")
             sys.exit(1)
-
+    #print ("AAA: ", gdf_fp_attr)
     gdf_fp_cols = gdf_fp_attr[['id',  'rl_gages']] # select the two columns of interest
     
     # Find out row(s) where rl_gages is not None (to get the corresponding waterbody)
