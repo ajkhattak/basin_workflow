@@ -12,6 +12,7 @@ dem_function <- function(div_infile,
     elev <- rast(dem_input_file)
   }, error = function(e) {
     cat ("Error: dem_input_file does not exist: provided ", dem_input_file, "\n")
+    cat("Details:", e$message, "\n")
   })
 
   
