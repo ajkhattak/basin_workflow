@@ -8,7 +8,12 @@ dem_function <- function(div_infile,
                          dem_output_dir) {
   print ("DEM FUNCTION")
   
-  elev <- rast(dem_input_file)
+  tryCatch({
+    elev <- rast(dem_input_file)
+  }, error = function(e) {
+    cat ("Error: dem_input_file does not exist: provided ", dem_input_file, "\n")
+  })
+
   
   # Get the catchment geopackage
   div <- read_sf(div_infile, 'divides')

@@ -70,7 +70,8 @@ setup <-function() {
   source(paste0(workflow_dir, "/giuh_twi/install_load_libs.R"))
   source(glue("{workflow_dir}/giuh_twi/custom_functions.R"))
   
-  dem_input_file        <<- get_param(inputs, "gpkg_model_params$dem_input_file", "/vsicurl/https://lynker-spatial.s3.amazonaws.com/gridded-resources/dem.vrt")
+  dem_input_file        <<- get_param(inputs, "gpkg_model_params$dem_input_file", "s3://lynker-spatial/gridded-resources/dem.vrt")
+
   dem_output_dir        <<- get_param(inputs, "gpkg_model_params$dem_output_dir", "")
   
   use_gage_id   <<- get_param(inputs, "gpkg_model_params$options$use_gage_id$use_gage_id", FALSE)
@@ -128,7 +129,7 @@ if (use_gage_id == TRUE) {
                                        nproc = nproc,
                                        write_attr_parquet = write_attr_parquet,
                                        dem_output_dir = dem_output_dir,
-                                       dem_infile = dem_input_file
+                                       dem_input_file = dem_input_file
                                        )
   
   
@@ -165,6 +166,9 @@ end_time <- Sys.time()
 time_taken <- as.numeric(end_time - start_time, units = "secs")
 print (paste0("Time total = ", time_taken))
 
-print(paste0("failed_cats ", cats_failed))
+if (length(cats_failed) > 0) {
+   print(paste0("failed_cats ", cats_failed))
+}
+
 
 ################################### DONE #######################################

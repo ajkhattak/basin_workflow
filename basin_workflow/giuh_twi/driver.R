@@ -136,7 +136,7 @@ driver_given_gpkg <- function(gage_files,
                               failed_dir = "failed_cats",
                               dem_output_dir = "",
                               dem_input_file = NULL,
-			                        write_attr_parquet = FALSE,
+                              write_attr_parquet = FALSE,
                               nproc = 1) {
   print ("DRIVER GIVEN GEOPACKGE FUNCTION")
   
@@ -164,9 +164,9 @@ driver_given_gpkg <- function(gage_files,
                                 "hf_source",
                                 "gpkg_dir",
                                 "as_sqlite",
-				                        "write_attr_parquet",
+				"write_attr_parquet",
                                 "dem_output_dir",
-				                        "dem_input_file"),
+				"dem_input_file"),
                 envir = environment())
   
   #evaluate an expression on in the global environment each node of the cluster; here loading packages
@@ -274,6 +274,7 @@ run_driver <- function(gage_id = NULL,
                        loc_gpkg_file = "",
                        twi_pre_computed_option = FALSE,
                        write_attr_parquet = FALSE) {
+
   print ("RUN DRIVER FUNCTION")
   
   start.time <- Sys.time()
@@ -325,7 +326,7 @@ run_driver <- function(gage_id = NULL,
   # STEP #4: Add models' attributes from the parquet file to the geopackage
   # this TRUE will be changed once synchronized HF bugs are fixed
 
-  if(is.null(hf_source) & FALSE) {
+  if(is.null(hf_source) | TRUE) {
     # print layers before appending model attributes
     layers_before_cfe_attr <- sf::st_layers(outfile)
     #print (layers_before_cfe_attr$name)
@@ -410,7 +411,7 @@ run_driver <- function(gage_id = NULL,
   time.taken <- as.numeric(Sys.time() - start.time, units = "secs")
   print (paste0("Time (giuh ftn) = ", time.taken))
   
-  ############################### GENERATE GIUH ################################
+  #######################. COMPUTE NASH CASCADE PARAMS ###########################
   # STEP #7: Generate Nash cascade parameters for surface runoff
  
   print("STEP: Computing Nash Cascade parameters .............")
@@ -423,8 +424,7 @@ run_driver <- function(gage_id = NULL,
   ####################### WRITE MODEL ATTRIBUTE FILE ###########################
   # STEP #8: Append GIUH, TWI, width function, and Nash cascade N and K parameters
   # to model attributes layers
-  
-  
+
   m_attr$giuh <- giuh_dat_values$giuh             # append GIUH column to the model attributes layer
   m_attr$twi  <- twi_dat_values$twi               # append TWI column to the model attributes layer
   m_attr$width_dist <- twi_dat_values$width_dist  # append width distribution column to the model attributes layer
