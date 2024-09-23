@@ -138,8 +138,8 @@ driver_given_gpkg <- function(gage_files,
                               dem_input_file = NULL,
                               write_attr_parquet = FALSE,
                               nproc = 1) {
-  print ("DRIVER GIVEN GEOPACKGE FUNCTION")
   
+  print ("DRIVER GIVEN GEOPACKAGE FUNCTION")
   # create directory to stored catchment geopackage in case of errors or missing data
   #failed_dir = "failed_cats"
   
@@ -155,7 +155,7 @@ driver_given_gpkg <- function(gage_files,
   # make a cluster of multicores
   cl <- parallel::makeCluster(nproc)
   on.exit(parallel::stopCluster(cl))  # this ensures the cluster is stopped on exit
-  
+
   # Export all environment variables and functions here, so all worker/nodes have access to them
   clusterExport(cl, varlist = c(functions_lst, 
                                 "libraries_lst", 
@@ -179,7 +179,6 @@ driver_given_gpkg <- function(gage_files,
   
   
   # Initialize and call pb (progress bar)
-  
   cats_failed <- pblapply(X = gage_files, FUN = process_gpkg, cl = cl, failed_dir)
   
   #cats_failed <- lapply(X = gage_files, FUN = process_gpkg, failed_dir)
@@ -199,7 +198,9 @@ process_gpkg <- function(gfile, failed_dir) {
   #log_file <- file("output.log", open = "wt")
   #sink(log_file, type = "output")
 
-  id <- as.integer(sub(".*_(.*?)\\..*", "\\1", gfile))
+  #id <- as.integer(sub(".*_(.*?)\\..*", "\\1", gfile))
+  id <- sub(".*_(.*?)\\..*", "\\1", gfile)
+  
   if (is.na(id)) {
      id <- 11111
   }
@@ -251,7 +252,11 @@ process_gpkg <- function(gfile, failed_dir) {
   if (failed) {
     cat ("Cat failed:", id, "\n")
     cats_failed <- append(cats_failed, id)
-    file.rename(cat_dir, glue("{output_dir}/{failed_dir}/{id}"))
+    target_failed_cat_dir =  glue("{output_dir}/{failed_dir}/{id}")
+    if (dir.exists(target_failed_cat_dir)) {
+      unlink(target_failed_cat_dir, recursive = TRUE)
+    }
+    file.rename(cat_dir, target_failed_cat_dir)
   }
   else {
     cat ("Cat passed:", id, "\n")
@@ -277,9 +282,10 @@ run_driver <- function(gage_id = NULL,
 
   print ("RUN DRIVER FUNCTION")
   
-  start.time <- Sys.time()
+  
   outfile <- " "
   if(!is_gpkg_provided) {
+    start.time <- Sys.time()
     fid = glue('USGS-{gage_id}')
     outfile <- glue('data/gage_{gage_id}.gpkg')
     
@@ -303,14 +309,14 @@ run_driver <- function(gage_id = NULL,
       #"model-attributes", 'flowpath-attributes'
     }
 
+    time.taken <- as.numeric(Sys.time() - start.time, units = "secs") #end.time - start.time
+    print (paste0("Time (geopackage) = ", time.taken))
     
   } else { 
     outfile <- loc_gpkg_file
     }
 
-  time.taken <- as.numeric(Sys.time() - start.time, units = "secs") #end.time - start.time
-  print (paste0("Time (geopackage) = ", time.taken))
-  
+ 
   ## Stop if .gpkg does not exist
 
   if (!file.exists(outfile)) {

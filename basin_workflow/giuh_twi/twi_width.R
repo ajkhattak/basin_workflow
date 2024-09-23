@@ -39,8 +39,6 @@ twi_function <- function(div_infile, dem_output_dir, distribution = 'quantiles',
                               ID = "divide_id",
                               fun = zonal::distribution,
                               breaks = nclasses)
-     
-     
   }
   
   return(twi_cat)

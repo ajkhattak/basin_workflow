@@ -25,6 +25,14 @@ dem_function <- function(div_infile,
   dem <- crop(elev, project(vect(div_bf), crs(elev)), snap = "out")
   cm_to_m <- 0.01
   dem <- dem * cm_to_m
+
+  # Checking for NaN values
+  if (any(is.nan(values(dem)))) {
+    writeRaster(dem, glue("{dem_output_dir}/dem.tif"), overwrite = TRUE)
+    print (glue("Error: The DEM contains NaN values. Check dem.tif. Now quitting..."))
+    stop()
+  }
+  
   writeRaster(dem, glue("{dem_output_dir}/dem.tif"), overwrite = TRUE)
   
   gdal_utils("warp",
@@ -62,10 +70,12 @@ add_model_attributes <- function(div_infile, hf_version = 'v2.1.1', write_attr_p
   net = as_sqlite(div_infile, "network") 
 
   # Courtesy of Mike Johnson
+  print ("Extracting model-attributes from .parquet file on S3 bucket")
   model_attr <- arrow::open_dataset(glue('{base}_model-attributes')) |>
     dplyr::inner_join(dplyr::collect(dplyr::distinct(dplyr::select(net, divide_id, vpuid)))) |> 
     dplyr::collect() 
 
+  print ("Extracting flowpath-attributes from .parquet file on S3 bucket")
   flowpath_attr <- arrow::open_dataset(glue('{base}_flowpath-attributes')) |>
     dplyr::inner_join(dplyr::collect(dplyr::distinct(dplyr::select(net, id, vpuid)))) |> 
     dplyr::collect()
