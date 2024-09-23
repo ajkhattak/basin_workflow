@@ -91,7 +91,7 @@ def read_gpkg_file(infile, coupled_models, surface_runoff_scheme, verbosity, sch
     gdf_soil['soil_slope']  = gdf_soil[params['soil_slope']].fillna(1.0)
     gdf_soil['ISLTYP']      = gdf_soil[params['ISLTYP']].fillna(1).astype(int)
     gdf_soil['IVGTYP']      = gdf_soil[params['IVGTYP']].fillna(1).astype(int)
-    gdf_soil['gw_Zmax']     = gdf_soil['gw_Zmax']/1000.
+    gdf_soil['gw_Zmax']     = gdf_soil['gw_Zmax']/1000. # convert mm to m
     gdf_soil['gw_Coeff']    = gdf_soil['gw_Coeff']*3600/(7.337700*1000*1000) # schema.py for more details
     gdf_soil['elevation_mean'] = gdf_soil[params['elevation_mean']].fillna(4) # if nan, put 4 MASL
     
