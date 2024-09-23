@@ -1,6 +1,7 @@
 # file contains list of calibratable parameters for different models
 
 # Define parameters to calibrate, their bounds, and initial values.
+
 # MODEL CFE
 cfe_params: &cfe_params
   -
@@ -8,78 +9,88 @@ cfe_params: &cfe_params
     min: 0.0
     max: 21.94
     init: 4.05
-  - 
+  -
     name: satdk # saturated hydraulic conductivity
     min: 0.0
     max: 0.000726
     init: 3.38e-06
-  - 
+  -
     name: satpsi # saturated capillary head
     min: 0.0
     max: 0.995
     init: 0.355
-  - # Maybe parameter
+
+  -
+    name: maxsmc # saturated soil moisture content
+    min: 0.20554
+    max: 0.6
+    init: 0.439
+
+  -
+    name: max_gw_storage # maximum storage in the conceptual reservoir
+    min: 0.01
+    max: 0.2
+    init: 0.05
+
+  -
+    name: Cgw  #groundwater coefficient
+    min: 1.6266e-06
+    max: 0.1
+    init: 1.6266e-05
+
+  -
+    name: expon # exponent parameter (1.0 for linear reservoir) (groundwater)
+    min: 1.0
+    max: 8.0
+    init: 5.0
+
+  - 
+    name: Kn # Nash Config param for lateral subsurface runoff
+    min: 0.0
+    max: 1.0
+    init: 0.03
+
+  - 
+    name: Klf # Nash Config param - primary reservoir
+    min: 0.0
+    max: 1.0
+    init: 0.01
+ 
+  - 
+    name: Kinf_nash_surface # runon infiltration coefficient (NASH CASCADE runoff only; cfe2.0)
+    min: 0.001
+    max: 0.005
+    init: 0.002
+
+  - 
+    name: retention_depth_nash_surface # used only with CFE2.0
+    min: 0.0
+    max: 0.02
+    init: 0.001
+  -
+    name: refkdt # used only with Schakee
+    min: 0.1
+    max: 4.0
+    init: 3.0
+
+  # these params can be calibrated as well
+  -   
     name: slope # this factor (0-1) modifies the gradient of the hydraulic head at the soil bottom. 0=no-flow.
     min: 0.0
     max: 1.0
     init: 0.01
-  - 
-    name: maxsmc # saturated soil moisture content
-    min: 0.20554
-    max: 1.0
-    init: 0.439
+
   - # Maybe parameter
     name: wltsmc # wilting point soil moisture content
     min: 0.0
     max: 0.138
     init: 0.066
-  - # Maybe parameter
-    name: max_gw_storage # maximum storage in the conceptual reservoir
-    min: 0.01
-    max: 0.25
-    init: 0.016
-  - # Maybe parameter
-    name: Cgw # the primary outlet coefficient
-    # based on the 75% (min), 25% (max), and 50% (init)
-    # basin area size from hydrofab v2.1.1
-    min: 1.6266115088728495e-06
-    max: 3.942439507098691e-06
-    init: 2.4530847540782534e-06
-  - # Maybe parameter
-    name: expon # exponent parameter (1.0 for linear reservoir) (groundwater)
-    min: 1.0
-    max: 8.0
-    init: 6.0
-  - # Maybe parameter
+  - 
     name: alpha_fc # field capacity
     min: 0.1
     max: 1.0
     init: 0.33
-  - # Maybe parameter
-    name: Kn # Nash Config param for lateral subsurface runoff
-    min: 0.0
-    max: 1.0
-    init: 0.03
-  - # Maybe parameter
-    name: Klf # Nash Config param - primary reservoir
-    min: 0.0
-    max: 1.0
-    init: 0.01
-  - # Maybe parameter, ONLY APPLICABLE TO NASH SURFACE RUNOFF OPTION
-    name: Kinf_nash_surface # optional (default = 0.05); storage fraction per hour that moves from reservoirs to soil
-    min: 0.0
-    max: 1.0
-    init: 0.05
-  - # Maybe parameter, ONLY APPLICABLE TO NASH SURFACE RUNOFF OPTION
-    name: retention_depth_nash_surface # optional (default = 0.001); water retention depth threshold (only applied to the first reservoir)
-    min: 0.0
-    max: 0.01
-    init: 0.001
-  -
-    name: refkdt # ONLY WITH SCHAKEE
-    min: 0.1
-    max: 4.0
-    init: 3.0
+    
 #   - # Maybe parameter
 #     name: a_Xinanjiang_inflection_point_parameter # Xinanjiang: Tension water distribution inflection parameter
 #     min: 0.001
@@ -137,3 +148,5 @@ nom_parameters: &nom_parameters
     init: 9.0
 
 # MODEL LASAM
+# SFT
+# SMP
