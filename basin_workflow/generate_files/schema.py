@@ -27,56 +27,122 @@ cgs = cgs*3600 # m/hr
 self.data['cgw'].value = cgs
 """
 
-def get_schema(gdf_soil):
-    schema = gdf_soil.dtypes
+def get_schema_model_attributes(gdf_model):
+    schema = gdf_model.dtypes
     
-    dict = {}
+    df = {}
     for d in schema.index:
         if 'bexp_soil_layers_stag=1' in d:
-            dict['soil_b'] = d
+            df['soil_b'] = d
         if 'dksat_soil_layers_stag=1' in d:
-            dict['soil_dksat'] = d
+            df['soil_dksat'] = d
         if 'psisat_soil_layers_stag=1' in d:
-            dict['soil_psisat'] = d
+            df['soil_psisat'] = d
         if 'smcmax_soil_layers_stag=1' in d:
-            dict['soil_smcmax'] = d
+            df['soil_smcmax'] = d
         if 'smcwlt_soil_layers_stag=1' in d:
-            dict['soil_smcwlt'] = d
+            df['soil_smcwlt'] = d
     
         if 'ISLTYP' in d:
-            dict['ISLTYP'] = d
+            df['ISLTYP'] = d
         if 'IVGTYP' in d:
-            dict['IVGTYP'] = d
+            df['IVGTYP'] = d
 
         if 'refkdt' in d:
-            dict['soil_refkdt'] = d
+            df['soil_refkdt'] = d
         
         if 'Coeff' in d:
-            dict['gw_Coeff'] = d
+            df['gw_Coeff'] = d
         if 'Zmax' in d:
-            dict['gw_Zmax'] = d
+            df['gw_Zmax'] = d
         if 'Expon' in d:
-            dict['gw_Expon'] = d
+            df['gw_Expon'] = d
         if 'slope' in d:
             if 'slope_mean' in d:
-                dict['slope_mean'] = d
+                df['slope_mean'] = d
             else:
-                dict['soil_slope'] = d
+                df['soil_slope'] = d
         if 'elevation' in d:
-            dict['elevation_mean'] = d
+            df['elevation_mean'] = d
 
         if 'twi'in d:
             if 'twi_dist' in d:
-                dict['twi_dist'] = d
+                df['twi_dist'] = d
             else:
-                dict['twi'] = d
+                df['twi'] = d
         if 'width_dist' in d:
-            dict['width_dist'] = d
+            df['width_dist'] = d
         if 'giuh' in d:
-            dict['giuh'] = d
+            df['giuh'] = d
         if 'N_nash' in d:
-            dict['N_nash_surface'] = d
+            df['N_nash_surface'] = d
         if 'K_nash' in d:
-            dict['K_nash_surface'] = d
+            df['K_nash_surface'] = d
 
-    return dict
+    return df
+
+
+
+def get_schema_flowpath_attributes(gdf_flowpath, for_gage_id = False):
+    schema = gdf_flowpath.dtypes
+
+    df = {}
+
+    # key, downstream, and mainstem should come from flowlines column names, and not from flowpaths-attributes
+    df['mainstem'] = 'mainstem'
+    df['key'] = "id"
+    df['downstream'] = "toid"
+    df['alt'] = "alt"    # should come from flowpaths-attributes
+
+    for d in schema.index:
+
+        if (for_gage_id):
+            if 'id' == d or 'link' == d:
+                df['key'] = d
+
+        #if 'id' == d or 'link' == d:
+        #    df['key'] = d
+
+        #if 'to' == d:
+        #    df['downstream'] = d
+
+        if 'length_m' == d or 'Length_m' == d:
+            df['dx'] = d
+
+        if 'n' == d :
+            df['n'] = d
+
+        if 'nCC' == d:
+            df['ncc'] = d
+
+        if 'So' == d:
+            df['s0'] = d
+
+        if 'BtmWdth' == d:
+            df['bw'] = d
+
+        if 'rl_NHDWaterbodyComID' == d or 'WaterbodyID' == d:
+            df['waterbody'] = d 
+
+        if 'rl_gages' == d or 'gage' == d:
+            df['gages'] = d
+
+        if 'TopWdth' == d:
+            df['tw'] = d
+
+        if 'TopWdthCC' == d:
+            df['twcc'] = d
+
+        if 'alt' == d:
+            df['alt'] = d
+
+        if 'MusK' == d:
+            df['musk'] = d
+
+        if 'MusX' == d:
+            df['musx'] = d
+
+        if 'ChSlp' == d:
+            df['cs'] = d
+
+    return df

@@ -57,6 +57,7 @@ def main():
         parser.add_argument("-m",    dest="models_option", type=str, required=True,  help="option for models coupling\n%s"%coupled_models_options)
         parser.add_argument("-netcdf", dest="netcdf", type=str, required=False, default=False, help="option for forcing data format")
         parser.add_argument("-troute", dest="troute", type=str, required=False, default=False, help="option for t-route")
+        parser.add_argument("-routfile", dest="routfile", type=str, required=False, default=False, help="routing sample config file")
         parser.add_argument("-v",      dest="verbosity", type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
         parser.add_argument("-c",      dest="calib",     type=str, required=False, default=False, help="option for calibration")
         parser.add_argument("-sout",   dest="sim_output_dir",  type=str, required=True,  help="ngen runs output directory")
@@ -65,7 +66,7 @@ def main():
     except:
         parser.print_help()
         sys.exit(1)
-    
+
     # check if geopackage file exists, if not, throw an error
     if (not os.path.exists(args.gpkg_file)):
         sys.exit('The gpkg file (%s) does not exist!'%args.gpkg_file)
@@ -109,7 +110,7 @@ def main():
     generate_config_files = f'python {path_crf_gen_files} -gpkg {args.gpkg_file} -ngen {args.ngen_dir} \
                               -f {args.forcing_dir} -o {args.config_dir} -m {coupled_models} \
                               -p {args.precip_partitioning_scheme} -r {args.surface_runoff_scheme} \
-                              -troute {args.troute} \
+                              -troute {args.troute} -routfile {args.routfile} \
                               -t \'{args.time}\' -v {args.verbosity} \
                               -json {args.json_dir} \
                               -sout {args.sim_output_dir} \

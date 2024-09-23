@@ -67,14 +67,18 @@ def read_gpkg_file(infile, coupled_models, surface_runoff_scheme, verbosity, sch
     gdf_soil.set_index("divide_id", inplace=True)
     gdf_div = gpd.read_file(infile, layer='divides')
     gdf_div = gdf_div.to_crs("EPSG:4326") # change CRS to 4326
-   
+
+    #global layers, flowpath_layer   # global layers
     layers = fiona.listlayers(infile)
+
+    flowpath_layer = [layer for layer in layers if 'flowpath' in layer][0]
+    
     if (verbosity >=3):
         print ("Geopackage layers: ", layers)
         print ("\n")
 
-    params = schema.get_schema(gdf_soil)
-   
+    params = schema.get_schema_model_attributes(gdf_soil)
+
     #read_gpkg_schema()
     gdf_soil['soil_b']      = gdf_soil[params['soil_b']].fillna(16)
     gdf_soil['soil_dksat']  = gdf_soil[params['soil_dksat']].fillna(0.00000338)
@@ -85,13 +89,13 @@ def read_gpkg_file(infile, coupled_models, surface_runoff_scheme, verbosity, sch
     gdf_soil['gw_Coeff']    = gdf_soil[params['gw_Coeff']].fillna(1.8e-05)
     gdf_soil['gw_Expon']    = gdf_soil[params['gw_Expon']].fillna(6.0)
     gdf_soil['soil_slope']  = gdf_soil[params['soil_slope']].fillna(1.0)
-    gdf_soil['ISLTYP']      = gdf_soil[params['ISLTYP']].fillna(1)
-    gdf_soil['IVGTYP']      = gdf_soil[params['IVGTYP']].fillna(1)
+    gdf_soil['ISLTYP']      = gdf_soil[params['ISLTYP']].fillna(1).astype(int)
+    gdf_soil['IVGTYP']      = gdf_soil[params['IVGTYP']].fillna(1).astype(int)
     gdf_soil['gw_Zmax']     = gdf_soil['gw_Zmax']/1000.
     gdf_soil['gw_Coeff']    = gdf_soil['gw_Coeff']*3600/(7.337700*1000*1000) # schema.py for more details
     gdf_soil['elevation_mean'] = gdf_soil[params['elevation_mean']].fillna(4) # if nan, put 4 MASL
     
-    
+
     if (schema_type == 'dangermond'):
         gdf_soil['elevation_mean'] = gdf_soil['elevation_mean']/100.0  # cm to m conversion
         
@@ -195,7 +199,7 @@ def write_nom_input_files(catids, nom_dir, forcing_dir, gdf_soil, simulation_tim
         
         soil_type = str(gdf_soil.loc[cat_name]['ISLTYP'])
         veg_type  = str(gdf_soil.loc[cat_name]['IVGTYP'])
-        
+
         timing = ["&timing                                   ! and input/output paths",
                   "  dt                 = 3600.0             ! timestep [seconds]",
                   "  startdate          = \"%s\"             ! UTC time start of simulation (YYYYMMDDhhmm)"%start_time,
@@ -693,10 +697,8 @@ def write_pet_input_files(catids, gdf_soil, gpkg_file, pet_dir):
 # @param catids         : array/list of integers contain catchment ids
 # @param troute_dir        : output directory (config files are written to this directory)
 #############################################################################
-def write_troute_input_files(gpkg_file, ngen_dir, troute_dir, simulation_time,
+def write_troute_input_files(gpkg_file, routing_file, troute_dir, simulation_time,
                              sim_output_dir, is_calib):
-
-    routing_file = os.path.join(ngen_dir, "data/gauge_01073000/routing_config.yaml")
 
     gpkg_name  = os.path.basename(gpkg_file).split(".")[0]
     
@@ -706,11 +708,43 @@ def write_troute_input_files(gpkg_file, ngen_dir, troute_dir, simulation_time,
     with open(routing_file, 'r') as file:
         d = yaml.safe_load(file)
     
-    d['network_topology_parameters']['supernetwork_parameters']['geo_file_path'] = gpkg_file    
+    d['network_topology_parameters']['supernetwork_parameters']['geo_file_path'] = gpkg_file
     d['network_topology_parameters']['waterbody_parameters']['level_pool']['level_pool_waterbody_parameter_file_path'] = gpkg_file
     d['network_topology_parameters']['supernetwork_parameters']['title_string'] = gpkg_name
     
     dt = 300 # seconds
+    """
+    layers = fiona.listlayers(gpkg_file)
+
+    flowpath_layer = [layer for layer in layers if 'flowpath' in layer][0]
+    
+    gdf_fp_attr = gpd.read_file(gpkg_file, layer=flowpath_layer)
+
+    params = schema.get_schema_flowpath_attributes(gdf_fp_attr)
+    """
+    
+    params = get_flowpath_attributes(gpkg_file, full_schema=True)
+
+    columns = {
+        'key' : params['key'],
+        'downstream' : params['downstream'],
+        'mainstem' : params['mainstem'],
+        'dx' : params['dx'],
+        'n' : params['n'],
+        'ncc' : params['ncc'],
+        's0' : params['s0'],
+        'bw' : params['bw'],
+        'waterbody' : params['waterbody'],
+        'gages' : params['gages'],
+        'tw' : params['tw'],
+        'twcc' : params['twcc'],
+        'musk' : params['musk'],
+        'musx' : params['musx'],
+        'cs' : params['cs'],
+        'alt' : params['alt']
+    }
+
+    d['network_topology_parameters']['supernetwork_parameters']['columns'] = columns
     
     #start_time = pd.Timestamp(simulation_time['start_time']).strftime("%Y-%m-%d_%H:%M:%S")
     start_time = pd.Timestamp(simulation_time['start_time'])
@@ -762,7 +796,6 @@ def write_troute_input_files(gpkg_file, ngen_dir, troute_dir, simulation_time,
         yaml.dump(d,file, default_flow_style=False, sort_keys=False)
 
 
-
 #############################################################################
 # The function generates configuration file for t-route model
 # @param catids         : array/list of integers contain catchment ids
@@ -793,25 +826,10 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
     #d['model']['routing_output'] = troute_output_file # if in the outputs/troute directory
 
 
-    try:
-        gdf_fp_attr = gpd.read_file(gpkg_file, layer='flowpath-attributes')
-    except:
-        try:
-            gdf_fp_attr = gpd.read_file(gpkg_file, layer='flowpath_attributes')
-        except:
-            print("layer 'flowpath-attributes' or 'flowpath_attributes' does not exist!'")
-            sys.exit(1)
-    #print ("AAA: ", gdf_fp_attr)
-    gdf_fp_cols = gdf_fp_attr[['id',  'rl_gages']] # select the two columns of interest
-    
-    # Find out row(s) where rl_gages is not None (to get the corresponding waterbody)
-    rl_gages = gdf_fp_cols[gdf_fp_cols['rl_gages'].notna()]
+    gage_id = get_flowpath_attributes(gpkg_file, gage_id=True)
 
-    ids = rl_gages['id'].tolist()
-
-    
-    if (len(ids) == 1):
-        d['model']['eval_feature'] = ids[0]
+    if (len(gage_id) == 1):
+        d['model']['eval_feature'] = gage_id[0]
     else:
         print ("more than one rl_gages exist in the geopackage, using max drainage area to filter...")
         div = gpd.read_file(gpkg_file, layer='divides')
@@ -820,7 +838,7 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
         df.set_index(index, inplace=True)
         idmax = df['tot_drainage_areasqkm'].idxmax() # maximum drainage area catchment ID; downstream outlet
         d['model']['eval_feature'] = idmax
-        #sys.exit(1)
+
 
     # 2nd strategy: using total drainage area to locate the basin outlet gage ID
     """
@@ -844,6 +862,33 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
     
     with open(os.path.join(conf_dir,"calib_config.yaml"), 'w') as file:
         yaml.dump(d,file, default_flow_style=False, sort_keys=False)
+
+
+#############################################################################
+# Return flowpath attributes for t-troue and ngen-cal
+#############################################################################
+def get_flowpath_attributes(gpkg_file, full_schema=False, gage_id=False):
+
+    layers = fiona.listlayers(gpkg_file)
+
+    flowpath_layer = [layer for layer in layers if 'flowpath' in layer][0]
+
+    gdf_fp_attr = gpd.read_file(gpkg_file, layer=flowpath_layer)
+
+    params = schema.get_schema_flowpath_attributes(gdf_fp_attr, for_gage_id = gage_id)
+
+    if (full_schema):
+        return params
+    elif (gage_id):
+        # get the gage and waterbody IDs for calibration
+        gage_id      = params['gages']   # gage or rl_gages
+        waterbody_id = params['key']     # id or link
+
+        gdf_fp_cols = gdf_fp_attr[[waterbody_id, gage_id]] # select the two columns of interest
+        basin_gage  = gdf_fp_cols[gdf_fp_cols[gage_id].notna()]
+        basin_gage_id = basin_gage[waterbody_id].tolist()
+
+        return basin_gage_id
 
 
 #############################################################################
@@ -921,9 +966,10 @@ def main():
                             help="simulation start/end time") 
         parser.add_argument("-ow",   dest="overwrite",     type=str, required=False, default=True,
                             help="overwrite old/existing files")
-        parser.add_argument("-troute", dest="troute",    type=str, required=False, default=False, help="option for t-toure")
-        parser.add_argument("-v",      dest="verbosity", type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
-        parser.add_argument("-json",   dest="json_dir",  type=str, required=True,  help="realization files directory")
+        parser.add_argument("-troute", dest="troute",     type=str, required=False, default=False, help="option for t-toure")
+        parser.add_argument("-routfile", dest="routfile", type=str, required=False, default=False, help="routing sample config file")
+        parser.add_argument("-v",      dest="verbosity",  type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
+        parser.add_argument("-json",   dest="json_dir",   type=str, required=True,  help="realization files directory")
         parser.add_argument("-sout",   dest="sim_output_dir",  type=str, required=True,  help="ngen runs output directory")
         parser.add_argument("-c",      dest="calib",     type=str, required=False, default=False, help="option for calibration")
         parser.add_argument("-schema", dest="schema",    type=str, required=False, default=False, help="gpkg schema type")
@@ -1049,7 +1095,7 @@ def main():
 
 
     if (args.troute):
-        write_troute_input_files(args.gpkg_file, args.ngen_dir, args.output_dir, args.time,
+        write_troute_input_files(args.gpkg_file, args.routfile, args.output_dir, args.time,
                                  sim_output_dir = args.sim_output_dir, is_calib = args.calib)
 
     #if (args.calib):

@@ -212,10 +212,12 @@ def generate_catchment_files(dir, forcing_files):
 
     workflow_driver = os.path.join(workflow_dir, "generate_files/driver.py")
 
+    routing_file = os.path.join(workflow_dir, "configs/samples/config_troute.yaml")
+
     driver = f'python {workflow_driver} -gpkg {gpkg_dir} -ngen {ngen_dir} -f {div_forcing_dir} \
     -o {config_dir} -m {model_option} -p {precip_partitioning_scheme} -r {surface_runoff_scheme} -t \'{simulation_time}\' \
-    -netcdf {is_netcdf_forcing} -troute {is_routing} -json {json_dir} -v {verbosity} -c {is_calibration} \
-    -sout {sim_output_dir} -schema {schema_type}'
+    -netcdf {is_netcdf_forcing} -troute {is_routing} -routfile {routing_file} -json {json_dir} -v {verbosity} \
+    -c {is_calibration} -sout {sim_output_dir} -schema {schema_type}'
 
     failed = subprocess.call(driver, shell=True)
 
