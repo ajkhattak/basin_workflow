@@ -7,6 +7,7 @@ dem_function <- function(div_infile,
                          dem_input_file = NULL,
                          dem_output_dir) {
   print ("DEM FUNCTION")
+  print (glue("DEM file: ", dem_input_file))
   
   tryCatch({
     elev <- rast(dem_input_file)
@@ -28,10 +29,11 @@ dem_function <- function(div_infile,
 
   # Checking for NaN values
   if (any(is.nan(values(dem)))) {
-    writeRaster(dem, glue("{dem_output_dir}/dem.tif"), overwrite = TRUE)
-    print (glue("Error: The DEM contains NaN values. Check dem.tif. Now quitting..."))
-    stop()
+    print (glue("Warning: The DEM contains NaN values."))
   }
+  
+  #dem[is.nan(dem)] <- NA  # Convert NaN to NA
+  dem[dem < 0] <- 0      # Convert negative values to NA
   
   writeRaster(dem, glue("{dem_output_dir}/dem.tif"), overwrite = TRUE)
   
@@ -41,7 +43,8 @@ dem_function <- function(div_infile,
              options = c("-of", "GTiff", "-t_srs", "EPSG:5070", "-r", "bilinear")
   )
   
-  wbt_breach_depressions(dem = glue("{dem_output_dir}/dem_proj.tif"), output = glue("{dem_output_dir}/dem_corr.tif") )
+  wbt_breach_depressions(dem = glue("{dem_output_dir}/dem_proj.tif"), 
+                         output = glue("{dem_output_dir}/dem_corr.tif") )
   
 }
 

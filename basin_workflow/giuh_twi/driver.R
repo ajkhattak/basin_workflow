@@ -140,6 +140,9 @@ driver_given_gpkg <- function(gage_files,
                               nproc = 1) {
   
   print ("DRIVER GIVEN GEOPACKAGE FUNCTION")
+  
+  stopifnot(length(gage_files) >=1)
+  
   # create directory to stored catchment geopackage in case of errors or missing data
   #failed_dir = "failed_cats"
   
@@ -282,7 +285,6 @@ run_driver <- function(gage_id = NULL,
 
   print ("RUN DRIVER FUNCTION")
   
-  
   outfile <- " "
   if(!is_gpkg_provided) {
     start.time <- Sys.time()
@@ -324,9 +326,9 @@ run_driver <- function(gage_id = NULL,
     stop()
     }
 
-  div <- read_sf(outfile, 'divides')
-  nexus <- read_sf(outfile, 'nexus')
-  streams <- read_sf(outfile, 'flowlines')
+  #div <- read_sf(outfile, 'divides')
+  #nexus <- read_sf(outfile, 'nexus')
+  #streams <- read_sf(outfile, 'flowlines')
 
   ########################## MODELS' ATTRIBUTES ##################################
   # STEP #4: Add models' attributes from the parquet file to the geopackage

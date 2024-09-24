@@ -7,10 +7,24 @@
 
 
 # Function computes Geomorphological Instantaneous Unit Hydrograph (GIUH)
-giuh_function <- function(div_infile, dem_output_dir, vel_channel = 1, vel_overland = .5, vel_gully = .2, gully_threshold = 3) {
+giuh_function <- function(div_infile, dem_output_dir, vel_channel = 1, vel_overland = .5, 
+                          vel_gully = .2, gully_threshold = 3) {
   
   div <- read_sf(div_infile, 'divides')
-  river <- read_sf(div_infile, "flowlines")
+  
+  river <- NULL
+  # check if geopackage has flowlines or flowpaths table
+  tryCatch({
+    river <- read_sf(div_infile, "flowlines")
+    print("flowlines table found.")
+  }, error = function(e) {
+    tryCatch({
+      river <<- read_sf(div_infile, "flowpaths")
+      message("flowpaths table found.")
+    }, error = function(e) {
+      message("No flowlines or flowpaths table found.")
+    })
+  })
   
   # @param out_type Output type; one of 'cells' (default), 'catchment area', and 'specific contributing area'.
   wbt_d8_flow_accumulation(input = glue("{dem_output_dir}/dem_corr.tif"), output = glue("{dem_output_dir}/giuh_sca.tif"),
