@@ -912,10 +912,9 @@ def write_forcing_input_files(forcing_basefile, gpkg_file, time):
     
     start_yr = pd.Timestamp(time_sim['start_time']).year #strftime("%Y")
     end_yr = pd.Timestamp(time_sim['end_time']).year #strftime("%Y")
-
+    
     if (start_yr <= end_yr):
-        print (start_yr, end_yr)
-        end_yr = start_yr + 1
+        end_yr = end_yr + 1
 
     d['gpkg']  = gpkg_file
     d["years"] = [start_yr, end_yr]
@@ -923,7 +922,7 @@ def write_forcing_input_files(forcing_basefile, gpkg_file, time):
 
     if (not os.path.exists(d["out_dir"])):
         os.makedirs("data/forcing")
-    
+
     with open(os.path.join(d["out_dir"],"forcing_config.yaml"), 'w') as file:
         yaml.dump(d,file, default_flow_style=False, sort_keys=False)
 

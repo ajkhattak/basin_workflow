@@ -143,7 +143,7 @@ def generate_catchment_files(dir, forcing_files):
     if (setup_simulation):
         
         if verbosity >=1:
-            print(filled_dot, gpkg_name)#, end="")
+            print(filled_dot, gpkg_name, end="")
 
         last_underscore_index = gpkg_name.rfind('_')
         dot_index = gpkg_name.rfind('.')
@@ -169,7 +169,7 @@ def generate_catchment_files(dir, forcing_files):
             end_yr   = pd.Timestamp(sim_time['end_time']).year 
 
             if (start_yr <= end_yr):
-                end_yr = start_yr + 1
+                end_yr = end_yr + 1
 
             if (is_netcdf_forcing):
                 name_without_ext = gpkg_name.split(".")[0]
