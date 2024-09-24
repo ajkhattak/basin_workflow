@@ -871,7 +871,7 @@ def get_flowpath_attributes(gpkg_file, full_schema=False, gage_id=False):
 
     layers = fiona.listlayers(gpkg_file)
 
-    flowpath_layer = [layer for layer in layers if 'flowpath' in layer][0]
+    flowpath_layer = [layer for layer in layers if 'flowpath' in layer and not 'flowpaths' in layer][0]
 
     gdf_fp_attr = gpd.read_file(gpkg_file, layer=flowpath_layer)
 
