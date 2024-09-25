@@ -31,16 +31,17 @@ gpkg_model_params :
     use_gpkg :
       use_gpkg  : TRUE
       gpkg_dir  : "/Users/ahmadjan/Core/SimulationsData/projects/tnc-dangermond/ngen-dr"
-      pattern   :  "jldp_ngen_nhdhr_11111111.gpkg"
+      pattern   :  "jldp_ngen_nhdhr_11120600.gpkg"
+      #pattern : "jldp_ngen_nhdhr_11111111.gpkg"
       
 ###############
 simulations :
   ngen_dir           : "/Users/ahmadjan/codes/ngen/ngen"
-  is_netcdf_forcing  : True
+  is_netcdf_forcing  : False
   forcing_source     : "Nels_forcing_prep" # if forcing data are downloaded using Nels tools 'forcing_prep'
   forcing_venv_dir   : "/Users/ahmadjan/.ngen_forcing/" # "/home/ec2-user/venv_forcing" # provide only when using forcing data downloaders
   
-  simulation_time            : '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2010-10-02 00:00:00"}'
+  simulation_time            : '{"start_time" : "1979-10-01 00:00:00", "end_time" : "1979-10-02 00:00:00"}'
   model_option               : "NCP"
   precip_partitioning_scheme : 'Schaake'
   surface_runoff_scheme      : 'NASH_CASCADE'

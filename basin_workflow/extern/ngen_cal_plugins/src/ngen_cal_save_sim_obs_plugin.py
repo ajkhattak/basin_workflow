@@ -68,7 +68,7 @@ class SaveOutput:
         #df = pd.merge(self.sim, self.obs, left_index=True, right_index=True)
 
         if self.save_obs_nwm:
-            self.save_obs_nwm = False
+            #self.save_obs_nwm = False  # will revisit this later
             df = pd.merge(self.sim, self.obs, left_index=True, right_index=True)
         else:
             df = pd.DataFrame(self.sim)
