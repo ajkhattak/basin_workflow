@@ -59,14 +59,20 @@ class ReadObservedData:
         start = self.obs_kwargs["start_time"]
         end = self.obs_kwargs["end_time"]
         simulation_interval = self.obs_kwargs["simulation_interval"]
-        
+
         divide_id = nexus.id
         # subset into `pd.Series` that is indexed by `datetime` with a name
         df.set_index("value_time", inplace=True)
         df = df.loc[start:end]
 
+        # get total hours to ensure the length of observed data is consistent with the leght of simulated data
+        total_hours = (end - start).total_seconds()/3600.
+        length = int(total_hours/self.window)
+
+        assert (length > 0)
+
         #ds = df["value"].resample(simulation_interval).nearest()
-        ds = df["value"]
+        ds = df["value"][:length]
         ds.rename("obs_flow", inplace=True)
 
         self.proxy.set_proxy(ds)
@@ -100,6 +106,7 @@ class ReadObservedData:
 
         index = self.proxy._proxy_obj.index
         sim_local = sim.copy()
+
         mean_values = np.reshape(sim_local.values,(-1,self.window)).mean(axis=1)
 
         assert (len(mean_values) == len(index))
