@@ -19,6 +19,7 @@ coupled_models_options = {
     "C"   : "cfe",
     "L"   : "lasam",
     "NC"  : "nom_cfe",
+    "PC"  : "pet_cfe",
     "NL"  : "nom_lasam",
     "NCP" : "nom_cfe_pet",
     "NCSS": "nom_cfe_smp_sft",

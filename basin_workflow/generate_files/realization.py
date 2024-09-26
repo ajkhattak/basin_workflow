@@ -26,7 +26,7 @@ import shutil
 # @param config_dir : input directory of the PET config files
 # @param model_exe : path to PET executable
 #############################################################################
-def get_pet_block(model_exe, config_dir):
+def get_pet_block(model_exe, config_dir, var_names_map = False):
 
     block = {
 	"name": "bmi_c",
@@ -43,6 +43,19 @@ def get_pet_block(model_exe, config_dir):
 	}
     }
 
+    if (var_names_map):
+        # update mapping block for the use with Nels focing data script
+        block['params']['variables_names_map'] = {
+            "PRCPNONC" : "APCP_surface",
+	    "Q2"       : "SPFH_2maboveground",
+	    "SFCTMP"   : "TMP_2maboveground",
+	    "UU"       : "UGRD_10maboveground",
+	    "VV"       : "VGRD_10maboveground",
+	    "LWDN"     : "DLWRF_surface",
+	    "SOLDN"    : "DSWRF_surface",
+	    "SFCPRS"   : "PRES_surface"
+        }
+        
     return block
 
 #############################################################################
@@ -105,7 +118,7 @@ def get_noah_owp_modular_block(model_exe, config_dir):
 # @param model_exe : path to CFE executable
 # @param cfe_standalone : if true, additional parameters are mapped from the SLoTH BMI
 #############################################################################
-def get_cfe_block(model_exe, config_dir, cfe_standalone, cfe_with_pet = True):
+def get_cfe_block(model_exe, config_dir, cfe_standalone, coupled_models):
     
     block = {
         "name": "bmi_c",
@@ -136,8 +149,11 @@ def get_cfe_block(model_exe, config_dir, cfe_standalone, cfe_with_pet = True):
         var_name_map.update(sub_map)
         block["params"]["variables_names_map"] = var_name_map
 
-    if (not cfe_with_pet):
+    if (("nom" in coupled_models) and (not "pet" in coupled_models)):
         block["params"]["variables_names_map"]["water_potential_evaporation_flux"] = "EVAPOTRANS"
+        
+    if (not "nom" in coupled_models):
+        block["params"]["variables_names_map"]["atmosphere_water__liquid_equivalent_precipitation_rate"] = "APCP_surface"
     
     return block
 
@@ -287,7 +303,7 @@ def get_sloth_block(model_exe, coupled_models):
 
     params = dict()
     
-    if (coupled_models in ["nom_cfe", "nom_cfe_pet", "cfe"]):
+    if (coupled_models in ["nom_cfe", "nom_cfe_pet", "cfe", "pet_cfe"]):
         params = {
             "ice_fraction_schaake(1,double,m,node)": 0.0,
             "ice_fraction_xinanjiang(1,double,1,node)": 0.0,
@@ -400,6 +416,9 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
     elif ("darwin" in platform):
        ext = "lib*.dylib"
 
+    # flag for adding forcing data variables mapping to a module
+    var_names_map = True
+    
     # , include topmodel later
     for m in models:
     
@@ -433,6 +452,7 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
     if ("nom" in coupled_models):
         assert(lib_files['noah-owp-modular'] != "")
         nom_block = get_noah_owp_modular_block(lib_files['noah-owp-modular'], config_dir)
+        var_names_map = False
     
 
     # cfe
@@ -441,12 +461,7 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
     if ("cfe" in coupled_models):
         assert (lib_files['cfe'] != "")
 
-        is_pet_included = False
-        
-        if ("pet" in coupled_models):
-            is_pet_included = True
-
-        cfe_block = get_cfe_block(lib_files['cfe'], config_dir, cfe_standalone=False, cfe_with_pet = is_pet_included)
+        cfe_block = get_cfe_block(lib_files['cfe'], config_dir, cfe_standalone=False, coupled_models = coupled_models)
     
     # topmodel
     topmodel_block = dict()
@@ -483,7 +498,8 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
 
     pet_block = dict()
     if (lib_files['evapotranspiration'] != ""):
-        pet_block = get_pet_block(lib_files['evapotranspiration'], config_dir)
+        pet_block = get_pet_block(lib_files['evapotranspiration'], config_dir,
+                                  var_names_map = var_names_map)
 
 
     ##########################################################################
@@ -548,7 +564,7 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
     main_output_variable = ""
     modules = []
 
-    if (coupled_models == "cfe"):
+    if (coupled_models == "cfe" or coupled_models == "pet_cfe"):
         model_type_name = "CFE"
         main_output_variable = "Q_OUT"
         modules = [sloth_block, pet_block, cfe_block]

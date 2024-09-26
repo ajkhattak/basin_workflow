@@ -907,8 +907,6 @@ def write_forcing_input_files(forcing_basefile, gpkg_file, time):
     with open(forcing_basefile, 'r') as file:
         d = yaml.safe_load(file)
     time_sim = json.loads(time)
-
-    print ("T: ", time_sim)
     
     start_yr = pd.Timestamp(time_sim['start_time']).year #strftime("%Y")
     end_yr = pd.Timestamp(time_sim['end_time']).year #strftime("%Y")

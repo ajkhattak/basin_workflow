@@ -22,68 +22,60 @@ cfe_params: &cfe_params
   -
     name: b # beta exponent on Clapp-Hornberger (1978) soil water relations
     min: 0.0
-    max: 21.94
+    max: 16
     init: 4.05
+  - 
+    name: satdk # saturated hydraulic conductivity [m/s]
+    min: 2.0E-7
+    max: 7.26E-3
+    init: 3.38E-6
   -
-    name: satdk # saturated hydraulic conductivity
-    min: 0.0
-    max: 0.000726
-    init: 3.38e-06
-  -
-    name: satpsi # saturated capillary head
-    min: 0.0
+    name: satpsi # saturated capillary head [m]
+    min: 0.036
     max: 0.995
     init: 0.355
-
   -
     name: maxsmc # saturated soil moisture content
-    min: 0.20554
+    min: 0.2
     max: 0.6
     init: 0.439
-
   -
-    name: max_gw_storage # maximum storage in the conceptual reservoir
+    name: max_gw_storage # maximum groundwater storage [m]
     min: 0.01
-    max: 0.2
+    max: 0.25
     init: 0.05
-
   -
-    name: Cgw  #groundwater coefficient
-    min: 1.6266e-06
-    max: 0.1
-    init: 1.6266e-05
-
+    name: Cgw  # groundwater coefficient [m/h]
+    min: 1.6266E-6
+    max: 1.6266E-3
+    init: 1.6266E-5
   -
     name: expon # exponent parameter (1.0 for linear reservoir) (groundwater)
     min: 1.0
     max: 8.0
     init: 5.0
-
   - 
-    name: Kn # Nash Config param for lateral subsurface runoff
+    name: Kn # Nash cascade lateral subsurface runoff coefficient [1/h]
     min: 0.0
     max: 1.0
     init: 0.03
-
   - 
-    name: Klf # Nash Config param - primary reservoir
+    name: Klf # Nash cascade lateral subsurface param - primary reservoir [1/h]
     min: 0.0
     max: 1.0
     init: 0.01
- 
   - 
     name: Kinf_nash_surface # runon infiltration coefficient (NASH CASCADE runoff only; cfe2.0)
-    min: 0.001
-    max: 0.005
-    init: 0.002
-
+    min: 1.0E-6
+    max: 5.0E-3
+    init: 2.0E-3
   - 
-    name: retention_depth_nash_surface # used only with CFE2.0
+    name: retention_depth_nash_surface # used only with cfe2.0
     min: 0.0
     max: 0.02
     init: 0.001
   -
-    name: refkdt # used only with Schakee
+    name: refkdt # soil infiltration params; used only with Schakee
     min: 0.1
     max: 4.0
     init: 3.0

@@ -43,7 +43,7 @@ simulations :
   
   simulation_time            : '{"start_time" : "1979-10-01 00:00:00", "end_time" : "1982-09-29 00:00:00"}'
   #simulation_time            : '{"start_time" : "1979-10-01 00:00:00", "end_time" : "1979-10-05 00:00:00"}'
-  model_option               : "NCP"
+  model_option               : "PC"
   precip_partitioning_scheme : 'Schaake'
   surface_runoff_scheme      : 'NASH_CASCADE'
   is_routing                 : True
