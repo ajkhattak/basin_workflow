@@ -114,3 +114,4 @@ model:
        ngen_cal_read_obs_data:
          obs_data_path: /Users/ahmadjan/Core/SimulationsData/projects/tnc-dangermond/ngen-dr/stream_discharge-19791001-19820929_11120600.csv
          units: "ft3/sec"
+         window: 24 # data interval in hours
