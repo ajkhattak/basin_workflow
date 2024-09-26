@@ -110,8 +110,11 @@ model:
       - "ngen_cal_user_plugins.ngen_cal_save_iteration_output_plugin.NgenSaveOutput" # saves cat_*.csv or nex-*.csv to "output_iteration" directory
       - "ngen_cal_user_plugins.ngen_cal_save_sim_obs_plugin.SaveOutput"              # saves simulated and observed discharge at the outlet
       - "ngen_cal_user_plugins.ngen_cal_read_obs_plugin.ReadObservedData"
+      - "ngen_cal_user_plugins.ngen_cal_symlink_plugin.NgenCalSymlinkDir"
     plugin_settings:
-       ngen_cal_read_obs_data:
-         obs_data_path: /Users/ahmadjan/Core/SimulationsData/projects/tnc-dangermond/ngen-dr/simulations/stream_discharge-19791001-19820929_11120600.csv
-         units: "ft3/sec"
-         window: 24 # data interval in hours
+      ngen_cal_read_obs_data:
+        obs_data_path: /Users/ahmadjan/Core/SimulationsData/projects/tnc-dangermond/ngen-dr/simulations/stream_discharge-19791001-19820929_11120600.csv
+        units: "ft3/sec"
+        window: 24 # data interval in hours
+      ngen_cal_symlink_dir:
+        path: "./outputs_calib"
