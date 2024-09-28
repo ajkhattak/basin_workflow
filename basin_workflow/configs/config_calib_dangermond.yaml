@@ -47,7 +47,7 @@ cfe_params: &cfe_params
   -
     name: Cgw  # groundwater coefficient [m/h]
     min: 1.6266E-6
-    max: 1.6266E-3
+    max: 1.6266E-4
     init: 1.6266E-5
   -
     name: expon # exponent parameter (1.0 for linear reservoir) (groundwater)
@@ -91,7 +91,7 @@ model:
     hydrofabric: ./Gage_1022500.gpkg
     eval_feature: wb-3550
     # Each catchment upstream of observable nexus gets its own permuted parameter space, evaluates at one observable nexus 
-    strategy: independent
+    strategy: uniform
     params: 
         CFE: *cfe_params
     
@@ -102,11 +102,11 @@ model:
       - "ngen_cal_user_plugins.ngen_cal_save_iteration_output_plugin.NgenSaveOutput" # saves cat_*.csv or nex-*.csv to "output_iteration" directory
       - "ngen_cal_user_plugins.ngen_cal_save_sim_obs_plugin.SaveOutput"              # saves simulated and observed discharge at the outlet
       - "ngen_cal_user_plugins.ngen_cal_read_obs_plugin.ReadObservedData"
-      - "ngen_cal_user_plugins.ngen_cal_symlink_plugin.NgenCalSymlinkDir"
+      #- "ngen_cal_user_plugins.ngen_cal_symlink_plugin.NgenCalSymlinkDir"
     plugin_settings:
       ngen_cal_read_obs_data:
         obs_data_path: /Users/ahmadjan/Core/SimulationsData/projects/tnc-dangermond/ngen-dr/simulations/stream_discharge-19791001-19820929_11120600.csv
         units: "ft3/sec"
         window: 24 # data interval in hours
-      ngen_cal_symlink_dir:
-        path: "./outputs_calib"
+      #ngen_cal_symlink_dir:
+      #  path: "./outputs_calib"

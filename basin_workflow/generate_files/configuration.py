@@ -770,13 +770,13 @@ def write_troute_input_files(gpkg_file, routing_file, troute_dir, simulation_tim
 
     if(is_calib in ["True", "true", "TRUE", "Yes", "yes",  "YES"]):
         stream_output = {
-            "csv_output" : {
-                "csv_output_folder" : "./"
-            },
+            #"csv_output" : {
+            #    "csv_output_folder" : "./"
+            #},
             "stream_output" : {
                 "stream_output_directory" : "./",
                 'stream_output_time'      : -1, #[hr], -1 = write one file at the end of simulation
-                'stream_output_type'      : '.csv', # netcdf '.nc' or '.csv' or '.pkl'
+                'stream_output_type'      : '.nc', # netcdf '.nc' or '.csv' or '.pkl'
                 'stream_output_internal_frequency' : 60 #[min]
             }
         }
@@ -785,7 +785,7 @@ def write_troute_input_files(gpkg_file, routing_file, troute_dir, simulation_tim
             "stream_output" : {
                 'stream_output_directory' : os.path.join(sim_output_dir, "troute"),
                 'stream_output_time'      : -1, #[hr], -1 = write one file at the end of simulation
-                'stream_output_type'      : '.csv', # netcdf '.nc' or '.csv' or '.pkl'
+                'stream_output_type'      : '.nc', # netcdf '.nc' or '.csv' or '.pkl'
                 'stream_output_internal_frequency' : 60 #[min]
             }
         }
@@ -821,9 +821,10 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
     d['model']['binary']      = os.path.join(ngen_dir, "cmake_build/ngen")
     d['model']['realization'] = realz_file
     d['model']['hydrofabric'] = gpkg_file
-    d['model']['routing_output'] = f'./flowveldepth_{gpkg_name}.csv' # this gpkg_name should be consistent with title_string in troute
+    
+    #d['model']['routing_output'] = f'./flowveldepth_{gpkg_name}.csv' # this gpkg_name should be consistent with title_string in troute
     #"./troute_output_201010010000.csv" # in the ngen-cal created directory named {current_time}_ngen_{random stuff}_worker
-    #d['model']['routing_output'] = troute_output_file # if in the outputs/troute directory
+    d['model']['routing_output'] = troute_output_file # if in the outputs/troute directory
 
 
     gage_id = get_flowpath_attributes(gpkg_file, gage_id=True)
