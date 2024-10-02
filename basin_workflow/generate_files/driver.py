@@ -21,6 +21,7 @@ coupled_models_options = {
     "NC"  : "nom_cfe",
     "PC"  : "pet_cfe",
     "NL"  : "nom_lasam",
+    "PL"  : "pet_lasam",
     "NCP" : "nom_cfe_pet",
     "NCSS": "nom_cfe_smp_sft",
     "NLSS": "nom_lasam_smp_sft",
@@ -60,7 +61,7 @@ def main():
         parser.add_argument("-troute", dest="troute", type=str, required=False, default=False, help="option for t-route")
         parser.add_argument("-routfile", dest="routfile", type=str, required=False, default=False, help="routing sample config file")
         parser.add_argument("-v",      dest="verbosity", type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
-        parser.add_argument("-c",      dest="calib",     type=str, required=False, default=False, help="option for calibration")
+        parser.add_argument("-ncal",   dest="ncal",     type=str, required=False, default=False, help="option for calibration")
         parser.add_argument("-sout",   dest="sim_output_dir",  type=str, required=True,  help="ngen runs output directory")
         parser.add_argument("-schema", dest="schema",    type=str, required=False, default=False, help="gpkg schema type")
         args = parser.parse_args()
@@ -115,7 +116,7 @@ def main():
                               -t \'{args.time}\' -v {args.verbosity} \
                               -json {args.json_dir} \
                               -sout {args.sim_output_dir} \
-                              -c {args.calib} \
+                              -ncal {args.ncal} \
                               -schema {args.schema}'
 
     if (args.verbosity >=3):
@@ -147,7 +148,7 @@ def main():
                                   -b {baseline_case} -r {args.surface_runoff_scheme} -t \'{args.time}\' \
                                   -netcdf {args.netcdf} -troute {args.troute} -json {args.json_dir} \
                                   -v {args.verbosity} -sout {args.sim_output_dir} \
-                                  -c {args.calib}'
+                                  -ncal {args.ncal}'
 
     if (args.verbosity >=3):
         print ("Running (from driver.py): \n ", generate_realization_file)

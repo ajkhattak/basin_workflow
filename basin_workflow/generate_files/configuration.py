@@ -145,7 +145,7 @@ def read_gpkg_file(infile, coupled_models, surface_runoff_scheme, verbosity, sch
         gdf['width_dist'] = gdf_soil[params['width_dist']]
 
     if ("cfe" in coupled_models or "lasam" in coupled_models):
-        if (surface_runoff_scheme == "GIUH" or surface_runoff_scheme == 1):
+        if (surface_runoff_scheme == "GIUH" or surface_runoff_scheme == 1 or "lasam" in coupled_models):
             gdf['giuh'] = gdf_soil[params['giuh']]
         elif (surface_runoff_scheme == "NASH_CASCADE" or surface_runoff_scheme == 2):
             gdf['N_nash_surface'] = gdf_soil[params['N_nash_surface']]
@@ -592,14 +592,15 @@ def write_lasam_input_files(catids, soil_param_file, gdf_soil, lasam_dir, couple
                          'soil_params_file=' + soil_param_file,
                          'layer_thickness=200.0[cm]',
                          'initial_psi=2000.0[cm]',
-                         'timestep=300[sec]',
-                         'endtime=1000[hr]',
+                         'timestep=3600[sec]',
+                         'endtime=1000000000.0[d]',
                          'forcing_resolution=3600[sec]',
                          'ponded_depth_max=0[cm]',
                          'use_closed_form_G=false',
                          'layer_soil_type=',
                          'wilting_point_psi=15495.0[cm]',
                          'field_capacity_psi=340.9[cm]',
+                         'adaptive_timestep=true',
                          'giuh_ordinates='
                          ]
 
@@ -610,7 +611,6 @@ def write_lasam_input_files(catids, soil_param_file, gdf_soil, lasam_dir, couple
     if ( ("sft" in coupled_models) and (sft_calib in ["true", "True"]) ):
         lasam_params_base.append('calib_params=true')
 
-    
     soil_type_loc = lasam_params_base.index("layer_soil_type=")
     giuh_loc_id   = lasam_params_base.index("giuh_ordinates=")
     
@@ -698,7 +698,7 @@ def write_pet_input_files(catids, gdf_soil, gpkg_file, pet_dir):
 # @param troute_dir        : output directory (config files are written to this directory)
 #############################################################################
 def write_troute_input_files(gpkg_file, routing_file, troute_dir, simulation_time,
-                             sim_output_dir, is_calib):
+                             sim_output_dir, ngen_cal_type):
 
     gpkg_name  = os.path.basename(gpkg_file).split(".")[0]
     
@@ -755,7 +755,7 @@ def write_troute_input_files(gpkg_file, routing_file, troute_dir, simulation_tim
     d['compute_parameters']['restart_parameters']['start_datetime'] = start_time.strftime("%Y-%m-%d_%H:%M:%S")
     
 
-    if(is_calib in ["True", "true", "TRUE", "Yes", "yes",  "YES"]):
+    if (ngen_cal_type in ['calibration', 'validation', 'restart']):
         d['compute_parameters']['forcing_parameters']['qlat_input_folder'] =  "./"
     else:
         d['compute_parameters']['forcing_parameters']['qlat_input_folder'] =  os.path.join(sim_output_dir,"div")
@@ -768,7 +768,7 @@ def write_troute_input_files(gpkg_file, routing_file, troute_dir, simulation_tim
 
     d['compute_parameters']['cpu_pool'] = 10
 
-    if(is_calib in ["True", "true", "TRUE", "Yes", "yes",  "YES"]):
+    if (ngen_cal_type in ['calibration', 'validation', 'restart']):
         stream_output = {
             #"csv_output" : {
             #    "csv_output_folder" : "./"
@@ -804,7 +804,8 @@ def write_troute_input_files(gpkg_file, routing_file, troute_dir, simulation_tim
 # @param real_file      : realization file
 #############################################################################
 def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_file_par,
-                            troute_output_file, ngen_cal_basefile, num_proc = 1):
+                            cal_troute_output_file, val_troute_output_file, ngen_cal_basefile,
+                            ngen_cal_type, cal_state_dir, val_simulation_time, num_proc):
 
     if (not os.path.exists(ngen_cal_basefile)):
         sys.exit("Sample calib yaml file does not exist, provided is " + ngen_cal_basefile)
@@ -823,8 +824,7 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
     d['model']['hydrofabric'] = gpkg_file
     
     #d['model']['routing_output'] = f'./flowveldepth_{gpkg_name}.csv' # this gpkg_name should be consistent with title_string in troute
-    #"./troute_output_201010010000.csv" # in the ngen-cal created directory named {current_time}_ngen_{random stuff}_worker
-    d['model']['routing_output'] = troute_output_file # if in the outputs/troute directory
+    d['model']['routing_output'] = cal_troute_output_file # if in the outputs/troute directory
 
 
     gage_id = get_flowpath_attributes(gpkg_file, gage_id=True)
@@ -860,7 +860,38 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
         d['model']['binary'] = f'PYTHONEXECUTABLE=$(which python) ' + os.path.join(ngen_dir, "cmake_build/ngen")
     else:
         d['model']['binary'] = os.path.join(ngen_dir, "cmake_build/ngen")
-    
+
+    if (ngen_cal_type == 'validation'):
+
+        val_troute_output = {
+            'ngen_cal_troute_output': {
+                'validation_routing_output': val_troute_output_file
+            }
+        }
+        d['model']['plugin_settings'].update(val_troute_output)
+
+        val_params = {
+            #'sim_start': '2022-09-01 00:00:00',
+            'evaluation_start': val_simulation_time['start_time'],
+            'evaluation_stop': val_simulation_time['end_time'],
+            'objective' : "kling_gupta"
+            }
+        d['model']['val_params'] = val_params
+
+    if (ngen_cal_type in  ['validation', 'restart']):
+        df_par    = pd.read_parquet(os.path.join(cal_state_dir,"calib_param_df_state.parquet"))
+        df_params = pd.read_csv(os.path.join(cal_state_dir,"best_params.txt"), header = None)
+        best_itr  = str(int(df_params.values[1]))
+
+        best_params_set = df_par[best_itr]
+        calib_params    = best_params_set.index.to_list()
+
+        for block in d:
+            if '_params' in block:
+                for par in d[block]:
+                    if par['name'] in calib_params:
+                        par['init'] = float(best_params_set[par['name']])
+
     with open(os.path.join(conf_dir,"calib_config.yaml"), 'w') as file:
         yaml.dump(d,file, default_flow_style=False, sort_keys=False)
 
@@ -969,7 +1000,7 @@ def main():
         parser.add_argument("-v",      dest="verbosity",  type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
         parser.add_argument("-json",   dest="json_dir",   type=str, required=True,  help="realization files directory")
         parser.add_argument("-sout",   dest="sim_output_dir",  type=str, required=True,  help="ngen runs output directory")
-        parser.add_argument("-c",      dest="calib",     type=str, required=False, default=False, help="option for calibration")
+        parser.add_argument("-ncal",   dest="ncal",     type=str, required=False, default=False, help="option for calibration, validation, or restart")
         parser.add_argument("-schema", dest="schema",    type=str, required=False, default=False, help="gpkg schema type")
     except:
         parser.print_help()
@@ -1077,10 +1108,10 @@ def main():
     if "lasam" in args.models_option:
         if (args.verbosity >=3):
             print ("Generating config files for LASAM ...")
-        lasam_params = os.path.join(args.ngen_dir,"extern/LGAR-C/data/vG_default_params.dat")
+        lasam_params = os.path.join(args.ngen_dir,"extern/LGAR-C/LGAR-C/data/vG_params_stat_nom_ordered.dat")
 
         if (not os.path.isfile(lasam_params)):
-            lasam_params = os.path.join(args.ngen_dir,"extern/LASAM/data/vG_default_params.dat")
+            lasam_params = os.path.join(args.ngen_dir,"extern/LASAM/LASAM/data/vG_params_stat_nom_ordered.dat")
 
         lasam_dir = os.path.join(args.output_dir,"lasam")
         create_directory(lasam_dir)
@@ -1088,13 +1119,13 @@ def main():
         str_sub ="cp -r "+ lasam_params + " %s"%lasam_dir
         out=subprocess.call(str_sub,shell=True)
 
-        write_lasam_input_files(catids, os.path.join(lasam_dir, "vG_default_params.dat"),
+        write_lasam_input_files(catids, os.path.join(lasam_dir, "vG_params_stat_nom_ordered.dat"),
                                 gdf_soil, lasam_dir, args.models_option)
 
 
     if (args.troute):
         write_troute_input_files(args.gpkg_file, args.routfile, args.output_dir, args.time,
-                                 sim_output_dir = args.sim_output_dir, is_calib = args.calib)
+                                 sim_output_dir = args.sim_output_dir, ngen_cal_type = args.ncal)
 
     #if (args.calib):
     #    real_file = os.path.join(args.json_dir, "realization_%s.json"%args.models_option)

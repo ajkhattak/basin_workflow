@@ -132,7 +132,7 @@ def get_cfe_block(model_exe, config_dir, cfe_standalone, coupled_models):
             "fixed_time_step": False,
             "uses_forcing_file": False,
             "variables_names_map": {
-                "atmosphere_water__liquid_equivalent_precipitation_rate": "QINSUR",
+                "atmosphere_water__liquid_equivalent_precipitation_rate": "APCP_surface",
                 "water_potential_evaporation_flux": "water_potential_evaporation_flux"
             },
             "registration_function": "register_bmi_cfe"
@@ -152,8 +152,8 @@ def get_cfe_block(model_exe, config_dir, cfe_standalone, coupled_models):
     if (("nom" in coupled_models) and (not "pet" in coupled_models)):
         block["params"]["variables_names_map"]["water_potential_evaporation_flux"] = "EVAPOTRANS"
         
-    if (not "nom" in coupled_models):
-        block["params"]["variables_names_map"]["atmosphere_water__liquid_equivalent_precipitation_rate"] = "APCP_surface"
+    if ("nom" in coupled_models):
+        block["params"]["variables_names_map"]["atmosphere_water__liquid_equivalent_precipitation_rate"] = "QINSUR"
     
     return block
 
@@ -260,7 +260,7 @@ def get_smp_block(model_exe, config_dir, coupled_models):
 # @param config_dir : input directory of the LASAM config files
 # @param model_exe : path to LASAM executable
 #############################################################################
-def get_lasam_block(model_exe, config_dir):
+def get_lasam_block(model_exe, config_dir, coupled_models):
     block = {
         "name": "bmi_c++",
         "params": {
@@ -272,12 +272,18 @@ def get_lasam_block(model_exe, config_dir):
             "allow_exceed_end_time": True,
             "uses_forcing_file": False,
             "variables_names_map": {
-                "precipitation_rate" : "QINSUR",
-                "potential_evapotranspiration_rate": "EVAPOTRANS"
+                "precipitation_rate" : "APCP_surface",
+                "potential_evapotranspiration_rate": "water_potential_evaporation_flux"
             }
         }
     }
 
+    if ("nom" in coupled_models):
+        block["params"]["variables_names_map"]["precipitation_rate"] = "QINSUR"
+
+    if (not "pet" in coupled_models):
+        block["params"]["variables_names_map"]["potential_evapotranspiration_rate"] = "EVAPOTRANS"
+        
     return block
 
 #############################################################################
@@ -309,7 +315,7 @@ def get_sloth_block(model_exe, coupled_models):
             "ice_fraction_xinanjiang(1,double,1,node)": 0.0,
 	    "soil_moisture_profile(1,double,1,node)": 0.0
         }
-    elif (coupled_models == "nom_lasam"):
+    elif (coupled_models == "nom_lasam" or coupled_models == "pet_lasam"):
         params = {
             "soil_temperature_profile(1,double,K,node)" : 275.15
         }
@@ -336,7 +342,7 @@ def get_sloth_block(model_exe, coupled_models):
     
     model_params = block["params"]
     model_params["model_params"] = params
-    
+
     return block
 
 #############################################################################
@@ -403,7 +409,7 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
                            coupled_models, runoff_scheme, precip_partitioning_scheme,
                            simulation_time, baseline_case, is_netcdf_forcing,
                            is_troute, verbosity, sim_output_dir,
-                           is_calib):
+                           ngen_cal_type):
 
     lib_file = {}
     extern_path = os.path.join(ngen_dir, 'extern')
@@ -471,7 +477,7 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
     
     # sloth
     sloth_block = dict()
-    if ("cfe" in coupled_models or "smp" in coupled_models or "sft" in coupled_models):
+    if ("cfe" in coupled_models or "smp" in coupled_models or "sft" in coupled_models or "lasam" in coupled_models):
         assert (lib_files['sloth'] != "")
         sloth_block = get_sloth_block(lib_files['sloth'], coupled_models)
 
@@ -492,14 +498,13 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
     lasam_block = dict()
     if ('lasam' in coupled_models):
         if ("LASAM" in lib_files.keys()):
-            lasam_block = get_lasam_block(lib_files['LASAM'], config_dir)
+            lasam_block = get_lasam_block(lib_files['LASAM'], config_dir, coupled_models)
         elif ("LGAR-C" in lib_files.keys()):
-            lasam_block = get_lasam_block(lib_files['LGAR-C'], config_dir)
+            lasam_block = get_lasam_block(lib_files['LGAR-C'], config_dir, coupled_models)
 
     pet_block = dict()
     if (lib_files['evapotranspiration'] != ""):
-        pet_block = get_pet_block(lib_files['evapotranspiration'], config_dir,
-                                  var_names_map = var_names_map)
+        pet_block = get_pet_block(lib_files['evapotranspiration'], config_dir, var_names_map = var_names_map)
 
 
     ##########################################################################
@@ -523,7 +528,7 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
     }
 
 
-    if(is_calib in ["False", "false", "FALSE", "No", "no",  "NO"]):
+    if (not ngen_cal_type in ['calibration', 'validation', 'restart']):
         root["output_root"] = os.path.join(sim_output_dir, "div")
 
     # Update the forcing block if the forcings are in netcdf format
@@ -595,11 +600,21 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
         modules = [sloth_block, nom_block, lasam_block]
 
         output_variables = ["TGS", "precipitation", "potential_evapotranspiration", "actual_evapotranspiration", 
-                            "soil_storage", "surface_runoff", "giuh_runoff", "groundwater_to_stream_recharge",  "percolation", "total_discharge", 
-                            "infiltration"] 
-        output_header_fields = ["ground_temperature", "rain_rate", "PET_rate", "actual_ET",  
-                                "soil_storage", "direct_runoff", "giuh_runoff", "deep_gw_to_channel_flux", "soil_to_gw_flux", "q_out",
+                            "soil_storage", "surface_runoff", "giuh_runoff", "groundwater_to_stream_recharge",  "percolation",
+                            "total_discharge", "infiltration"] 
+        output_header_fields = ["ground_temperature", "rain_rate", "PET_rate", "actual_ET", "soil_storage", "direct_runoff",
+                                "giuh_runoff", "deep_gw_to_channel_flux", "soil_to_gw_flux", "q_out",
                                 "infiltration"]
+    elif (coupled_models == "pet_lasam"):
+        model_type_name = "PET_LASAM"
+        main_output_variable = "total_discharge"
+        modules = [sloth_block, pet_block, lasam_block]
+
+        output_variables = ["precipitation", "potential_evapotranspiration", "actual_evapotranspiration", 
+                            "soil_storage", "surface_runoff", "giuh_runoff", "groundwater_to_stream_recharge",  "percolation",
+                            "total_discharge", "infiltration"] 
+        output_header_fields = ["rain_rate", "PET_rate", "actual_ET", "soil_storage", "direct_runoff", "giuh_runoff",
+                                "deep_gw_to_channel_flux", "soil_to_gw_flux", "q_out", "infiltration"]
     elif (coupled_models == "nom_topmodel"):
         model_type_name = "NOM_TOPMODEL"
         main_output_variable = "Qout"
@@ -632,7 +647,7 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
                                 "soil_storage", "direct_runoff", "giuh_runoff", "deep_gw_to_channel_flux", "soil_to_gw_flux", "q_out",
                                 "infiltration", "soil_moisture_fraction"]
         
-    if (runoff_scheme == "NASH_CASCADE"):
+    if (runoff_scheme == "NASH_CASCADE" and (not "lasam" in coupled_models)):
         output_variables.remove("GIUH_RUNOFF")
         output_header_fields.remove("giuh_runoff")
             
@@ -672,7 +687,7 @@ def main():
         parser.add_argument("-p",      dest="precip_partitioning_scheme", type=str, required=True, help="option for precip partitioning scheme")
         parser.add_argument("-v", dest="verbosity",   type=int, required=False, default=False, help="verbosity option (0, 1, 2)")
         parser.add_argument("-sout",   dest="sim_output_dir",  type=str, required=True,  help="ngen runs output directory")
-        parser.add_argument("-c",      dest="calib",     type=str, required=False, default=False, help="option for calibration")
+        parser.add_argument("-ncal",   dest="ncal",     type=str, required=False, default=False, help="option for calibration, validation, or restart")
         args = parser.parse_args()
     except:
         parser.print_help()
@@ -715,7 +730,7 @@ def main():
         is_troute         = args.troute,
         verbosity         = args.verbosity,
         sim_output_dir    = args.sim_output_dir,
-        is_calib          = args.calib
+        ngen_cal_type     = args.ncal
     )
 
 

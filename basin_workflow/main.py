@@ -48,7 +48,6 @@ def runner(config_workflow, config_calib):
         
     if (args.run):
         print ("Calling Runner ...")
-        #infile = f"{workflow_dir}/configs/config_workflow.yaml"
         
         with open(config_workflow, 'r') as file:
             d = yaml.safe_load(file)

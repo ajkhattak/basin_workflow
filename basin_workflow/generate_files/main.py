@@ -103,11 +103,13 @@ num_processors_config      = dsim.get('num_processors_config', 1)
 num_processors_sim         = dsim.get('num_processors_sim', 1)
 setup_simulation           = dsim.get('setup_simulation', True)
 rename_existing_simulation = dsim.get('rename_existing_simulation', "")
-is_calibration             = dsim.get('is_calibration', False)
 is_netcdf_forcing          = dsim.get('is_netcdf_forcing', True)
 forcing_source             = dsim.get('forcing_source', "")
 forcing_dir                = dsim.get('forcing_dir', "")
 schema_type                = dsim.get('schema_type', "noaa-owp")
+
+dcalib = d['ngen_cal']
+ngen_cal_type              = dcalib.get('task_type', None)
 
 def process_clean_input_param():
     clean_lst = []
@@ -217,7 +219,7 @@ def generate_catchment_files(dir, forcing_files):
     driver = f'python {workflow_driver} -gpkg {gpkg_dir} -ngen {ngen_dir} -f {div_forcing_dir} \
     -o {config_dir} -m {model_option} -p {precip_partitioning_scheme} -r {surface_runoff_scheme} -t \'{simulation_time}\' \
     -netcdf {is_netcdf_forcing} -troute {is_routing} -routfile {routing_file} -json {json_dir} -v {verbosity} \
-    -c {is_calibration} -sout {sim_output_dir} -schema {schema_type}'
+    -ncal {ngen_cal_type} -sout {sim_output_dir} -schema {schema_type}'
 
     failed = subprocess.call(driver, shell=True)
 

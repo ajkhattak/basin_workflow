@@ -26,9 +26,29 @@ output_dir       = d["output_dir"]
 ngen_dir         = dsim["ngen_dir"]
 nproc            = int(dsim.get('num_processors_sim', 1))
 nproc_adaptive   = int(dsim.get('num_processors_adaptive', True))
-is_calibration   = dsim.get('is_calibration', False)
 simulation_time  = json.loads(dsim["simulation_time"])
 
+
+dcalib = d['ngen_cal']
+ngen_cal_type    = dcalib.get('task_type', None)
+
+cal_simulation_time = simulation_time
+val_simulation_time = simulation_time
+cal_state_dir = "./"
+if (ngen_cal_type in ['validation', 'restart']):
+    cal_state_dir    = dcalib.get('state_dir')
+    
+    if cal_state_dir is None:
+        raise ValueError("ngen_cal_type is validation or restart, however, cal_state_dir in None. It must be set to a valid directory.")
+
+    if not cal_state_dir:
+        raise FileNotFoundError(f"cal_state_dir does not exist, provided {cal_state_dir}.")
+
+    try:
+        cal_evaluation_time  = json.loads(dcalib["cal_evaluation_time"])
+        val_evaluation_time  = json.loads(dcalib["val_evaluation_time"])
+    except:
+        pass
 #
 #
 def run_ngen_without_calibration():
@@ -83,7 +103,8 @@ def run_ngen_with_calibration():
     #path = Path(sys.argv[0]).resolve() # get the absolute path
     
     #ngen_cal_basefile = sys.argv[1] #os.path.join(path_arg1.parent,Path(sys.argv[1]).name)
-   
+
+    
     for id, ncats in zip(indata["basin_id"], indata['n_cats']):
 
         ncats = int(ncats)
@@ -99,8 +120,14 @@ def run_ngen_with_calibration():
         
         #troute_output_file = os.path.join(dir, "outputs/troute", "troute_output_{}.csv".format(start_time))
         #troute_output_file = os.path.join(dir, "outputs/troute", "flowveldepth_{}.csv".format(gpkg_name))
-        troute_output_file = os.path.join("./troute_output_{}.nc".format(start_time))
+        cal_troute_output_file = os.path.join("./troute_output_{}.nc".format(start_time))
 
+        val_troute_output_file = ""
+        val_start_time = start_time
+        if (ngen_cal_type in ['validation', 'restart']):
+            val_start_time = pd.Timestamp(val_simulation_time['start_time']).strftime("%Y%m%d%H%M")
+            val_troute_output_file = os.path.join("./troute_output_{}.nc".format(val_start_time))
+                
         conf_dir = os.path.join(dir,"configs")
 
         file_par = ""
@@ -122,7 +149,11 @@ def run_ngen_with_calibration():
                                               realz_file_par = file_par,
                                               ngen_cal_basefile = ngen_cal_basefile,
                                               num_proc = nproc_local,
-                                              troute_output_file = troute_output_file)
+                                              cal_troute_output_file = cal_troute_output_file,
+                                              val_troute_output_file = val_troute_output_file,
+                                              ngen_cal_type = ngen_cal_type,
+                                              cal_state_dir = cal_state_dir,
+                                              val_simulation_time = val_simulation_time)
         #quit()
         run_command = f"python -m ngen.cal configs/calib_config.yaml"  
         result = subprocess.call(run_command,shell=True)
@@ -153,10 +184,10 @@ if __name__ == "__main__":
         sys.exit("Partitioning geopackage is requested but partitionGenerator does not exit! Quitting...")
 
 
-    if (not is_calibration):
+    if (not ngen_cal_type in ['calibration', 'validation', 'restart']):
         print ("Running NextGen without calibration ...")
         run_ngen_without_calibration()
     else:
-        print ("Running NextGen with calibration ...")
+        print (f'Running NextGen with {ngen_cal_type}')
         run_ngen_with_calibration()
         
