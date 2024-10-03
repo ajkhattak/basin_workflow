@@ -103,10 +103,18 @@ num_processors_config      = dsim.get('num_processors_config', 1)
 num_processors_sim         = dsim.get('num_processors_sim', 1)
 setup_simulation           = dsim.get('setup_simulation', True)
 rename_existing_simulation = dsim.get('rename_existing_simulation', "")
-is_netcdf_forcing          = dsim.get('is_netcdf_forcing', True)
-forcing_source             = dsim.get('forcing_source', "")
-forcing_dir                = dsim.get('forcing_dir', "")
 schema_type                = dsim.get('schema_type', "noaa-owp")
+
+
+dforcing = d['forcings']
+forcing_dir      = dforcing.get("forcing_dir", "")
+forcing_format   = dforcing.get('forcing_format', '.nc')
+forcing_source   = dsim.get('forcing_source', "")
+
+is_netcdf_forcing = True
+if (forcing_format == '.csv'):
+    is_netcdf_forcing = False
+
 
 dcalib = d['ngen_cal']
 ngen_cal_type              = dcalib.get('task_type', None)
@@ -151,8 +159,6 @@ def generate_catchment_files(dir, forcing_files):
         dot_index = gpkg_name.rfind('.')
         id = gpkg_name[last_underscore_index + 1:dot_index]
 
-        #id = int(gpkg_name[:-5].rsplit("_")[1])
-
         if len(forcing_files) > 0:
 
             forcing_file = [f for f in forcing_files if str(id) in f]
@@ -165,7 +171,7 @@ def generate_catchment_files(dir, forcing_files):
                     print (colors.RED + "  Failed " + colors.END )
                 return
         
-        elif (forcing_source == "Nels_forcing_prep"):
+        elif (forcing_source == "Nels_forcing_prep" or True):
             sim_time = json.loads(simulation_time)
             start_yr = pd.Timestamp(sim_time['start_time']).year 
             end_yr   = pd.Timestamp(sim_time['end_time']).year 
@@ -174,11 +180,13 @@ def generate_catchment_files(dir, forcing_files):
                 end_yr = end_yr + 1
 
             if (is_netcdf_forcing):
-                name_without_ext = gpkg_name.split(".")[0]
-                div_forcing_dir = os.path.join(dir, f"data/forcing/{start_yr}_to_{end_yr}/{name_without_ext}_{start_yr}_to_{end_yr}.nc")
+                #name_without_ext = gpkg_name.split(".")[0]
+                #div_forcing_dir = os.path.join(dir, f"data/forcing/{start_yr}_to_{end_yr}/{name_without_ext}_{start_yr}_to_{end_yr}.nc")
+                div_forcing_dir = glob.glob(f"{forcing_dir}/*.nc")[0]
             else:
-                div_forcing_dir = os.path.join(dir, f"data/forcing/{start_yr}_to_{end_yr}")
-                
+                #div_forcing_dir = os.path.join(dir, f"data/forcing/{start_yr}_to_{end_yr}")
+                div_forcing_dir = forcing_dir
+            
             if (not os.path.exists(div_forcing_dir)):
                 if verbosity >=2:
                     print(f" Forcing file does not exist under {div_forcing_dir}, continuing to the next gpkg")

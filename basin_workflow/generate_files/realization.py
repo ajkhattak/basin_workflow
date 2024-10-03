@@ -265,7 +265,7 @@ def get_lasam_block(model_exe, config_dir, coupled_models):
         "name": "bmi_c++",
         "params": {
             "name": "bmi_c++",
-            "model_type_name": "LASAM",
+            "model_type_name": "LGAR",
             "main_output_variable": "precipitation_rate",
             "library_file": model_exe,
             "init_config": os.path.join(config_dir, 'lasam/lasam_config_{{id}}.txt'),

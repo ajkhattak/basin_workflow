@@ -930,7 +930,7 @@ def get_flowpath_attributes(gpkg_file, full_schema=False, gage_id=False):
 # @param gpkg_file      : basin geopackage file
 # @param real_file      : realization file
 #############################################################################
-def write_forcing_input_files(forcing_basefile, gpkg_file, time):
+def write_forcing_input_files(forcing_basefile, gpkg_file, forcing_time, forcing_format):
 
     if (not os.path.exists(forcing_basefile)):
         sys.exit("Sample forcing yaml file does not exist, provided is " + forcing_basefile)
@@ -952,6 +952,9 @@ def write_forcing_input_files(forcing_basefile, gpkg_file, time):
 
     if (not os.path.exists(d["out_dir"])):
         os.makedirs("data/forcing")
+
+    if (forcing_format == '.csv'):
+        d['netcdf'] = "false"
 
     with open(os.path.join(d["out_dir"],"forcing_config.yaml"), 'w') as file:
         yaml.dump(d,file, default_flow_style=False, sort_keys=False)

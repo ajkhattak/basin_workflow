@@ -130,13 +130,16 @@ class ReadObservedData:
         sim_local = sim.copy()
         
         mean_values = np.reshape(sim_local.values, (-1, self.window)).mean(axis=1)
-        
+
         #assert len(mean_values) == len(index)
         if (len(mean_values) == len(index) ):
             ds_sim = pd.Series(mean_values, index=index)
         else:
-            index = pd.date_range(start=sim_local.index[0], end=sim_local.index[-1], freq=f'{self.window}H')
-            #index = pd.datetime(start = sim_local.index[0], end=sim_local.index[-1], freq = f'{windows}H')
+            index = pd.date_range(start=sim_local.index[0], end=sim_local.index[-1], freq=f'{self.window}h')
+            if self.window == 24:
+                index = pd.date_range(start=sim_local.index[0].normalize(), end=sim_local.index[-1], freq='d')
+                index = index[:len(mean_values)]
+
             ds_sim = pd.Series(mean_values, index=index)
 
         ds_sim.rename("sim_flow", inplace=True)

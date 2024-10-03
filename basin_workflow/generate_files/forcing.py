@@ -19,12 +19,18 @@ with open(infile, 'r') as file:
 dsim = d['simulations']
 workflow_dir        = d["workflow_dir"]
 output_dir          = d["output_dir"]
-simulation_time     = dsim["simulation_time"]
-is_netcdf_forcing   = dsim.get('is_netcdf_forcing', True)
+#simulation_time     = dsim["simulation_time"]
+#is_netcdf_forcing   = dsim.get('is_netcdf_forcing', True)
 verbosity           = dsim.get('verbosity', 0)
-forcing_venv_dir    = dsim.get('forcing_venv_dir', "~/venv_forcing")
+#forcing_venv_dir    = dsim.get('forcing_venv_dir', "~/venv_forcing")
 #forcing_venv_dir   = "/home/ec2-user/venv_forcing"
 num_processors_forcing  = 1
+
+dforcing = d['forcings']
+forcing_dir      = dforcing.get("forcing_dir", "")
+forcing_time     = dforcing["forcing_time"]
+forcing_format   = dforcing.get('forcing_format', '.nc')
+forcing_venv_dir = dforcing.get('forcing_venv_dir', "~/venv_forcing")
 
 def forcing_generate_catchment(dir):
 
@@ -38,8 +44,9 @@ def forcing_generate_catchment(dir):
     
     config_dir = os.path.join(dir,"configs")
     forcing_config = configuration.write_forcing_input_files(forcing_basefile = infile,
-                                                             gpkg_file = gpkg_file,
-                                                             time = simulation_time)
+                                                             gpkg_file        = gpkg_file,
+                                                             forcing_time     = forcing_time,
+                                                             forcing_format   = forcing_format)
 
     run_cmd = f'python {workflow_dir}/extern/CIROH_DL_NextGen/forcing_prep/generate.py {forcing_config}'
 

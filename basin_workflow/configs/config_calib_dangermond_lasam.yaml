@@ -1,6 +1,6 @@
 # file: calibration_config.yaml
 general:
-  strategy: 
+  strategy:
       # Type of strategy, currently supported is estimation
       type: estimation
       # defaults to dds (currently, the only supported algorithm)
@@ -21,67 +21,36 @@ general:
      - "ngen_cal_user_plugins.ngen_cal_read_obs_plugin.ReadObservedData"
 
 # Define parameters to calibrate, their bounds, and initial values.
-cfe_params: &cfe_params
-  -
-    name: b # beta exponent on Clapp-Hornberger (1978) soil water relations
-    min: 0.0
-    max: 16
-    init: 4.05
-  - 
-    name: satdk # saturated hydraulic conductivity [m/s]
-    min: 2.0E-7
-    max: 7.26E-3
-    init: 3.38E-6
-  -
-    name: satpsi # saturated capillary head [m]
-    min: 0.036
-    max: 0.995
-    init: 0.355
-  -
-    name: maxsmc # saturated soil moisture content
+lgar_params: &lgar_params
+  - name: smcmin
+    init: 0.08
+    min: 0.01
+    max: 0.15
+  - name: smcmax
+    init: 0.439
     min: 0.2
     max: 0.6
-    init: 0.439
-  -
-    name: max_gw_storage # maximum groundwater storage [m]
-    min: 0.01
-    max: 0.25
-    init: 0.05
-  -
-    name: Cgw  # groundwater coefficient [m/h]
-    min: 1.6266E-6
-    max: 1.6266E-4
-    init: 1.6266E-5
-  -
-    name: expon # exponent parameter (1.0 for linear reservoir) (groundwater)
-    min: 1.0
-    max: 8.0
-    init: 5.0
-  - 
-    name: Kn # Nash cascade lateral subsurface runoff coefficient [1/h]
-    min: 0.0
-    max: 1.0
-    init: 0.03
-  - 
-    name: Klf # Nash cascade lateral subsurface param - primary reservoir [1/h]
-    min: 0.0
-    max: 1.0
+  - name: van_genuchten_n
+    init: 2.0
+    min: 1.01
+    max: 3.0
+  - name: van_genuchten_alpha
+    init: 0.1
+    min: 0.001
+    max: 0.3
+  - name: hydraulic_conductivity
+    init: 0.5
+    min: 0.001
+    max: 100
+  - name: field_capacity
+    init: 340.9
+    min: 10.3
+    max: 516.6
+  - name: ponded_depth_max
     init: 0.01
-  - 
-    name: Kinf_nash_surface # runon infiltration coefficient (NASH CASCADE runoff only; cfe2.0)
-    min: 1.0E-6
-    max: 5.0E-3
-    init: 2.0E-3
-  - 
-    name: retention_depth_nash_surface # used only with cfe2.0
     min: 0.0
-    max: 0.02
-    init: 0.001
-  -
-    name: refkdt # soil infiltration params; used only with Schakee
-    min: 0.1
-    max: 4.0
-    init: 3.0
+    max: 2.0
+
 
 # Model specific configuration
 model:
@@ -95,9 +64,10 @@ model:
     eval_feature: wb-3550
     # Each catchment upstream of observable nexus gets its own permuted parameter space, evaluates at one observable nexus 
     strategy: uniform
-    params: 
-        CFE: *cfe_params
-    
+    params:
+        # Note, this name MUST be the same as the realization model_type_name for the keys
+        LGAR: *lgar_params
+
     eval_params:
       # choices are "kling_gupta", "nnse", "custom", "single_peak", "volume"
       objective: "kling_gupta"
