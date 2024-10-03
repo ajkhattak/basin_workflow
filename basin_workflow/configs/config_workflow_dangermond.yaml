@@ -41,16 +41,16 @@ simulations :
   forcing_venv_dir   : "/Users/ahmadjan/.ngen_forcing/" # "/home/ec2-user/venv_forcing" # provide only when using forcing data downloaders
   
   #simulation_time        : '{"start_time" : "1979-10-01 00:00:00", "end_time" : "1982-09-29 00:00:00"}'
-  #simulation_time        : '{"start_time" : "1979-10-01 00:00:00", "end_time" : "1979-10-05 00:00:00"}'
-  simulation_time        : '{"start_time" : "1979-10-05 00:00:00", "end_time" : "1979-10-15 00:00:00"}'
-  model_option               : "PL"
+  simulation_time        : '{"start_time" : "1982-09-01 00:00:00", "end_time" : "1982-09-25 00:00:00"}'
+  #simulation_time        : '{"start_time" : "1982-09-20 00:00:00", "end_time" : "1982-09-25 00:00:00"}'
+  model_option               : "PC"
   precip_partitioning_scheme : 'Schaake'
   surface_runoff_scheme      : 'NASH_CASCADE'
   is_routing                 : True
 
   clean                      : ['existing']
   setup_simulation           : True
-  verbosity                  : 0
+  verbosity                  : 3
 
   num_processors_sim         : 1
   num_processors_adaptive    : False
@@ -61,8 +61,7 @@ simulations :
 
 ngen_cal :
   #task_type  : calibration #, validation, restart
-  #task_type  : validation # #calibration, validation, restart
-  task_type : None
+  task_type  : validation # #calibration, validation, restart
+  #task_type : None
   state_dir  : "/Users/ahmadjan/Core/SimulationsData/projects/tnc-dangermond/ngen-dr/simulations/11120600/202410011919_ngen_uw17as8j_worker"
-  #cal_evaluation_time        : '{"start_time" : "1979-10-05 00:00:00", "end_time" : "1979-10-15 00:00:00"}'
-  #val_evaluation_time        : '{"start_time" : "1979-10-05 00:00:00", "end_time" : "1979-10-15 00:00:00"}'
+  val_evaluation_time        : '{"start_time" : "1982-09-25 00:00:00", "end_time" : "1982-10-05 00:00:00"}'

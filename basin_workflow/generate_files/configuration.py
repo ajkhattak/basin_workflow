@@ -877,7 +877,7 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
             'objective' : "kling_gupta"
             }
         d['model']['val_params'] = val_params
-
+    """
     if (ngen_cal_type in  ['validation', 'restart']):
         df_par    = pd.read_parquet(os.path.join(cal_state_dir,"calib_param_df_state.parquet"))
         df_params = pd.read_csv(os.path.join(cal_state_dir,"best_params.txt"), header = None)
@@ -891,7 +891,7 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
                 for par in d[block]:
                     if par['name'] in calib_params:
                         par['init'] = float(best_params_set[par['name']])
-
+    """
     with open(os.path.join(conf_dir,"calib_config.yaml"), 'w') as file:
         yaml.dump(d,file, default_flow_style=False, sort_keys=False)
 

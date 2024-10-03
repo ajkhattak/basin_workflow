@@ -13,9 +13,12 @@ general:
 
   start_iteration: 0
   # The total number of search iterations to run
-  iterations: 100
+  iterations: 2
   random_seed: 444
   workdir: ./
+  plugins:
+     - "ngen_cal_user_plugins.ngen_cal_save_iteration_output_plugin.SaveValidation"  # saves ngen *.csv to "output_validation" directory
+     - "ngen_cal_user_plugins.ngen_cal_read_obs_plugin.ReadObservedData"
 
 # Define parameters to calibrate, their bounds, and initial values.
 cfe_params: &cfe_params
@@ -99,8 +102,8 @@ model:
       # choices are "kling_gupta", "nnse", "custom", "single_peak", "volume"
       objective: "kling_gupta"
     plugins:
-      - "ngen_cal_user_plugins.ngen_cal_save_iteration_output_plugin.NgenSaveOutput" # saves cat_*.csv or nex-*.csv to "output_iteration" directory
-      - "ngen_cal_user_plugins.ngen_cal_save_sim_obs_plugin.SaveOutput"              # saves simulated and observed discharge at the outlet
+      - "ngen_cal_user_plugins.ngen_cal_save_iteration_output_plugin.SaveCalibration" # saves ngen *.csv to "output_iteration" directory
+      - "ngen_cal_user_plugins.ngen_cal_save_sim_obs_plugin.SaveOutput"               # saves simulated and observed discharge at the outlet
       - "ngen_cal_user_plugins.ngen_cal_read_obs_plugin.ReadObservedData"
       #- "ngen_cal_user_plugins.ngen_cal_symlink_plugin.NgenCalSymlinkDir"
     plugin_settings:

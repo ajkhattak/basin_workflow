@@ -43,12 +43,18 @@ if (ngen_cal_type in ['validation', 'restart']):
 
     if not cal_state_dir:
         raise FileNotFoundError(f"cal_state_dir does not exist, provided {cal_state_dir}.")
-
+    
     try:
-        cal_evaluation_time  = json.loads(dcalib["cal_evaluation_time"])
-        val_evaluation_time  = json.loads(dcalib["val_evaluation_time"])
+        cal_simulation_time  = json.loads(dcalib["cal_evaluation_time"])
     except:
         pass
+    
+    try:
+        val_simulation_time  = json.loads(dcalib["val_evaluation_time"])
+    except:
+        pass
+
+
 #
 #
 def run_ngen_without_calibration():
