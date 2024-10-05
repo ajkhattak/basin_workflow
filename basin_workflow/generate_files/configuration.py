@@ -803,9 +803,16 @@ def write_troute_input_files(gpkg_file, routing_file, troute_dir, simulation_tim
 # @param gpkg_file      : basin geopackage file
 # @param real_file      : realization file
 #############################################################################
-def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_file_par,
+def write_calib_input_files(gpkg_file, ngen_dir, output_dir, realization_file_par,
                             cal_troute_output_file, val_troute_output_file, ngen_cal_basefile,
                             ngen_cal_type, cal_state_dir, val_simulation_time, num_proc):
+
+    conf_dir = os.path.join(output_dir,"configs")
+
+    realization = glob.glob(os.path.join(output_dir,"json/realization_*.json"))
+
+    assert (len(realization) == 1)
+
 
     if (not os.path.exists(ngen_cal_basefile)):
         sys.exit("Sample calib yaml file does not exist, provided is " + ngen_cal_basefile)
@@ -817,10 +824,10 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
     with open(ngen_cal_basefile, 'r') as file:
         d = yaml.safe_load(file)
 
-    d['general']['workdir']    = os.path.dirname(os.path.dirname(gpkg_file))
-
+    #d['general']['workdir']    = os.path.dirname(os.path.dirname(gpkg_file))
+    d['general']['workdir']   = output_dir
     d['model']['binary']      = os.path.join(ngen_dir, "cmake_build/ngen")
-    d['model']['realization'] = realz_file
+    d['model']['realization'] = realization[0]
     d['model']['hydrofabric'] = gpkg_file
     
     #d['model']['routing_output'] = f'./flowveldepth_{gpkg_name}.csv' # this gpkg_name should be consistent with title_string in troute
@@ -854,13 +861,13 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
 
     if (num_proc > 1):
         d['model']['parallel'] = num_proc
-        d['model']['partitions'] = realz_file_par
+        d['model']['partitions'] = realization_file_par
 
     if os_name == "Darwin":
         d['model']['binary'] = f'PYTHONEXECUTABLE=$(which python) ' + os.path.join(ngen_dir, "cmake_build/ngen")
     else:
         d['model']['binary'] = os.path.join(ngen_dir, "cmake_build/ngen")
-
+    
     if (ngen_cal_type == 'validation'):
 
         val_troute_output = {
@@ -877,8 +884,9 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
             'objective' : "kling_gupta"
             }
         d['model']['val_params'] = val_params
-    """
-    if (ngen_cal_type in  ['validation', 'restart']):
+    
+    #if (ngen_cal_type in  ['validation', 'restart']):
+    if (ngen_cal_type in  ['restart']):
         df_par    = pd.read_parquet(os.path.join(cal_state_dir,"calib_param_df_state.parquet"))
         df_params = pd.read_csv(os.path.join(cal_state_dir,"best_params.txt"), header = None)
         best_itr  = str(int(df_params.values[1]))
@@ -891,7 +899,7 @@ def write_calib_input_files(gpkg_file, ngen_dir, conf_dir, realz_file, realz_fil
                 for par in d[block]:
                     if par['name'] in calib_params:
                         par['init'] = float(best_params_set[par['name']])
-    """
+
     with open(os.path.join(conf_dir,"calib_config.yaml"), 'w') as file:
         yaml.dump(d,file, default_flow_style=False, sort_keys=False)
 

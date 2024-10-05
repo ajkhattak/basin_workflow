@@ -90,7 +90,8 @@ with open(infile, 'r') as file:
 
 dsim = d['simulations']
 workflow_dir               = d["workflow_dir"]
-output_dir                 = d["output_dir"]
+input_dir                  = d["input_dir"]
+output_dir                 = Path(d["output_dir"])
 ngen_dir                   = dsim["ngen_dir"]
 simulation_time            = dsim["simulation_time"]
 model_option               = dsim['model_option']
@@ -119,6 +120,8 @@ if (forcing_format == '.csv'):
 dcalib = d['ngen_cal']
 ngen_cal_type              = dcalib.get('task_type', None)
 
+output_dir.mkdir(parents=True, exist_ok=True)
+
 def process_clean_input_param():
     clean_lst = []
     if (isinstance(clean, str)):
@@ -131,19 +134,24 @@ clean = process_clean_input_param()
 
 ##############################################################################
 
-def generate_catchment_files(dir, forcing_files):
-    
-    os.chdir(dir)
+def generate_catchment_files(dirs, forcing_files):
+
+    i_dir = dirs[0]
+    o_dir = dirs[1]
+
+    o_dir.mkdir(parents=True, exist_ok=True)
+    os.chdir(o_dir)
 
     basin_ids = []
     num_cats  = []
     
     if (verbosity >=2):
-        print ("dir: ", dir)
+        print ("i_dir: ", i_dir)
+        print ("o_dir: ", o_dir)
         print ("cwd: ", os.getcwd())
 
-    if (os.path.exists(os.path.join(dir,"data"))):
-        gpkg_name = os.path.basename(glob.glob(dir + "/data/*.gpkg")[0])
+    if (os.path.exists(os.path.join(i_dir,"data"))):
+        gpkg_name = os.path.basename(glob.glob(i_dir + "/data/*.gpkg")[0])
         gpkg_dir = f"data/{gpkg_name}"
     else:
         return
@@ -205,16 +213,16 @@ def generate_catchment_files(dir, forcing_files):
                             print (colors.RED + "  Failed " + colors.END )
                     return
             else:
-                div_forcing_dir = forcing_dir.replace("{*}", Path(dir).name)
+                div_forcing_dir = forcing_dir.replace("{*}", Path(i_dir).name)
 
         assert os.path.exists(div_forcing_dir)
 
-    config_dir = os.path.join(dir,"configs")
-    json_dir   = os.path.join(dir, "json")
-    gpkg_dir   = os.path.join(dir, gpkg_dir)
-    sim_output_dir = os.path.join(dir, "outputs")
+    config_dir = os.path.join(o_dir,"configs")
+    json_dir   = os.path.join(o_dir, "json")
+    gpkg_dir   = os.path.join(i_dir, gpkg_dir)
+    sim_output_dir = os.path.join(o_dir, "outputs")
     
-    helper.create_clean_dirs(output_dir = dir, setup_simulation = setup_simulation,
+    helper.create_clean_dirs(output_dir = o_dir, setup_simulation = setup_simulation,
                              rename_existing_simulation = rename_existing_simulation, clean = clean)
 
     if (not setup_simulation):
@@ -228,7 +236,7 @@ def generate_catchment_files(dir, forcing_files):
     -o {config_dir} -m {model_option} -p {precip_partitioning_scheme} -r {surface_runoff_scheme} -t \'{simulation_time}\' \
     -netcdf {is_netcdf_forcing} -troute {is_routing} -routfile {routing_file} -json {json_dir} -v {verbosity} \
     -ncal {ngen_cal_type} -sout {sim_output_dir} -schema {schema_type}'
-
+    
     failed = subprocess.call(driver, shell=True)
 
     if (not failed):
@@ -273,11 +281,14 @@ def main(nproc = 4):
     pool = multiprocessing.Pool(processes=nproc)
     
     #print ("CPU:", multiprocessing.cpu_count())
+    tuple_list = list(zip(gpkg_dirs, output_dirs))
+    
 
     partial_generate_files_catchment = partial(generate_catchment_files, forcing_files=forcing_files)
 
     # map catchments to each processor
-    results = pool.map(partial_generate_files_catchment, gpkg_dirs)
+    results = pool.map(partial_generate_files_catchment, tuple_list)
+
 
     results = [result for result in results if result is not None]
 
@@ -321,12 +332,15 @@ if __name__ == "__main__":
     if (not os.path.exists(os.path.join(workflow_dir, "generate_files"))):
         sys.exit("check `workflow_dir`, it should be the parent directory of `generate_files` directory")
 
-    all_dirs = glob.glob(os.path.join(output_dir, '*/'), recursive = True)
+    all_dirs = glob.glob(os.path.join(input_dir, '*/'), recursive = True)
 
     gpkg_dirs = [
         g for g in all_dirs 
         if os.path.exists(os.path.join(g, 'data')) and glob.glob(os.path.join(g, 'data', '*.gpkg'))
     ]
+
+    
+    output_dirs = [output_dir / Path(g).name for g in gpkg_dirs ]
 
     success_ncats = main(nproc = num_processors_config)
 
