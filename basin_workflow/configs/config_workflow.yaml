@@ -5,8 +5,8 @@
 # make sure to install yaml package using install.packages("yaml") if not installed already
 
 workflow_dir  : "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/"
-input_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/test_basinsX/"
-output_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/test_basinsY/"
+input_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/tests_ss/"
+output_dir    : "/Users/ahmadjan/Core/SimulationsData/projects/tests_ss/"
 
 
 gpkg_model_params :
@@ -36,19 +36,13 @@ gpkg_model_params :
 
 forcings:
   forcing_format     : ".nc"
-  forcing_source     : "Nels_forcing_prep" # if forcing data are downloaded using Nels' tools 'forcing_prep'
   forcing_venv_dir   : "/Users/ahmadjan/.ngen_forcing/" # provide only when using forcing data downloaders
-  forcing_dir        : "/Users/ahmadjan/Core/SimulationsData/projects/test_basinsX/0214655255/data/forcing/2010_to_2011/"
-  forcing_time       : '{"start_time" : "2010-09-20 00:00:00", "end_time" : "2011-09-25 00:00:00"}'
+  forcing_dir        : "/Users/ahmadjan/Core/SimulationsData/projects/tests_ss/{*}/data/forcing/2010_to_2011/"
+  forcing_time       : '{"start_time" : "2010-09-20 00:00:00", "end_time" : "2010-09-25 00:00:00"}'
   
-###############
+
 simulations :
   ngen_dir           : "/Users/ahmadjan/codes/ngen/ngen"
-  is_netcdf_forcing  : True
-  #forcing_source     : "local"
-  forcing_source     : "Nels_forcing_prep" # if forcing data are downloaded using Nels tools 'forcing_prep'
-  #forcing_dir        : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/forcingsX/{*}"
-  forcing_venv_dir   : "/Users/ahmadjan/.ngen_forcing/" #"/home/ec2-user/venv_forcing" # provide only when using forcing data downloaders
   
   #simulation_time            : '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2010-10-05 00:00:00"}'
   simulation_time            : '{"start_time" : "2010-10-05 00:00:00", "end_time" : "2010-10-30 00:00:00"}'
@@ -69,9 +63,7 @@ simulations :
   rename_existing_simulation : ""
 
 ngen_cal :
-  #task_type  : calibration #, validation, restart
-  #task_type  : validation # #calibration, validation, restart
-  task_type : "restart"
+  task_type  : calibration # calibration, validation, restart, None
   state_dir  : "/Users/ahmadjan/Core/SimulationsData/projects/test_basinsX/0214655255/202410042024_ngen_qaiklwj0_worker/"
   val_evaluation_time        : '{"start_time" : "2010-10-05 00:00:00", "end_time" : "2010-10-30 00:00:00"}'
   #val_evaluation_time        : '{"start_time" : "1982-09-30 00:00:00", "end_time" : "1982-10-05 00:00:00"}'

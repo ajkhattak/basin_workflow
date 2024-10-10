@@ -71,13 +71,18 @@ def run_ngen_without_calibration():
     for id, ncats in zip(indata["basin_id"], indata['n_cats']):
 
         ncats = int(ncats)
+
+        o_dir = output_dir / id
+        i_dir = Path(input_dir) / id
         
-        o_dir = os.path.join(output_dir, id)
-        i_dir = os.path.join(input_dir, id)
+        print ("cwd: ", os.getcwd())
+        print ("input_dir: ", i_dir)
+        print ("output_dir: ", o_dir)
+
         os.chdir(o_dir)
 
-        gpkg_name  = os.path.basename(glob.glob(i_dir + "/data/*.gpkg")[0])
-        gpkg_file  = f"data/{gpkg_name}" 
+        gpkg_file = Path(glob.glob(str(i_dir / "data" / "*.gpkg"))[0])
+        gpkg_name = gpkg_file.stem
 
         nproc_local = nproc
 
@@ -110,23 +115,24 @@ def run_ngen_with_calibration():
     infile = os.path.join(output_dir, "basins_passed.csv")
     indata = pd.read_csv(infile, dtype=str)
    
-    #path = Path(sys.argv[0]).resolve() # get the absolute path
-    
-    #ngen_cal_basefile = sys.argv[1] #os.path.join(path_arg1.parent,Path(sys.argv[1]).name)
-
-    
     for id, ncats in zip(indata["basin_id"], indata['n_cats']):
 
         ncats = int(ncats)
 
-        o_dir = os.path.join(output_dir, id)
-        i_dir = os.path.join(input_dir, id)
+        o_dir = output_dir / id
+        i_dir = Path(input_dir) / id
+
+        print ("cwd: ", os.getcwd())
+        print ("input_dir: ", i_dir)
+        print ("output_dir: ", o_dir)
+
         os.chdir(o_dir)
 
-        gpkg_file = glob.glob(i_dir + "/data/*.gpkg")[0]
-        gpkg_name  = os.path.basename(gpkg_file).split(".")[0]
+        gpkg_file = Path(glob.glob(str(i_dir / "data" / "*.gpkg"))[0])
+        gpkg_name = gpkg_file.stem
+
         nproc_local = nproc
-        
+
         start_time = pd.Timestamp(simulation_time['start_time']).strftime("%Y%m%d%H%M")
         
         #troute_output_file = os.path.join(dir, "outputs/troute", "troute_output_{}.csv".format(start_time))
@@ -159,7 +165,7 @@ def run_ngen_with_calibration():
                                               ngen_cal_type = ngen_cal_type,
                                               cal_state_dir = cal_state_dir,
                                               val_simulation_time = val_simulation_time)
-        
+
         run_command = f"python -m ngen.cal configs/calib_config.yaml"  
         result = subprocess.call(run_command,shell=True)
 

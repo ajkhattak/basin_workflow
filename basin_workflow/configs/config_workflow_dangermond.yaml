@@ -4,9 +4,9 @@
 # See main.R for further details
 # make sure to install yaml package using install.packages("yaml") if not installed already
 
-
-workflow_dir  : "/home/ec2-user/codes/workflows/basin_workflow/basin_workflow/"
-output_dir    : "/home/ec2-user/core/tnc-dangermond/simulations/lasam"
+workflow_dir  : "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/"
+input_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/tnc-dangermond/ngen-dr/simulations"
+output_dir    : "/Users/ahmadjan/Core/SimulationsData/projects/tnc-dangermond/ngen-dr/simulations"
 
 
 gpkg_model_params :
@@ -34,21 +34,20 @@ gpkg_model_params :
       gpkg_dir  : "/Users/ahmadjan/Core/SimulationsData/projects/tnc-dangermond/ngen-dr"
       pattern   :  "jldp_ngen_nhdhr_11120600.gpkg"
       
-###############
+
 forcings:
   forcing_format     : ".nc"
-  forcing_source     : "Nels_forcing_prep" # if forcing data are downloaded using Nels' tools 'forcing_prep'
-  forcing_venv_dir   : "/home/ec2-user/venv_forcing" # provide only when using forcing data downloaders
-  forcing_dir        : "/home/ec2-user/core/tnc-dangermond/simulations/cfe/11120600/data/forcing/1979_to_2024/"
+  forcing_venv_dir   : "/Users/ahmadjan/.ngen_forcing/" # provide only when using forcing data downloaders
+  forcing_dir        : "/Users/ahmadjan/Core/SimulationsData/projects/tnc-dangermond/ngen-dr/simulations/11120600/data/forcing/1979_to_1980/"
   forcing_time       : '{"start_time" : "1979-09-20 00:00:00", "end_time" : "2023-09-25 00:00:00"}'
 
 simulations :
-  ngen_dir           : "/home/ec2-user/codes/ngen/ngen"
+  ngen_dir           : "/Users/ahmadjan/codes/ngen/ngen"
   
   simulation_time            : '{"start_time" : "1979-10-01 00:00:00", "end_time" : "1982-09-29 00:00:00"}'
   #simulation_time           : '{"start_time" : "1979-10-01 00:00:00", "end_time" : "2023-09-29 00:00:00"}'
   #simulation_time            : '{"start_time" : "1982-09-25 00:00:00", "end_time" : "1982-09-29 00:00:00"}'
-  model_option               : "PL"
+  model_option               : "PC"
 
   precip_partitioning_scheme : 'Schaake'
   surface_runoff_scheme      : 'NASH_CASCADE'
@@ -66,9 +65,7 @@ simulations :
   schema_type                : "dangermond"
 
 ngen_cal :
-  #task_type  : calibration #, validation, restart
-  task_type  : validation # #calibration, validation, restart
-  #task_type : None
+  task_type  : calibration # calibration, validation, restart, None  
   state_dir  : "/Users/ahmadjan/Core/SimulationsData/projects/tnc-dangermond/ngen-dr/simulations/11120600/202410011919_ngen_uw17as8j_worker"
   val_evaluation_time        : '{"start_time" : "1982-09-30 00:00:00", "end_time" : "2023-09-30 00:00:00"}'
   #val_evaluation_time        : '{"start_time" : "1982-09-30 00:00:00", "end_time" : "1982-10-05 00:00:00"}'

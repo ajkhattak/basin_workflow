@@ -23,6 +23,7 @@ import numpy as np
 import fiona
 import yaml
 import platform
+from pathlib import Path
 
 try:
     from generate_files import schema
@@ -820,16 +821,16 @@ def write_calib_input_files(gpkg_file, ngen_dir, output_dir, realization_file_pa
     basin_workflow_dir = os.path.dirname(os.path.dirname(ngen_cal_basefile))
 
     gpkg_name  = os.path.basename(gpkg_file).split(".")[0]
-    
+
     with open(ngen_cal_basefile, 'r') as file:
         d = yaml.safe_load(file)
 
     #d['general']['workdir']    = os.path.dirname(os.path.dirname(gpkg_file))
-    d['general']['workdir']   = output_dir
+    d['general']['workdir']   = output_dir.as_posix()
     d['model']['binary']      = os.path.join(ngen_dir, "cmake_build/ngen")
     d['model']['realization'] = realization[0]
-    d['model']['hydrofabric'] = gpkg_file
-    
+    d['model']['hydrofabric'] = gpkg_file.as_posix()
+
     #d['model']['routing_output'] = f'./flowveldepth_{gpkg_name}.csv' # this gpkg_name should be consistent with title_string in troute
     d['model']['routing_output'] = cal_troute_output_file # if in the outputs/troute directory
 
@@ -938,19 +939,23 @@ def get_flowpath_attributes(gpkg_file, full_schema=False, gage_id=False):
 # @param gpkg_file      : basin geopackage file
 # @param real_file      : realization file
 #############################################################################
-def write_forcing_input_files(forcing_basefile, gpkg_file, forcing_time, forcing_format):
+def write_forcing_input_files(forcing_basefile, gpkg_file, forcing_time, forcing_format,
+                              forcing_dir):
 
     if (not os.path.exists(forcing_basefile)):
-        sys.exit("Sample forcing yaml file does not exist, provided is " + forcing_basefile)
+        sys.exit(f"Sample forcing yaml file does not exist, provided is {forcing_basefile}")
 
     
     with open(forcing_basefile, 'r') as file:
         d = yaml.safe_load(file)
-    time_sim = json.loads(time)
+    time_sim = json.loads(forcing_time)
     
     start_yr = pd.Timestamp(time_sim['start_time']).year #strftime("%Y")
     end_yr = pd.Timestamp(time_sim['end_time']).year #strftime("%Y")
-    
+
+    if (start_yr > end_yr):
+        sys.exit(f"end_time ({end_yr})is less than the start_time ({start_yr}")
+        
     if (start_yr <= end_yr):
         end_yr = end_yr + 1
 
@@ -958,16 +963,26 @@ def write_forcing_input_files(forcing_basefile, gpkg_file, forcing_time, forcing
     d["years"] = [start_yr, end_yr]
     d["out_dir"] = os.path.join(os.path.dirname(gpkg_file), "forcing")
 
+    # check that out_dir and forcing_dir are consisten
+    out_dir = Path(d['out_dir']) / f'{start_yr}_to_{end_yr}'
+    
+    # Check if the two directory paths are identical
+    are_identical = out_dir.resolve() == Path(forcing_dir).resolve()
+    
+    # Output the result
+    if not are_identical:
+        raise RuntimeError(f"Directory mismatch: out_dir={out_dir} is not the same as forcing_dir={forcing_dir}.")
+    
     if (not os.path.exists(d["out_dir"])):
         os.makedirs("data/forcing")
 
     if (forcing_format == '.csv'):
         d['netcdf'] = "false"
 
-    with open(os.path.join(d["out_dir"],"forcing_config.yaml"), 'w') as file:
+    with open(os.path.join(d["out_dir"],"config_forcing.yaml"), 'w') as file:
         yaml.dump(d,file, default_flow_style=False, sort_keys=False)
 
-    return os.path.join(d["out_dir"],"forcing_config.yaml")
+    return os.path.join(d["out_dir"],"config_forcing.yaml")
 
 #############################################################################
 #############################################################################

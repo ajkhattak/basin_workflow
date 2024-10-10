@@ -18,7 +18,7 @@ cid: -1 # The divide_id chunk size. Default -1 means all divide_ids in a basin. 
 redo: false # Set to true if you want to ensure intermediate data files not read in from local storage
 x_lon_dim: "longitude" # The longitude term in the AORC dataset
 y_lat_dim: "latitude" # The latitude term in the AORC dataset
-out_dir: "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/test/01052500/data/forcingX" # The local storage data output directory. 
+out_dir: "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/test/01052500/data/forcing" # The local storage data output directory. 
 
 # By default, will generate ngen compatible netcdf files, to generate CSV files
 # instead, set the following key with false
