@@ -46,7 +46,7 @@ simulations :
   
   #simulation_time            : '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2010-10-05 00:00:00"}'
   simulation_time            : '{"start_time" : "2010-10-05 00:00:00", "end_time" : "2010-10-30 00:00:00"}'
-  model_option               : "PC"
+  model_option               : "PET_CFE"
   precip_partitioning_scheme : 'Schaake'
   surface_runoff_scheme      : 'NASH_CASCADE' # 'GIUH' for cfe1.0
   is_routing                 : True

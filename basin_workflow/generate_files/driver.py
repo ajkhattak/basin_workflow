@@ -16,18 +16,18 @@ import argparse
 import json
 
 coupled_models_options = {
-    "C"   : "cfe",
-    "L"   : "lasam",
-    "NC"  : "nom_cfe",
-    "PC"  : "pet_cfe",
-    "NL"  : "nom_lasam",
-    "PL"  : "pet_lasam",
-    "NCP" : "nom_cfe_pet",
-    "NCSS": "nom_cfe_smp_sft",
-    "NLSS": "nom_lasam_smp_sft",
-    "NT"  : "nom_topmodel",
-    "BC"  : "baseline_cfe",
-    "BL"  : "baseline_lasam"
+    "CFE"      : "cfe",
+    "LAS"      : "lasam",
+    "NOM_CFE"  : "nom_cfe",
+    "PET_CFE"  : "pet_cfe",
+    "NON_LAS"  : "nom_lasam",
+    "PET_LAS"         : "pet_lasam",
+    "NOM_CFE_PET"     : "nom_cfe_pet",
+    "NOM_CFE_SMP_SFT" : "nom_cfe_smp_sft",
+    "NOM_LAS_SMP_SFT" : "nom_lasam_smp_sft",
+    "NOM_TOP"         : "nom_topmodel",
+    "BASELINE_CFE"    : "baseline_cfe",
+    "BASELINE_LAS"    : "baseline_lasam"
 }
 
 class colors:

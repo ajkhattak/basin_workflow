@@ -47,7 +47,7 @@ simulations :
   simulation_time            : '{"start_time" : "1979-10-01 00:00:00", "end_time" : "1982-09-29 00:00:00"}'
   #simulation_time           : '{"start_time" : "1979-10-01 00:00:00", "end_time" : "2023-09-29 00:00:00"}'
   #simulation_time            : '{"start_time" : "1982-09-25 00:00:00", "end_time" : "1982-09-29 00:00:00"}'
-  model_option               : "PC"
+  model_option               : "PET_CFE"
 
   precip_partitioning_scheme : 'Schaake'
   surface_runoff_scheme      : 'NASH_CASCADE'
