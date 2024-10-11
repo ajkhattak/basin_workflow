@@ -30,7 +30,7 @@ import helper
 
 ############################# Required Arguments ###################################
 ### Specify the following four directories (change according to your settings)
-# workflow_dir    : points to the base directory of generate_files under basin_workflow
+# workflow_dir    : points to the base directory of src_py under basin_workflow
 # output_dir        : geopackage(s) directory (format output_dir/GAUGE_ID see below)                 
 # nc_forcing_dir  : lumped forcings directory (pre-downloaded forcing data for each catchment (.csv or .nc); only need if forcing
 #                   directory is outside the structure of the output_dir described below)
@@ -224,7 +224,7 @@ def generate_catchment_files(dirs):
     if (not setup_simulation):
         return
 
-    workflow_driver = os.path.join(workflow_dir, "generate_files/driver.py")
+    workflow_driver = os.path.join(workflow_dir, "src_py/driver.py")
 
     routing_file = os.path.join(workflow_dir, "configs/basefiles/config_troute.yaml")
 
@@ -309,8 +309,8 @@ if __name__ == "__main__":
     assert (os.path.exists(ngen_dir))
     ######################################
 
-    if (not os.path.exists(os.path.join(workflow_dir, "generate_files"))):
-        sys.exit("check `workflow_dir`, it should be the parent directory of `generate_files` directory")
+    if (not os.path.exists(os.path.join(workflow_dir, "src_py"))):
+        sys.exit("check `workflow_dir`, it should be the parent directory of `src_py` directory")
 
     all_dirs = glob.glob(os.path.join(input_dir, '*/'), recursive = True)
 

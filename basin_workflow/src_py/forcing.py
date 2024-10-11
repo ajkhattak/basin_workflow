@@ -4,7 +4,7 @@ import subprocess
 import glob
 import yaml
 import platform
-#from generate_files import configuration
+
 import configuration
 import main
 import json

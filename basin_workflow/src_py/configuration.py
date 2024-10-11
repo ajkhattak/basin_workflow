@@ -26,7 +26,7 @@ import platform
 from pathlib import Path
 
 try:
-    from generate_files import schema
+    from src_py import schema
 except:
     import schema
 os_name = platform.system()

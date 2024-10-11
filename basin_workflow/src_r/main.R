@@ -67,8 +67,8 @@ setup <-function() {
   reinstall_hydrofabric <<- inputs$gpkg_model_params$reinstall_hydrofabric
   write_attr_parquet    <<- inputs$gpkg_model_params$write_attributes_parquet
 
-  source(paste0(workflow_dir, "/giuh_twi/install_load_libs.R"))
-  source(glue("{workflow_dir}/giuh_twi/custom_functions.R"))
+  source(paste0(workflow_dir, "/src_r/install_load_libs.R"))
+  source(glue("{workflow_dir}/src_r/custom_functions.R"))
   
   dem_input_file        <<- get_param(inputs, "gpkg_model_params$dem_input_file", "s3://lynker-spatial/gridded-resources/dem.vrt")
 
