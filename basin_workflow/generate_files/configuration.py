@@ -806,7 +806,7 @@ def write_troute_input_files(gpkg_file, routing_file, troute_dir, simulation_tim
 #############################################################################
 def write_calib_input_files(gpkg_file, ngen_dir, output_dir, realization_file_par,
                             cal_troute_output_file, val_troute_output_file, ngen_cal_basefile,
-                            ngen_cal_type, cal_state_dir, val_simulation_time, num_proc):
+                            ngen_cal_type, restart_dir, validation_time, num_proc):
 
     conf_dir = os.path.join(output_dir,"configs")
 
@@ -876,20 +876,23 @@ def write_calib_input_files(gpkg_file, ngen_dir, output_dir, realization_file_pa
                 'validation_routing_output': val_troute_output_file
             }
         }
-        d['model']['plugin_settings'].update(val_troute_output)
+
+        try:
+            d['model']['plugin_settings'].update(val_troute_output)
+        except:
+            d['model']['plugin_settings'] = val_troute_output
 
         val_params = {
-            #'sim_start': '2022-09-01 00:00:00',
-            'evaluation_start': val_simulation_time['start_time'],
-            'evaluation_stop': val_simulation_time['end_time'],
+            'evaluation_start': validation_time['start_time'],
+            'evaluation_stop' : validation_time['end_time'],
             'objective' : "kling_gupta"
             }
         d['model']['val_params'] = val_params
-    
-    #if (ngen_cal_type in  ['validation', 'restart']):
-    if (ngen_cal_type in  ['restart']):
-        df_par    = pd.read_parquet(os.path.join(cal_state_dir,"calib_param_df_state.parquet"))
-        df_params = pd.read_csv(os.path.join(cal_state_dir,"best_params.txt"), header = None)
+
+
+    elif (ngen_cal_type == 'restart'):
+        df_par    = pd.read_parquet(os.path.join(restart_dir,"calib_param_df_state.parquet"))
+        df_params = pd.read_csv(os.path.join(restart_dir,"best_params.txt"), header = None)
         best_itr  = str(int(df_params.values[1]))
 
         best_params_set = df_par[best_itr]

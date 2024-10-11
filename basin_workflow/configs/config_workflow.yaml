@@ -45,12 +45,11 @@ simulations :
   ngen_dir           : "/Users/ahmadjan/codes/ngen/ngen"
   
   #simulation_time            : '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2010-10-05 00:00:00"}'
-  simulation_time            : '{"start_time" : "2010-10-05 00:00:00", "end_time" : "2010-10-30 00:00:00"}'
+  simulation_time            : '{"start_time" : "2010-10-05 00:00:00", "end_time" : "2010-10-05 23:00:00"}'
   model_option               : "PET_CFE"
   precip_partitioning_scheme : 'Schaake'
   surface_runoff_scheme      : 'NASH_CASCADE' # 'GIUH' for cfe1.0
   is_routing                 : True
-  is_calibration             : True
 
   clean                      : ['existing']
   setup_simulation           : True
@@ -63,7 +62,6 @@ simulations :
   rename_existing_simulation : ""
 
 ngen_cal :
-  task_type  : calibration # calibration, validation, restart, None
-  state_dir  : "/Users/ahmadjan/Core/SimulationsData/projects/test_basinsX/0214655255/202410042024_ngen_qaiklwj0_worker/"
-  val_evaluation_time        : '{"start_time" : "2010-10-05 00:00:00", "end_time" : "2010-10-30 00:00:00"}'
-  #val_evaluation_time        : '{"start_time" : "1982-09-30 00:00:00", "end_time" : "1982-10-05 00:00:00"}'
+  task_type       : validation # calibration, validation, restart, None
+  restart_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/test_basins/0214655255/202410042024_ngen_qaiklwj0_worker/"
+  validation_time : '{"start_time" : "2010-11-22 14:00:00", "end_time" : "2010-11-23 02:00:00"}'

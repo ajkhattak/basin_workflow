@@ -17,6 +17,10 @@ general:
   random_seed: 444
   workdir: ./
 
+  plugins:
+     - "ngen_cal_user_plugins.ngen_cal_save_iteration_output_plugin.SaveValidation"  # saves ngen *.csv to "output_validation" directory
+     - "ngen_cal_user_plugins.ngen_cal_save_sim_obs_plugin.SaveValidation"  # saves ngen *.csv to "output_validation" directory
+     
 # Define parameters to calibrate, their bounds, and initial values.
 cfe_params: &cfe_params
   - 
@@ -60,4 +64,5 @@ model:
       objective: "kling_gupta"
     plugins:
       - "ngen_cal_user_plugins.ngen_cal_save_iteration_output_plugin.SaveCalibration" # saves cat_*.csv or nex-*.csv to "output_iteration" directory
-      - "ngen_cal_user_plugins.ngen_cal_save_sim_obs_plugin.SaveOutput"              # saves simulated and observed discharge at the outlet
+      - "ngen_cal_user_plugins.ngen_cal_save_sim_obs_plugin.SaveCalibration"              # saves simulated and observed discharge at the outlet
+      - "ngen_cal_user_plugins.ngen_cal_save_sim_obs_plugin.SaveValidation"

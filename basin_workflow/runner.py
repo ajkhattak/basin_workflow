@@ -30,36 +30,30 @@ nproc_adaptive   = int(dsim.get('num_processors_adaptive', True))
 simulation_time  = json.loads(dsim["simulation_time"])
 
 
-#output_dir.mkdir(parents=True, exist_ok=True)
-
 dcalib = d['ngen_cal']
 ngen_cal_type    = dcalib.get('task_type', None)
 
-cal_simulation_time = simulation_time
-val_simulation_time = simulation_time
-cal_state_dir = "./"
-if (ngen_cal_type in ['validation', 'restart']):
-    cal_state_dir    = dcalib.get('state_dir')
-    
-    if cal_state_dir is None:
-        raise ValueError("ngen_cal_type is validation or restart, however, cal_state_dir in None. It must be set to a valid directory.")
+validation_time = simulation_time
 
-    if not cal_state_dir:
-        raise FileNotFoundError(f"cal_state_dir does not exist, provided {cal_state_dir}.")
+if (ngen_cal_type == 'validation'):
     
     try:
-        cal_simulation_time  = json.loads(dcalib["cal_evaluation_time"])
-    except:
-        pass
-    
-    try:
-        val_simulation_time  = json.loads(dcalib["val_evaluation_time"])
+        validation_time  = json.loads(dcalib["validation_time"])
     except:
         pass
 
+restart_dir = "./"
+if (ngen_cal_type == 'restart'):
+    restart_dir    = dcalib.get('restart_dir')
+    
+    if restart_dir is None:
+        raise ValueError("ngen_cal_type is restart, however, restart_dir in None. It must be set to a valid directory.")
 
-#
-#
+    if not restart_dir:
+        raise FileNotFoundError(f"restart_dir does not exist, provided {restart_dir}.")
+
+
+
 def run_ngen_without_calibration():
     
     infile = os.path.join(output_dir, "basins_passed.csv")
@@ -74,12 +68,13 @@ def run_ngen_without_calibration():
 
         o_dir = output_dir / id
         i_dir = Path(input_dir) / id
-        
+
+        os.chdir(o_dir)
         print ("cwd: ", os.getcwd())
         print ("input_dir: ", i_dir)
         print ("output_dir: ", o_dir)
 
-        os.chdir(o_dir)
+        
 
         gpkg_file = Path(glob.glob(str(i_dir / "data" / "*.gpkg"))[0])
         gpkg_name = gpkg_file.stem
@@ -122,11 +117,11 @@ def run_ngen_with_calibration():
         o_dir = output_dir / id
         i_dir = Path(input_dir) / id
 
+        os.chdir(o_dir)
         print ("cwd: ", os.getcwd())
         print ("input_dir: ", i_dir)
         print ("output_dir: ", o_dir)
 
-        os.chdir(o_dir)
 
         gpkg_file = Path(glob.glob(str(i_dir / "data" / "*.gpkg"))[0])
         gpkg_name = gpkg_file.stem
@@ -141,8 +136,8 @@ def run_ngen_with_calibration():
 
         val_troute_output_file = ""
         val_start_time = start_time
-        if (ngen_cal_type in ['validation', 'restart']):
-            val_start_time = pd.Timestamp(val_simulation_time['start_time']).strftime("%Y%m%d%H%M")
+        if (ngen_cal_type  == 'validation'):
+            val_start_time = pd.Timestamp(validation_time['start_time']).strftime("%Y%m%d%H%M")
             val_troute_output_file = os.path.join("./troute_output_{}.nc".format(val_start_time))
 
 
@@ -154,17 +149,17 @@ def run_ngen_with_calibration():
         print ("Running basin %s on cores %s ********"%(id, nproc_local), flush = True)
         
 
-        configuration.write_calib_input_files(gpkg_file = gpkg_file,
-                                              ngen_dir = ngen_dir,
+        configuration.write_calib_input_files(gpkg_file  = gpkg_file,
+                                              ngen_dir   = ngen_dir,
                                               output_dir = o_dir,
                                               realization_file_par = file_par,
                                               ngen_cal_basefile = ngen_cal_basefile,
                                               num_proc = nproc_local,
                                               cal_troute_output_file = cal_troute_output_file,
                                               val_troute_output_file = val_troute_output_file,
-                                              ngen_cal_type = ngen_cal_type,
-                                              cal_state_dir = cal_state_dir,
-                                              val_simulation_time = val_simulation_time)
+                                              ngen_cal_type   = ngen_cal_type,
+                                              restart_dir     = restart_dir,
+                                              validation_time = validation_time)
 
         run_command = f"python -m ngen.cal configs/calib_config.yaml"  
         result = subprocess.call(run_command,shell=True)

@@ -8,15 +8,15 @@ import pandas as pd
 from pathlib import Path
 
 #from download_nwm_streamflow import
-#ds_sim_test = pd.Series
-#ds_obs_test = pd.Series
-#_workdir: Path | None = None
+ds_sim_test = pd.Series
+ds_obs_test = pd.Series
+_workdir: Path | None = None
 
 if typing.TYPE_CHECKING:
     from datetime import datetime
     from ngen.cal.meta import JobMeta
 
-class SaveOutput:
+class SaveCalibration:
     def __init__(self) -> None:
         self.sim: pd.Series | None = None
         self.obs: pd.Series | None = None
@@ -47,9 +47,10 @@ class SaveOutput:
            return None
         assert isinstance(obs, pd.Series), f"expected pd.Series, got {type(obs)!r}"
         self.obs = obs
-        
+
         global ds_obs_test
         ds_obs_test = obs
+
         return obs
 
     @hookimpl(wrapper=True)
@@ -67,8 +68,6 @@ class SaveOutput:
 
         self.sim = sim
 
-        global ds_sim_test
-        ds_sim_test = sim
         return sim
 
     @hookimpl
@@ -103,3 +102,53 @@ class SaveOutput:
         
 
 
+class SaveValidation:
+    def __init__(self) -> None:
+        self.sim: pd.Series | None = None
+        self.obs: pd.Series | None = None
+        self.first_iteration: bool = True
+
+
+    @hookimpl(wrapper=True)
+    def ngen_cal_model_output(
+        self, id: str | None
+    ) -> typing.Generator[None, pd.Series, pd.Series]:
+        # In short, all registered `ngen_cal_model_output` hooks run
+        # before `yield` and the results are sent as the result to `yield`
+        # NOTE: DO NOT MODIFY `sim`
+        sim = yield
+
+        if sim is None:
+            return None
+
+        assert isinstance(sim, pd.Series), f"expected pd.Series, got {type(sim)!r}"
+
+        self.sim = sim
+
+        global ds_sim_test
+        ds_sim_test = sim
+        return sim
+
+    
+    @hookimpl
+    def ngen_cal_finish(exception: Exception | None) -> None:
+        
+        if exception is None:
+            print("validation: not saving obs/sim output")
+            return
+        
+        global _workdir
+        assert _workdir is not None, "invariant"
+
+        try:
+            df = pd.merge(ds_sim_test, ds_obs_test, left_index=True, right_index=True)
+        except:
+            df = pd.DataFrame(ds_sim_test)
+
+        df.reset_index(names="time", inplace=True)
+
+        path = _workdir
+        out_dir = path / f"output_sim_obs"
+        if (not out_dir.is_dir()):
+            Path.mkdir(out_dir)
+        df.to_csv(f"{out_dir}/sim_obs_validation.csv")

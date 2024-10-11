@@ -65,7 +65,6 @@ simulations :
   schema_type                : "dangermond"
 
 ngen_cal :
-  task_type  : calibration # calibration, validation, restart, None  
-  state_dir  : "/Users/ahmadjan/Core/SimulationsData/projects/tnc-dangermond/ngen-dr/simulations/11120600/202410011919_ngen_uw17as8j_worker"
-  val_evaluation_time        : '{"start_time" : "1982-09-30 00:00:00", "end_time" : "2023-09-30 00:00:00"}'
-  #val_evaluation_time        : '{"start_time" : "1982-09-30 00:00:00", "end_time" : "1982-10-05 00:00:00"}'
+  task_type        : calibration # calibration, validation, restart, None  
+  restart_dir      : "/Users/ahmadjan/Core/SimulationsData/projects/tnc-dangermond/ngen-dr/simulations/11120600/202410011919_ngen_uw17as8j_worker"
+  validation_time  : '{"start_time" : "1982-09-30 00:00:00", "end_time" : "2023-09-30 00:00:00"}'
