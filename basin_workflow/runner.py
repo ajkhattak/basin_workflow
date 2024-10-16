@@ -9,7 +9,7 @@ import subprocess
 import glob
 import yaml
 import platform
-from generate_files import configuration
+from src_py import configuration
 import json
 from pathlib import Path
 

@@ -28,7 +28,7 @@ def runner(config_workflow, config_calib):
 
     if (args.forc):
         print ("Generating forcing data...")
-        generate_forcing = f"python {workflow_dir}/generate_files/forcing.py {config_workflow}"
+        generate_forcing = f"python {workflow_dir}/src_py/forcing.py {config_workflow}"
         status = subprocess.call(generate_forcing,shell=True)
 
         if (status):
@@ -38,7 +38,7 @@ def runner(config_workflow, config_calib):
 
     if (args.conf):
         print ("Generating config files...")
-        generate_configs = f"python {workflow_dir}/generate_files/main.py {config_workflow}"
+        generate_configs = f"python {workflow_dir}/src_py/main.py {config_workflow}"
         status = subprocess.call(generate_configs,shell=True)
 
         if (status):
