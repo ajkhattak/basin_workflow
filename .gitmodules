@@ -1,6 +1,6 @@
 [submodule "basin_workflow/extern/ngen-cal"]
-	path = basin_workflow/extern/ngen-cal
+	path = extern/ngen-cal
 	url = https://github.com/NOAA-OWP/ngen-cal
 [submodule "basin_workflow/extern/CIROH_DL_NextGen"]
-	path = basin_workflow/extern/CIROH_DL_NextGen
+	path = extern/CIROH_DL_NextGen
 	url = https://github.com/ajkhattak/CIROH_DL_NextGen
