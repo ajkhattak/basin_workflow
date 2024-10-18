@@ -4,7 +4,7 @@
 # See main.R for further details
 # make sure to install yaml package using install.packages("yaml") if not installed already
 
-workflow_dir  : "/Users/ahmadjan/codes/workflows/basin_workflow/basin_workflow/"
+workflow_dir  : "/Users/ahmadjan/codes/workflows/basin_workflow/"
 input_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/tests_ss/"
 output_dir    : "/Users/ahmadjan/Core/SimulationsData/projects/tests_ss/"
 

@@ -84,7 +84,7 @@ build_models()
 build_workflow()
 {
     git clone https://github.com/ajkhattak/basin_workflow /home/ec2-user/codes/workflows/basin_workflow
-    cd /home/ec2-user/codes/workflows/basin_workflow/basin_workflow
+    cd /home/ec2-user/codes/workflows/basin_workflow
     git submodule update --init
     git submodule update --remote extern/ngen-cal
     git submodule update --remote extern/CIROH_DL_NextGen
