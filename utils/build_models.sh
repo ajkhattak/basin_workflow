@@ -60,7 +60,7 @@ build_troute()
 
 build_models()
 {
-    for model in cfe evapotranspiration SoilFreezeThaw SoilMoistureProfiles CAMAS; do
+    for model in cfe evapotranspiration SoilFreezeThaw SoilMoistureProfiles LGAR; do
 	rm -rf extern/$model/${builddir}
 	if [ "$model" == "cfe" ] || [ "$model" == "SoilFreezeThaw" ] || [ "$model" == "SoilMoistureProfiles" ]; then
 	    git submodule update --remote extern/${model}/${model}
@@ -68,7 +68,7 @@ build_models()
 	    make -C extern/${model}/${model}/${builddir}
 	fi
 	
-	if [ "$model" == "CAMAS" ]; then
+	if [ "$model" == "LGAR" ]; then
 	    git clone https://github.com/NOAA-OWP/LGAR-C extern/${model}/${model}
 	    cmake -B extern/${model}/${model}/${builddir} -S extern/${model}/${model} -DNGEN=ON -DCMAKE_BUILD_TYPE=Release
 	    make -C extern/${model}/${model}/${builddir}

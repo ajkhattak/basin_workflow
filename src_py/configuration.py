@@ -953,8 +953,8 @@ def write_forcing_input_files(forcing_basefile, gpkg_file, forcing_time, forcing
         d = yaml.safe_load(file)
     time_sim = json.loads(forcing_time)
     
-    start_yr = pd.Timestamp(time_sim['start_time']).year #strftime("%Y")
-    end_yr = pd.Timestamp(time_sim['end_time']).year #strftime("%Y")
+    start_yr = pd.Timestamp(time_sim['start_time']).year  #strftime("%Y")
+    end_yr   = pd.Timestamp(time_sim['end_time']).year    #strftime("%Y")
 
     if (start_yr > end_yr):
         sys.exit(f"end_time ({end_yr})is less than the start_time ({start_yr}")

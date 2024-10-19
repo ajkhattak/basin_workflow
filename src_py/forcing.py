@@ -63,7 +63,7 @@ def forcing_data_correction(fdir):
 def forcing_generate_catchment(dir):
 
     os.chdir(dir)
-    infile = os.path.join(workflow_dir, "configs/config_aorc.yaml")
+    infile = os.path.join(workflow_dir, "configs/basefiles/config_aorc.yaml")
 
     if (os.path.exists(os.path.join(dir,"data"))):
         gpkg_file = glob.glob(dir + "data/*.gpkg")[0]
