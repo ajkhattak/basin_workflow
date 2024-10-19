@@ -45,8 +45,6 @@ simulations :
   ngen_dir           : "/Users/ahmadjan/codes/ngen/ngen"
   
   simulation_time            : '{"start_time" : "1979-10-01 00:00:00", "end_time" : "1982-09-29 00:00:00"}'
-  #simulation_time           : '{"start_time" : "1979-10-01 00:00:00", "end_time" : "2023-09-29 00:00:00"}'
-  #simulation_time            : '{"start_time" : "1982-09-25 00:00:00", "end_time" : "1982-09-29 00:00:00"}'
   model_option               : "PET_CFE"
 
   precip_partitioning_scheme : 'Schaake'
@@ -55,7 +53,7 @@ simulations :
 
   clean                      : ['existing']
   setup_simulation           : True
-  verbosity                  : 3
+  verbosity                  : 0
 
   num_processors_sim         : 6
   num_processors_adaptive    : False

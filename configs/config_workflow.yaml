@@ -53,7 +53,7 @@ simulations :
 
   clean                      : ['existing']
   setup_simulation           : True
-  verbosity                  : 3
+  verbosity                  : 0
 
   num_processors_sim         : 1
   num_processors_adaptive    : False
@@ -62,6 +62,6 @@ simulations :
   rename_existing_simulation : ""
 
 ngen_cal :
-  task_type       : validation # calibration, validation, restart, None
-  restart_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/test_basins/0214655255/202410042024_ngen_qaiklwj0_worker/"
-  validation_time : '{"start_time" : "2010-11-22 14:00:00", "end_time" : "2010-11-23 02:00:00"}'
+  task_type       : validation #calibration #, validation, restart, None
+  restart_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/test_basins/{*}/202410042024_ngen_qaiklwj0_worker/"
+  validation_time : '{"start_time" : "2010-11-22 14:00:00", "end_time" : "2010-12-23 02:00:00"}'
