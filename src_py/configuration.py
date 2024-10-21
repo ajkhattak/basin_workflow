@@ -792,7 +792,7 @@ def write_troute_input_files(gpkg_file, routing_file, troute_dir, simulation_tim
         }
     
     d['output_parameters'] = stream_output
-    
+
     with open(os.path.join(troute_dir,"troute_config.yaml"), 'w') as file:
         yaml.dump(d,file, default_flow_style=False, sort_keys=False)
 
@@ -870,7 +870,6 @@ def write_calib_input_files(gpkg_file, ngen_dir, output_dir, realization_file_pa
         d['model']['binary'] = os.path.join(ngen_dir, "cmake_build/ngen")
     
     if (ngen_cal_type == 'validation'):
-
         val_troute_output = {
             'ngen_cal_troute_output': {
                 'validation_routing_output': val_troute_output_file
@@ -889,6 +888,14 @@ def write_calib_input_files(gpkg_file, ngen_dir, output_dir, realization_file_pa
             }
         d['model']['val_params'] = val_params
 
+        val_plugins = [
+                "ngen_cal_user_plugins.ngen_cal_save_iteration_output_plugin.SaveValidation",  
+                "ngen_cal_user_plugins.ngen_cal_read_obs_plugin.ReadObservedData"
+            ]
+        try:
+            d['general']['plugins'].update(val_plugins)
+        except:
+            d['general']['plugins'] = val_plugins
 
     elif (ngen_cal_type == 'restart'):
         df_par    = pd.read_parquet(os.path.join(restart_dir,"calib_param_df_state.parquet"))

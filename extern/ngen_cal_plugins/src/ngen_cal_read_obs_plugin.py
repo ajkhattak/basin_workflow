@@ -66,14 +66,15 @@ class ReadObservedData:
         filename: str, start_time: datetime, end_time: datetime, window: int
     ) -> pd.Series:
         # read file
-        df = pd.read_csv(filename, usecols=["value_time", "value"])
+        print ("filename: ", filename)
+        df = pd.read_csv(filename, usecols=["value_date", "value"])
 
-        df["value_time"] = pd.to_datetime(df["value_time"])
+        df["value_date"] = pd.to_datetime(df["value_date"])
         if self.units == "ft3/sec" or self.units == "ft3/s":
             df["value"] = self.ft3_to_m3 * df["value"]
 
         # subset into `pd.Series` that is indexed by `datetime` with a name
-        df.set_index("value_time", inplace=True)
+        df.set_index("value_date", inplace=True)
         df = df.loc[start_time:end_time]
 
         # get total hours to ensure the length of observed data is consistent with the leght of simulated data
@@ -228,11 +229,11 @@ class ReadObservedData:
 
         # read file
         #df = pd.read_parquet(config.plugin_settings["ngen_cal_read_obs_data"]["obs_data_path"])
-        df = pd.read_csv(config.plugin_settings["ngen_cal_read_obs_data"]["obs_data_path"], usecols=['value_time', 'value'])
+        df = pd.read_csv(config.plugin_settings["ngen_cal_read_obs_data"]["obs_data_path"], usecols=['value_date', 'value'])
         self.units  = config.plugin_settings["ngen_cal_read_obs_data"]["units"]
         self.window = int(config.plugin_settings["ngen_cal_read_obs_data"]["window"])
 
-        df["value_time"] = pd.to_datetime(df['value_time'])
+        df["value_date"] = pd.to_datetime(df['value_date'])
         if (self.units == "ft3/sec" or self.units == "ft3/s"):
             df["value"] = self.ft3_to_m3 * df["value"]
             
@@ -245,7 +246,7 @@ class ReadObservedData:
 
         divide_id = nexus.id
         # subset into `pd.Series` that is indexed by `datetime` with a name
-        df.set_index("value_time", inplace=True)
+        df.set_index("value_date", inplace=True)
         df = df.loc[start:end]
 
         # get total hours to ensure the length of observed data is consistent with the leght of simulated data

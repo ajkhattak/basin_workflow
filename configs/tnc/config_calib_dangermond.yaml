@@ -13,13 +13,10 @@ general:
 
   start_iteration: 0
   # The total number of search iterations to run
-  iterations: 100
+  iterations: 2
   random_seed: 444
   workdir: ./
   
-  plugins:
-     - "ngen_cal_user_plugins.ngen_cal_save_iteration_output_plugin.SaveValidation"  # saves ngen *.csv to "output_validation" directory
-     - "ngen_cal_user_plugins.ngen_cal_read_obs_plugin.ReadObservedData"
 
 # Define parameters to calibrate, their bounds, and initial values.
 cfe_params: &cfe_params
@@ -108,6 +105,6 @@ model:
       - "ngen_cal_user_plugins.ngen_cal_read_obs_plugin.ReadObservedData"
     plugin_settings:
       ngen_cal_read_obs_data:
-        obs_data_path: /home/ec2-user/core/tnc-dangermond/simulations/stream_discharge-19791001-19820929_11120600.csv
+        obs_data_path: /Users/ahmadjan/Core/SimulationsData/projects/tnc-dangermond/ngen-dr/stream_discharge-19791001-19820929_11120600.csv
         units: "ft3/sec"
         window: 24 # data interval in hours
