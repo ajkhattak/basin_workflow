@@ -4,9 +4,9 @@
 # See main.R for further details
 # make sure to install yaml package using install.packages("yaml") if not installed already
 
-workflow_dir  : "/home/sakoriche/NextGen/Projects/ModelStructure/repositories/bwf_tnc_DM_nov2024/basin_workflow/"
-input_dir     : "/home/shared/Model-structure/sim_CFE1_sak/test_dem_input/"
-output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/test_dem_output/"
+workflow_dir  : "/home/ec2-user/Projects/repositories/bwf_aws_dec2024/basin_workflow/"
+input_dir     : "/home/ec2-user/Projects/simulations/test_ec2/"
+output_dir     : "/home/ec2-user/Projects/simulations/test_ec2/"
 
 
 gpkg_model_params :
@@ -19,13 +19,13 @@ gpkg_model_params :
 
   options :
     use_gage_id :
-      use_gage_id : FALSE
-      #gage_ids    : "01057000"  #"01208990" #"0214655255" #"10154200" #"0214655255" #"03366500"
+      use_gage_id : TRUE
+      gage_ids    : "0214655255"  #"01057000"  #"01208990" #"0214655255" #"10154200" #"0214655255" #"03366500"
       #gage_ids    : ["04115265", "07301410", "04063700", "12488500"]
       #gage_ids     : ["02378300", "02471078", "02381600", "02465000"]
-      gage_ids     : ["09378170", "09378630", "10258000", "11098000"]
+      #gage_ids     : ["09378170", "09378630", "10258000", "11098000"]
     use_gage_file :
-      use_gage_file : TRUE
+      use_gage_file : FALSE
       gage_file     : "/home/shared/Model-structure/input_CAMELS/camels_Area50to200/Camels_BasinIDs_Area50to200.csv"
       column_name   : "gage_ID"
 
@@ -36,14 +36,14 @@ gpkg_model_params :
 
 
 forcings:
-  forcing_format     : ".csv"   #".nc"
-  forcing_venv_dir   : "/home/shared/Model-structure/sifan/.venv_forcing/" # provide only when using forcing data downloaders
-  forcing_dir        : "/home/shared/Model-structure/sim_CFE1_sak/test_dem_input/{*}/data/forcing/2013_to_2022/"
-  forcing_time       : '{"start_time" : "2013-01-01 00:00:00", "end_time" : "2021-12-31 23:00:00"}'
+  forcing_format     : ".nc"  #".csv"   #".nc"
+  forcing_venv_dir   : "/home/ec2-user/.venv_forcing/" # provide only when using forcing data downloaders
+  forcing_dir        : "/home/ec2-user/Projects/simulations/test_ec2/{*}/data/forcing/2013_to_2014/"
+  forcing_time       : '{"start_time" : "2013-01-01 00:00:00", "end_time" : "2014-12-31 23:00:00"}'
   num_processors_forc : 1  
 
 formulation :
-  ngen_dir           : "/home/sakoriche/NextGen/ngen_sifan/ngen/"
+  ngen_dir           : "/home/ec2-user/Projects/NextGen/ngen/"
 
   models                     : "NOM_CFE" # "PET_CFE"  # "NOM_CFE"
   precip_partitioning_scheme : 'Schaake'
