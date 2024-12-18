@@ -78,7 +78,7 @@ def get_noah_owp_modular_block(model_exe, config_dir):
         "name": "bmi_fortran", 
         "params": {
             "name": "bmi_fortran", 
-            "model_type_name": "NoahOWP", 
+            "model_type_name": "NoahOWP",
             "main_output_variable": "QINSUR",
             "library_file": model_exe,
             "init_config": os.path.join(config_dir, 'nom/nom_config_{{id}}.input'),
@@ -428,7 +428,8 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
     # , include topmodel later
     for m in models:
     
-        if m in ['SoilFreezeThaw', 'cfe', 'SoilMoistureProfiles', 'LASAM', 'LGAR-C', \
+#        if m in ['SoilFreezeThaw', 'cfe', 'SoilMoistureProfiles', 'LASAM', 'LGAR-C', \
+        if m in ['SoilFreezeThaw', 'cfe', 'SoilMoistureProfiles', 'LASAM', 'LGAR', \
                  'sloth', 'evapotranspiration', 'noah-owp-modular', 'topmodel']:
 
             if m in ['sloth', 'noah-owp-modular', 'topmodel']:
@@ -496,11 +497,14 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
 
     # lasam
     lasam_block = dict()
+
     if ('lasam' in coupled_models):
         if ("LASAM" in lib_files.keys()):
             lasam_block = get_lasam_block(lib_files['LASAM'], config_dir, coupled_models)
-        elif ("LGAR-C" in lib_files.keys()):
-            lasam_block = get_lasam_block(lib_files['LGAR-C'], config_dir, coupled_models)
+#        elif ("LGAR-C" in lib_files.keys()):
+#            lasam_block = get_lasam_block(lib_files['LGAR-C'], config_dir, coupled_models)
+        elif ("LGAR" in lib_files.keys()):
+            lasam_block = get_lasam_block(lib_files['LGAR'], config_dir, coupled_models)
 
     pet_block = dict()
     if (lib_files['evapotranspiration'] != ""):
@@ -659,7 +663,6 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
     #global_block["params"]["output_variables"]     = output_variables
     global_block["params"]["output_header_fields"] = output_header_fields
     global_block["params"]["modules"]              = modules
-
 
     # replace formulations block
     root["global"]["formulations"] = [global_block]

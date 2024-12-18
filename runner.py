@@ -13,6 +13,7 @@ import platform
 from src_py import configuration
 import json
 from pathlib import Path
+import numpy as np
 
 os_name = platform.system()
 workflow_infile   = sys.argv[1]
@@ -111,12 +112,11 @@ def run_ngen_without_calibration():
 
 def run_ngen_with_calibration(basin):
 
-    infile = os.path.join(output_dir, "basins_passed.csv")
-    indata = pd.read_csv(infile, dtype=str)
-
+#    infile = os.path.join(output_dir, "basins_passed.csv")
+#    indata = pd.read_csv(infile, dtype=str)
+#
     id = basin[0]
     ncats = int(basin[1])
-
 
     o_dir = output_dir / id
     i_dir = Path(input_dir) / id
@@ -125,7 +125,6 @@ def run_ngen_with_calibration(basin):
     print ("cwd: ", os.getcwd())
     print ("input_dir: ", i_dir)
     print ("output_dir: ", o_dir)
-
 
     gpkg_file = Path(glob.glob(str(i_dir / "data" / "*.gpkg"))[0])
     gpkg_name = gpkg_file.stem
@@ -186,19 +185,85 @@ def run_ngen_with_calibration(basin):
         # .yaml file under cat_id/configs
         result = subprocess.call(run_command,shell=True)
 
+def driver_basins(basins):
+
+    for basin in basins:
+        run_ngen_with_calibration(basin)
+
 def driver_ngen_with_calibration():
 
     infile = os.path.join(output_dir, "basins_passed.csv")
-    indata = pd.read_csv(infile, dtype=str)
-    
-    pool = multiprocessing.Pool(processes=basins_in_par)
+#    indata = pd.read_csv(infile, dtype=str)
+    indata = pd.read_csv(infile, dtype={'basin_id': str, 'n_cats': int})
 
+#    pool = multiprocessing.Pool(processes=basins_in_par)
+#
     tuple_list = list(zip(indata["basin_id"], indata['n_cats']))
 
-    results = pool.map(run_ngen_with_calibration, tuple_list)
+#    results = pool.map(run_ngen_with_calibration, tuple_list)
+    bal_tuple_list = load_balance(paired = tuple_list, num_proc = basins_in_par)
+
+    bal_basins_in_par = basins_in_par
+
+    if basins_in_par > len(list(bal_tuple_list)):
+        bal_basins_in_par = len(list(bal_tuple_list))
+
+    pool = multiprocessing.Pool(processes=bal_basins_in_par)
+
+    results = pool.map(driver_basins, bal_tuple_list)
 
     pool.close()
     pool.join()
+
+
+def load_balance(paired, num_proc):
+
+    sorted_paired = sorted(paired, key=lambda x: x[1])
+
+    basin_ids, num_cats = zip(*sorted_paired)
+
+    num_cats = list(num_cats)
+    basin_ids = list(basin_ids)
+
+    num_cats_total = sum(num_cats)
+    num_cats_avg = int(num_cats_total / num_proc)  # average workload per core
+
+    chunks_ncats = []
+    chunk_ncats_temp = []
+    chunks_bid = [] # basin ID
+    chunk_bid_temp = []
+    workload = 0
+    X = []
+    X_temp = []
+
+    for i, (ncat, id) in enumerate(zip(num_cats, basin_ids)):
+
+        workload += ncat
+
+        if workload <= num_cats_avg:
+            chunk_ncats_temp.append(ncat)
+            chunk_bid_temp.append(id)
+            X_temp.append((id,ncat))
+        else:
+            chunks_ncats.append(chunk_ncats_temp)
+            chunks_bid.append(chunk_bid_temp)
+            X.append(X_temp)
+            # reset
+            chunk_ncats_temp = []
+            chunk_bid_temp = []
+            X_temp = []
+            workload = 0
+            chunk_ncats_temp.append(ncat) # save the current divide to the next chunk
+            chunk_bid_temp.append(id) # save the current divide to the next chunk
+            X_temp.append((id,ncat))
+
+    # make sure the last chunk is appended if not empty
+    if chunk_ncats_temp:
+        chunks_ncats.append(chunk_ncats_temp)
+        chunks_bid.append(chunk_bid_temp)
+        X.append(X_temp)
+
+    return X
 
 
 #####################################################################

@@ -593,7 +593,8 @@ def write_lasam_input_files(catids, soil_param_file, gdf_soil, lasam_dir, couple
     lasam_params_base = ['verbosity=none',
                          'soil_params_file=' + soil_param_file,
                          'layer_thickness=200.0[cm]',
-                         'initial_psi=2000.0[cm]',
+#                         'initial_psi=2000.0[cm]',
+                         'initial_psi=500.0[cm]',
                          'timestep=3600[sec]',
                          'endtime=1000000000.0[d]',
                          'forcing_resolution=3600[sec]',
@@ -613,7 +614,8 @@ def write_lasam_input_files(catids, soil_param_file, gdf_soil, lasam_dir, couple
     if ( ("sft" in coupled_models) and (sft_calib in ["true", "True"]) ):
         lasam_params_base.append('calib_params=true')
 
-    if (ngen_cal_type in ['calibration', 'validation', 'restart']):
+#    if (ngen_cal_type in ['calibration', 'validation', 'restart']):
+    if (ngen_cal_type in ['calibration', 'validation', 'calibvalid', 'restart']):
         lasam_params_base.append('calib_params=true')
 
     soil_type_loc = lasam_params_base.index("layer_soil_type=")
@@ -630,11 +632,16 @@ def write_lasam_input_files(catids, soil_param_file, gdf_soil, lasam_dir, couple
         # add giuh ordinates
         giuh_cat = json.loads(gdf_soil['giuh'][cat_name])
         giuh_cat = pd.DataFrame(giuh_cat, columns=['v', 'frequency'])
-
-        giuh_ordinates = ",".join(str(x) for x in np.array(giuh_cat["frequency"]))
-
-        any_nans = np.any(np.isnan(giuh_cat["frequency"]))
-        if (any_nans):
+        try:
+            giuh_ordinates = ",".join(str(x) for x in np.array(giuh_cat["frequency"]))
+#        giuh_ordinates = ",".join(str(x) for x in np.array(giuh_cat["frequency"]))
+#
+#        any_nans = np.any(np.isnan(giuh_cat["frequency"]))
+#        if (any_nans):
+            any_nans = np.any(np.isnan(giuh_cat["frequency"]))
+            if (any_nans):
+                giuh_ordinates = str(1.0)
+        except:
             giuh_ordinates = str(1.0)
 
         lasam_params[giuh_loc_id] += giuh_ordinates
@@ -858,7 +865,15 @@ def write_calib_input_files(gpkg_file, ngen_dir, output_dir, realization_file_pa
         idmax = df['tot_drainage_areasqkm'].idxmax() # maximum drainage area catchment ID; downstream outlet
         d['model']['eval_feature'] = idmax
 
-
+        """
+        df = df[df['divide_id'].index.isin(gage_id)]
+        try:
+            idmax = df['tot_drainage_areasqkm'].idxmax() # maximum drainage area catchment ID; downstream outlet
+            d['model']['eval_feature'] = idmax
+        except:
+            print ("rl_gage does not exist...")
+        """
+        
     # 2nd strategy: using total drainage area to locate the basin outlet gage ID
     """
     div = gpd.read_file(gpkg_file, layer='divides')
@@ -911,24 +926,29 @@ def write_calib_input_files(gpkg_file, ngen_dir, output_dir, realization_file_pa
             }
         d['model']['val_params'] = val_params
 
-        #val_plugins = [
-        #        "ngen_cal_user_plugins.ngen_cal_save_iteration_output_plugin.SaveValidation",  
-        #        "ngen_cal_user_plugins.ngen_cal_read_obs_plugin.ReadObservedData"
-        #    ]
-        """
-        val_plugins = [
-            "ngen_cal_user_plugins.ngen_cal_save_iteration_output_plugin.SaveValidation",
-            "ngen_cal_user_plugins.ngen_cal_save_sim_obs_plugin.SaveValidation"
-            ]
+#        #val_plugins = [
+#        #        "ngen_cal_user_plugins.ngen_cal_save_iteration_output_plugin.SaveValidation",  
+#        #        "ngen_cal_user_plugins.ngen_cal_read_obs_plugin.ReadObservedData"
+#        #    ]
+#        """
+#        val_plugins = [
+#            "ngen_cal_user_plugins.ngen_cal_save_iteration_output_plugin.SaveValidation",
+#            "ngen_cal_user_plugins.ngen_cal_save_sim_obs_plugin.SaveValidation"
+#            ]
+#
+#        try:
+#            d['general']['plugins'].update(val_plugins)
+#       except:
+#            d['general']['plugins'] = val_plugins
+#        """
+#    elif (ngen_cal_type == 'restart'):
+#        df_par    = pd.read_parquet(os.path.join(restart_dir,"calib_param_df_state.parquet"))
+#        df_params = pd.read_csv(os.path.join(restart_dir,"best_params.txt"), header = None)
+    if (ngen_cal_type == 'restart' or ngen_cal_type == "validation"):
+        r_dir = glob.glob(str(Path(output_dir) / "2024*" / "best*"))[0]
 
-        try:
-            d['general']['plugins'].update(val_plugins)
-        except:
-            d['general']['plugins'] = val_plugins
-        """
-    elif (ngen_cal_type == 'restart'):
-        df_par    = pd.read_parquet(os.path.join(restart_dir,"calib_param_df_state.parquet"))
-        df_params = pd.read_csv(os.path.join(restart_dir,"best_params.txt"), header = None)
+        df_par    = pd.read_parquet(os.path.join(Path(r_dir).parent,"calib_param_df_state.parquet"))
+        df_params = pd.read_csv(os.path.join(Path(r_dir).parent,"best_params.txt"), header = None)
         best_itr  = str(int(df_params.values[1]))
 
         best_params_set = df_par[best_itr]
@@ -1179,7 +1199,8 @@ def main():
     if "lasam" in args.models_option:
         if (args.verbosity >=3):
             print ("Generating config files for LASAM ...")
-        lasam_params = os.path.join(args.ngen_dir,"extern/LGAR-C/LGAR-C/data/vG_params_stat_nom_ordered.dat")
+#        lasam_params = os.path.join(args.ngen_dir,"extern/LGAR-C/LGAR-C/data/vG_params_stat_nom_ordered.dat")
+        lasam_params = os.path.join(args.ngen_dir,"extern/LGAR/LGAR/data/vG_params_stat_nom_ordered.dat")
 
         if (not os.path.isfile(lasam_params)):
             lasam_params = os.path.join(args.ngen_dir,"extern/LASAM/LASAM/data/vG_params_stat_nom_ordered.dat")
