@@ -39,7 +39,7 @@ forcings:
   forcing_format     : ".nc"  #".csv"   #".nc"
   forcing_venv_dir   : "/home/ec2-user/.venv_forcing/" # provide only when using forcing data downloaders
   forcing_dir        : "/home/ec2-user/Projects/simulations/test_ec2/{*}/data/forcing/2013_to_2014/"
-  forcing_time       : '{"start_time" : "2013-01-01 00:00:00", "end_time" : "2014-12-31 23:00:00"}'
+  forcing_time       : '{"start_time" : "2013-01-01 00:00:00", "end_time" : "2013-12-31 23:00:00"}'
   num_processors_forc : 1  
 
 formulation :

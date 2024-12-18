@@ -178,7 +178,17 @@ build_workflow() {
     echo "Upgrading pip..."
     pip install -U pip==24.0
 
-    echo "Installing Python packages..."
+    echo "Installing Python packages... for forcing env" 
+    # Not all of the following pip list are necessary but on can just use one env for both forcing, ngen, troute >> 
+    # but for now i kept them separated  "
+    pip install 'extern/ngen-cal/python/ngen_cal[netcdf]'
+    pip install extern/ngen-cal/python/ngen_config_gen
+    pip install hydrotools.events
+    pip install -e ./extern/ngen_cal_plugins
+    pip install -r extern/CIROH_DL_NextGen/forcing_prep/requirements.txt
+    
+    echo "Installing Python packages... for ngen python env"
+    source ~/.vevn_ngen_py3.11/bin/activate
     pip install 'extern/ngen-cal/python/ngen_cal[netcdf]'
     pip install extern/ngen-cal/python/ngen_config_gen
     pip install hydrotools.events
