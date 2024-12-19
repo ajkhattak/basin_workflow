@@ -10,14 +10,13 @@ from dataretrieval import nwis, utils, codes, nldi
 
 
 def get_comid(fid):
-#    gdf = nldi.get_features(feature_source="WQP", feature_id=fid)
+
     gdf = nldi.get_features(feature_source="nwissite", feature_id=fid)
     comid = int(gdf['comid'][0])
 
     return comid
 
 
-#def get_stream_discharge(gage_id, start_time, end_time):
 def get_streamflow(gage_id, start_time, end_time):
 
     #gage_id = "USGS-01052500"
@@ -65,6 +64,5 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-#    get_stream_discharge(args.gage_id, args.start_time, args.end_time)
     get_streamflow(args.gage_id, args.start_time, args.end_time)
     

@@ -52,15 +52,15 @@ def get_best_kge():
             best_kge  = 1 - df_params['value'][2]
         else:
             best_kge = -100
-
+    
         sim_kge.append(best_kge)
-
+    
         id = str(file.parent.parent.stem)
         basin_id.append(id)
-
+        
         lat.append(df_basins.loc[id]['LAT_GAGE'])
         lng.append(df_basins.loc[id]['LNG_GAGE'])
-
+    
     df_calib = {
         'STAID' : basin_id,
         'LAT_GAGE' : lat,
@@ -137,12 +137,12 @@ def get_kge_nwm():
             observed_data.index = pd.to_datetime(observed_data.index)
 
             df_nwm = nwmQ.get_streamflow(gage_id=id, start_time=start_time, end_time=end_time)
-
+        
             df_nwm.set_index('time', inplace=True)
             df_nwm.index = pd.to_datetime(df_nwm.index)
-
+            
             df = pd.merge(df_nwm['flow'], observed_data['obs_flow'], left_index=True, right_index=True)
-
+            
             nwm_kge.append(kling_gupta_efficiency(df["obs_flow"], df["flow"]))
             #nwm_kge.append(nash_sutcliffe_efficiency(df["obs_flow"], df["flow"]))
         except:
@@ -162,5 +162,5 @@ def get_kge_nwm():
 
     df_nwm = pd.DataFrame(data = df_nwm)
     df_nwm.to_csv(outfile_nwm, index=True)
-
+    
 #get_kge_nwm()

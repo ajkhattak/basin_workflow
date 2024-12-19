@@ -112,9 +112,6 @@ def run_ngen_without_calibration():
 
 def run_ngen_with_calibration(basin):
 
-#    infile = os.path.join(output_dir, "basins_passed.csv")
-#    indata = pd.read_csv(infile, dtype=str)
-#
     id = basin[0]
     ncats = int(basin[1])
 
@@ -193,14 +190,11 @@ def driver_basins(basins):
 def driver_ngen_with_calibration():
 
     infile = os.path.join(output_dir, "basins_passed.csv")
-#    indata = pd.read_csv(infile, dtype=str)
-    indata = pd.read_csv(infile, dtype={'basin_id': str, 'n_cats': int})
 
-#    pool = multiprocessing.Pool(processes=basins_in_par)
-#
+    indata = pd.read_csv(infile, dtype={'basin_id': str, 'n_cats': int})
+    
     tuple_list = list(zip(indata["basin_id"], indata['n_cats']))
 
-#    results = pool.map(run_ngen_with_calibration, tuple_list)
     bal_tuple_list = load_balance(paired = tuple_list, num_proc = basins_in_par)
 
     bal_basins_in_par = basins_in_par
@@ -224,7 +218,7 @@ def load_balance(paired, num_proc):
 
     num_cats = list(num_cats)
     basin_ids = list(basin_ids)
-
+    
     num_cats_total = sum(num_cats)
     num_cats_avg = int(num_cats_total / num_proc)  # average workload per core
 

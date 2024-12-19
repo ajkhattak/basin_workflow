@@ -428,7 +428,6 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
     # , include topmodel later
     for m in models:
     
-#        if m in ['SoilFreezeThaw', 'cfe', 'SoilMoistureProfiles', 'LASAM', 'LGAR-C', \
         if m in ['SoilFreezeThaw', 'cfe', 'SoilMoistureProfiles', 'LASAM', 'LGAR', \
                  'sloth', 'evapotranspiration', 'noah-owp-modular', 'topmodel']:
 
@@ -501,8 +500,7 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
     if ('lasam' in coupled_models):
         if ("LASAM" in lib_files.keys()):
             lasam_block = get_lasam_block(lib_files['LASAM'], config_dir, coupled_models)
-#        elif ("LGAR-C" in lib_files.keys()):
-#            lasam_block = get_lasam_block(lib_files['LGAR-C'], config_dir, coupled_models)
+
         elif ("LGAR" in lib_files.keys()):
             lasam_block = get_lasam_block(lib_files['LGAR'], config_dir, coupled_models)
 

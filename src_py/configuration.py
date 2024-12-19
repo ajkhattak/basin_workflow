@@ -593,7 +593,6 @@ def write_lasam_input_files(catids, soil_param_file, gdf_soil, lasam_dir, couple
     lasam_params_base = ['verbosity=none',
                          'soil_params_file=' + soil_param_file,
                          'layer_thickness=200.0[cm]',
-#                         'initial_psi=2000.0[cm]',
                          'initial_psi=500.0[cm]',
                          'timestep=3600[sec]',
                          'endtime=1000000000.0[d]',
@@ -614,7 +613,6 @@ def write_lasam_input_files(catids, soil_param_file, gdf_soil, lasam_dir, couple
     if ( ("sft" in coupled_models) and (sft_calib in ["true", "True"]) ):
         lasam_params_base.append('calib_params=true')
 
-#    if (ngen_cal_type in ['calibration', 'validation', 'restart']):
     if (ngen_cal_type in ['calibration', 'validation', 'calibvalid', 'restart']):
         lasam_params_base.append('calib_params=true')
 
@@ -634,10 +632,6 @@ def write_lasam_input_files(catids, soil_param_file, gdf_soil, lasam_dir, couple
         giuh_cat = pd.DataFrame(giuh_cat, columns=['v', 'frequency'])
         try:
             giuh_ordinates = ",".join(str(x) for x in np.array(giuh_cat["frequency"]))
-#        giuh_ordinates = ",".join(str(x) for x in np.array(giuh_cat["frequency"]))
-#
-#        any_nans = np.any(np.isnan(giuh_cat["frequency"]))
-#        if (any_nans):
             any_nans = np.any(np.isnan(giuh_cat["frequency"]))
             if (any_nans):
                 giuh_ordinates = str(1.0)
@@ -831,7 +825,6 @@ def write_calib_input_files(gpkg_file, ngen_dir, output_dir, realization_file_pa
 
     assert (len(realization) == 1)
 
-
     if (not os.path.exists(ngen_cal_basefile)):
         sys.exit("Sample calib yaml file does not exist, provided is " + ngen_cal_basefile)
 
@@ -850,7 +843,6 @@ def write_calib_input_files(gpkg_file, ngen_dir, output_dir, realization_file_pa
 
     #d['model']['routing_output'] = f'./flowveldepth_{gpkg_name}.csv' # this gpkg_name should be consistent with title_string in troute
     d['model']['routing_output'] = troute_output_file # if in the outputs/troute directory
-
 
     gage_id = get_flowpath_attributes(gpkg_file, gage_id=True)
 
@@ -873,7 +865,6 @@ def write_calib_input_files(gpkg_file, ngen_dir, output_dir, realization_file_pa
         except:
             print ("rl_gage does not exist...")
         """
-        
     # 2nd strategy: using total drainage area to locate the basin outlet gage ID
     """
     div = gpd.read_file(gpkg_file, layer='divides')
@@ -926,25 +917,8 @@ def write_calib_input_files(gpkg_file, ngen_dir, output_dir, realization_file_pa
             }
         d['model']['val_params'] = val_params
 
-#        #val_plugins = [
-#        #        "ngen_cal_user_plugins.ngen_cal_save_iteration_output_plugin.SaveValidation",  
-#        #        "ngen_cal_user_plugins.ngen_cal_read_obs_plugin.ReadObservedData"
-#        #    ]
-#        """
-#        val_plugins = [
-#            "ngen_cal_user_plugins.ngen_cal_save_iteration_output_plugin.SaveValidation",
-#            "ngen_cal_user_plugins.ngen_cal_save_sim_obs_plugin.SaveValidation"
-#            ]
-#
-#        try:
-#            d['general']['plugins'].update(val_plugins)
-#       except:
-#            d['general']['plugins'] = val_plugins
-#        """
-#    elif (ngen_cal_type == 'restart'):
-#        df_par    = pd.read_parquet(os.path.join(restart_dir,"calib_param_df_state.parquet"))
-#        df_params = pd.read_csv(os.path.join(restart_dir,"best_params.txt"), header = None)
     if (ngen_cal_type == 'restart' or ngen_cal_type == "validation"):
+
         r_dir = glob.glob(str(Path(output_dir) / "2024*" / "best*"))[0]
 
         df_par    = pd.read_parquet(os.path.join(Path(r_dir).parent,"calib_param_df_state.parquet"))
@@ -1199,7 +1173,7 @@ def main():
     if "lasam" in args.models_option:
         if (args.verbosity >=3):
             print ("Generating config files for LASAM ...")
-#        lasam_params = os.path.join(args.ngen_dir,"extern/LGAR-C/LGAR-C/data/vG_params_stat_nom_ordered.dat")
+
         lasam_params = os.path.join(args.ngen_dir,"extern/LGAR/LGAR/data/vG_params_stat_nom_ordered.dat")
 
         if (not os.path.isfile(lasam_params)):
