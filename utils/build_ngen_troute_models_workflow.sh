@@ -3,7 +3,7 @@
 # Original Author : Ahmad Jan Khattak [ahmad.jan@noaa.gov | September 10, 2024]
 # Modified by: Sifan A. Koriche [sakoriche@ua.edu | December 18, 2024]
 
-# One needs to run setup_ec2.sh before this one 
+# One needs to run setup_ec2_4ngen.sh before this one 
 # Note: run this script from ngen base directory
 # Order of building options
 # 1st build T-ROUTE >> this helps to create t-route based environment which will also be handy for NGEN
@@ -21,8 +21,8 @@ cd ${wkdir}
 # Set Options
 BUILD_NGEN=OFF
 BUILD_TROUTE=OFF
-BUILD_MODELS=OFF
-BUILD_WORKFLOW=ON
+BUILD_MODELS=ON
+BUILD_WORKFLOW=OFF
 
 ###############################################################
 
@@ -92,7 +92,7 @@ build_models()
     # Declare commits for each model
     declare -A model_commits=(
         ["cfe"]="29231c4004b13882145c2e75fcbe2506a592478c"
-        ["CAMAS"]="master"
+        ["LGAR"]="master"
         ["evapotranspiration"]="master"
         ["topmodel"]="master"
         ["noah-owp-modular"]="0abb891b48b043cc626c4e4bbd0efe54ad357fe1"
@@ -102,19 +102,19 @@ build_models()
     for model in "${!model_commits[@]}"; do
         echo "Building model: $model"
 
-        # Handle CAMAS separately
-        if [ "$model" == "CAMAS" ]; then
+	# Handle LGAR (CASAM) separately
+        if [ "$model" == "LGAR" ]; then
             if [ ! -d "extern/$model/$model" ]; then
-                echo "Cloning CAMAS..."
+                echo "Cloning LGAR..."
                 git clone https://github.com/NOAA-OWP/LGAR-C.git extern/$model/$model
             fi
-            cd extern/$model/$model
-            git fetch origin
-            git checkout ${model_commits[$model]}
-            git pull
-            cd -
+            #cd extern/$model/$model
+            #git fetch origin
+            #git checkout ${model_commits[$model]}
+            #git pull
+            #cd -
 
-            # Clean and build CAMAS
+            # Clean and build LGAR
             rm -rf extern/$model/$model/${builddir}
             cmake -B extern/$model/$model/${builddir} -S extern/$model/$model -DNGEN=ON -DCMAKE_BUILD_TYPE=Release
             make -C extern/$model/$model/${builddir}

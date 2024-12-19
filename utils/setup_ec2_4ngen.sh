@@ -20,25 +20,30 @@ fi
 
 
 ###################### add the following to your .bash_profile  after downloading dependencies ##############
-# Define Boost root (if needed by your application)
+
+## Define Boost root (if needed by your application)
 #export BOOST_ROOT=~/boost
 
-# Set paths for OpenMPI
+## Set paths for OpenMPI
 #export PATH=/usr/lib64/openmpi/bin:$PATH
-#export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib:$LD_LIBRARY_PATH
 
-# Set compilers for MPI and Fortran
+## Set compilers for MPI and Fortran
 #export CC=/usr/lib64/openmpi/bin/mpicc
 #export CXX=/usr/lib64/openmpi/bin/mpicxx
 #export FC=/usr/bin/gfortran
 #export F90=${FC}  # Alias for Fortran compiler
 
-# Set paths for NetCDF
+## Set paths for NetCDF
 #export NETCDFINC="/usr/local/include"
 #export NETCDFLIB="/usr/local/lib"
 #export CFLAGS="-I${NETCDFINC}"
 #export LDFLAGS="-L${NETCDFLIB} -lnetcdf -lnetcdff"
-#export LD_LIBRARY_PATH="${NETCDFLIB}:$LD_LIBRARY_PATH"
+
+## Consolidate LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/usr/local/lib64:/usr/lib64/openmpi/lib:/usr/local/lib:$BOOST_ROOT/lib:$LD_LIBRARY_PATH
+
+#source ~/.vevn_ngen_py3.11/bin/activate
+
 ###############################################################
 
 
