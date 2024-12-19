@@ -10,6 +10,7 @@ from dataretrieval import nwis, utils, codes, nldi
 
 
 def get_comid(fid):
+
     gdf = nldi.get_features(feature_source="nwissite", feature_id=fid)
     comid = int(gdf['comid'][0])
 

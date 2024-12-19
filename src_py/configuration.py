@@ -632,7 +632,6 @@ def write_lasam_input_files(catids, soil_param_file, gdf_soil, lasam_dir, couple
         giuh_cat = pd.DataFrame(giuh_cat, columns=['v', 'frequency'])
         try:
             giuh_ordinates = ",".join(str(x) for x in np.array(giuh_cat["frequency"]))
-
             any_nans = np.any(np.isnan(giuh_cat["frequency"]))
             if (any_nans):
                 giuh_ordinates = str(1.0)
@@ -857,6 +856,7 @@ def write_calib_input_files(gpkg_file, ngen_dir, output_dir, realization_file_pa
         df.set_index(index, inplace=True)
         idmax = df['tot_drainage_areasqkm'].idxmax() # maximum drainage area catchment ID; downstream outlet
         d['model']['eval_feature'] = idmax
+
         """
         df = df[df['divide_id'].index.isin(gage_id)]
         try:
@@ -865,7 +865,6 @@ def write_calib_input_files(gpkg_file, ngen_dir, output_dir, realization_file_pa
         except:
             print ("rl_gage does not exist...")
         """
-
     # 2nd strategy: using total drainage area to locate the basin outlet gage ID
     """
     div = gpd.read_file(gpkg_file, layer='divides')
@@ -1174,6 +1173,7 @@ def main():
     if "lasam" in args.models_option:
         if (args.verbosity >=3):
             print ("Generating config files for LASAM ...")
+
         lasam_params = os.path.join(args.ngen_dir,"extern/LGAR/LGAR/data/vG_params_stat_nom_ordered.dat")
 
         if (not os.path.isfile(lasam_params)):

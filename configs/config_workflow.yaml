@@ -4,15 +4,14 @@
 # See main.R for further details
 # make sure to install yaml package using install.packages("yaml") if not installed already
 
-workflow_dir  : "/Users/ahmadjan/codes/workflows/basin_workflow/"
-input_dir     : "/Users/ahmadjan/Core/SimulationsData/projects/tests_ss/"
-output_dir    : "/Users/ahmadjan/Core/SimulationsData/projects/tests_ss/"
-
+workflow_dir  : "/home/ec2-user/Projects/repositories/bwf_aws_dec2024/basin_workflow/"
+input_dir     : "/home/ec2-user/Projects/simulations/test_ec2/"
+output_dir     : "/home/ec2-user/Projects/simulations/test_ec2/"
 
 
 gpkg_model_params :
-  hf_source                : "/Users/ahmadjan/Core/SimulationsData/preprocessing/hydrofabric_synced"
-  dem_output_dir           : "/Users/ahmadjan/Core/SimulationsData/projects/test_basinsX/dem"
+  #hf_source                : "/Users/ahmadjan/Core/SimulationsData/preprocessing/hydrofabric_synced"
+  #dem_output_dir           : "/Users/ahmadjan/Core/SimulationsData/projects/test_basinsX/dem"
   number_processors        : 4
   write_attributes_parquet : FALSE
   reinstall_hydrofabric    : FALSE
@@ -20,32 +19,33 @@ gpkg_model_params :
 
   options :
     use_gage_id :
-      use_gage_id : FALSE
-      #gage_ids    :  "0214655255" #"10154200" #"03366500"
+      use_gage_id : TRUE
+      gage_ids    : "0214655255"  #"01057000"  #"01208990" #"0214655255" #"10154200" #"0214655255" #"03366500"
       #gage_ids    : ["04115265", "07301410", "04063700", "12488500"]
-      gage_ids     : ["02378300", "02471078", "02381600", "02465000"]
+      #gage_ids     : ["02378300", "02471078", "02381600", "02465000"]
+      #gage_ids     : ["09378170", "09378630", "10258000", "11098000"]
     use_gage_file :
-      use_gage_file : TRUE
-      gage_file     : "/Users/ahmadjan/Core/SimulationsData/projects/ngen_evaluation_camels/CAMELS_v3_calib_BestModelsAll.csv"
-      column_name   : "hru_id_CAMELS"
+      use_gage_file : FALSE
+      gage_file     : "/home/shared/Model-structure/input_CAMELS/camels_Area50to200/Camels_BasinIDs_Area50to200.csv"
+      column_name   : "gage_ID"
 
     use_gpkg :
       use_gpkg  : FALSE
-      gpkg_dir  : "/Users/ahmadjan/Core/SimulationsData/projects/ngen-bm/test/gpkgs"
-      pattern   :  "hf_v211_"
+      gpkg_dir  : "/home/shared/Model-structure/input_CAMELS/camels_Area50to200/gpkgs"
+      pattern   :  "gage_"
 
 
 forcings:
-  forcing_format     : ".nc"
-  forcing_venv_dir   : "/Users/ahmadjan/.ngen_forcing/" # provide only when using forcing data downloaders
-  forcing_dir        : "/Users/ahmadjan/Core/SimulationsData/projects/tests_ss/{*}/data/forcing/2010_to_2011/"
-  forcing_time       : '{"start_time" : "2010-09-20 00:00:00", "end_time" : "2010-09-25 00:00:00"}'
-  
+  forcing_format     : ".nc"  #".csv"   #".nc"
+  forcing_venv_dir   : "/home/ec2-user/.venv_forcing/" # provide only when using forcing data downloaders
+  forcing_dir        : "/home/ec2-user/Projects/simulations/test_ec2/{*}/data/forcing/2013_to_2014/"
+  forcing_time       : '{"start_time" : "2013-01-01 00:00:00", "end_time" : "2013-12-31 23:00:00"}'
+  num_processors_forc : 1  
 
 formulation :
-  ngen_dir           : "/Users/ahmadjan/codes/ngen/ngen"
-  
-  models                     : "PET_CFE"
+  ngen_dir           : "/home/ec2-user/Projects/NextGen/ngen/"
+
+  models                     : "NOM_CFE" # "PET_CFE"  # "NOM_CFE"
   precip_partitioning_scheme : 'Schaake'
   surface_runoff_scheme      : 'NASH_CASCADE' # 'GIUH' for cfe1.0
   is_routing                 : True
@@ -56,14 +56,16 @@ formulation :
 
   np_per_basin               : 1         # number of processors for basin partitioning
   np_per_basin_adaptive      : False     # adaptive - set by the workflow
-  basins_in_par              : 2         # use for both config files and simulations
+  basins_in_par              : 1         # use for both config files and simulations
 
   rename_existing_simulation : ""
 
 ngen_cal :
-  task_type        : "calibvalid"  #calibration #, validation, restart, None
-  calibration_time : '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2010-10-30 23:00:00"}'
-  calib_eval_time  : '{"start_time" : "2010-10-05 00:00:00", "end_time" : "2010-10-23 02:00:00"}'
-  validation_time  : '{"start_time" : "2010-11-22 14:00:00", "end_time" : "2010-12-23 02:00:00"}'
-  valid_eval_time  : '{"start_time" : "2010-11-23 14:00:00", "end_time" : "2010-12-23 02:00:00"}'
-  restart_dir      : "/Users/ahmadjan/Core/SimulationsData/projects/test_basins/{*}/202410042024_ngen_qaiklwj0_worker/"
+  task_type        :  "calibvalid"  #calibration #, validation, restart, None
+  
+  calibration_time : '{"start_time" : "2013-10-01 00:00:00", "end_time" : "2013-10-30 23:00:00"}'
+  calib_eval_time  : '{"start_time" : "2013-10-05 00:00:00", "end_time" : "2013-10-23 02:00:00"}'
+  validation_time  : '{"start_time" : "2013-11-22 14:00:00", "end_time" : "2013-12-23 02:00:00"}'
+  valid_eval_time  : '{"start_time" : "2013-11-23 14:00:00", "end_time" : "2013-12-23 02:00:00"}'
+
+  restart_dir      : "/home/shared/Model-structure/sim_CFE1_sak/test_dem_input/{*}/202410042024_ngen_qaiklwj0_worker/"

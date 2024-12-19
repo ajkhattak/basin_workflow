@@ -1,0 +1,149 @@
+# See main.py for details about these parameters
+
+#
+# See main.R for further details
+# make sure to install yaml package using install.packages("yaml") if not installed already
+
+workflow_dir  : "/home/sakoriche/NextGen/Projects/ModelStructure/repositories/bwf_tnc_DM_nov2024/basin_workflow/"
+input_dir     : "/home/shared/Model-structure/sim_CFE1_sak/test_dem_input/"
+output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/test_dem_output/"
+
+
+#input_dir     : "/home/shared/Model-structure/input_CAMELS/test_dem_nov24/"
+#output_dir    : "/home/shared/Model-structure/sim_CFE1_sak/test_PET_noPartition/"
+#output_dir    : "/home/shared/Model-structure/input_CAMELS/test_dem_nov24/"
+
+#input_dir     : "/home/shared/Model-structure/input_CAMELS_sa/allCAMELS/"
+#output_dir    : "/home/shared/Model-structure/sim_CFE1_sak/allCAMELS_test/"
+
+#input_dir     : "/home/shared/Model-structure/input_CAMELS/input_ngiab/"
+#output_dir     : "/home/shared/Model-structure/input_CAMELS/input_ngiab/"
+#output_dir    : "/home/shared/Model-structure/sim_CFE1_sak/output_ngiab/"
+
+#input_dir      : "/home/shared/Model-structure/input_CAMELS/camels_less50Area/"
+#output_dir     : "/home/shared/Model-structure/input_CAMELS/camels_less50Area/"
+
+#input_dir      : "/home/shared/Model-structure/input_CAMELS/camels_Area50to200/"
+#output_dir     : "/home/shared/Model-structure/input_CAMELS/camels_Area50to200/"
+
+#input_dir      : "/home/shared/Model-structure/sim_CFE1_sak/test_validation/"
+#output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/test_validation/"
+
+########################### CFE + NOM ############################################
+#input_dir      : "/home/shared/Model-structure/input_CAMELS/noSnowAreaNOM_batch1/"
+#output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/CAMELS/cfe1SNOM_noSnowArea_batch1/"
+#output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/CAMELS/cfe2SNOM_noSnowArea_batch1/"
+
+#input_dir      : "/home/shared/Model-structure/input_CAMELS/noSnowAreaNOM_batch2/"
+#output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/CAMELS/cfe1SNOM_noSnowArea_batch2/"
+#output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/CAMELS/cfe2SNOM_noSnowArea_batch2/"
+
+#input_dir      : "/home/shared/Model-structure/input_CAMELS/camels_less50Area_NOM/"
+#output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/CAMELS/cfe1SNOM_less50Area_batch3/"
+#output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/CAMELS/cfe2SNOM_less50Area_batch3/"
+
+#input_dir      : "/home/shared/Model-structure/input_CAMELS/camels_Area50to200_NOM"
+#output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/CAMELS/cfe1SNOM_Area50to200_batch4"
+#output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/CAMELS/cfe2SNOM_Area50to200_batch4"
+
+########################### CFE + PET ############################################
+#input_dir      : "/home/shared/Model-structure/input_CAMELS/noSnowArea_batch1/"
+#output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/CAMELS/cfe1Spet_noSnowArea_batch1/"
+#output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/CAMELS/cfe2Spet_noSnowArea_batch1/"
+
+#input_dir      : "/home/shared/Model-structure/input_CAMELS/noSnowArea_batch2/"
+#output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/CAMELS/cfe1Spet_noSnowArea_batch2/"
+#output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/CAMELS/cfe2Spet_noSnowArea_batch2/"
+
+#input_dir      : "/home/shared/Model-structure/input_CAMELS/camels_less50Area/"
+#output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/CAMELS/cfe1Spet_less50Area_batch3/"
+#output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/CAMELS/cfe2Spet_less50Area_batch3/"
+
+#input_dir      : "/home/shared/Model-structure/input_CAMELS/camels_Area50to200/" 
+#output_dir      : "/home/shared/Model-structure/input_CAMELS/camels_Area50to200/"
+#output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/CAMELS/cfe1Spet_Area50to200_batch4/"
+#output_dir     : "/home/shared/Model-structure/sim_CFE1_sak/CAMELS/cfe2Spet_Area50to200_batch4"
+
+gpkg_model_params :
+  #hf_source                : "/Users/ahmadjan/Core/SimulationsData/preprocessing/hydrofabric_synced"
+  #dem_output_dir           : "/Users/ahmadjan/Core/SimulationsData/projects/test_basinsX/dem"
+  number_processors        : 4
+  write_attributes_parquet : FALSE
+  reinstall_hydrofabric    : FALSE
+  reinstall_arrow          : FALSE
+
+  options :
+    use_gage_id :
+      use_gage_id : FALSE
+      #gage_ids    : "01057000"  #"01208990" #"0214655255" #"10154200" #"0214655255" #"03366500"
+      #gage_ids    : ["04115265", "07301410", "04063700", "12488500"]
+      #gage_ids     : ["02378300", "02471078", "02381600", "02465000"]
+      gage_ids     : ["09378170", "09378630", "10258000", "11098000"]
+    use_gage_file :
+      use_gage_file : TRUE
+      gage_file     : "/home/shared/Model-structure/input_CAMELS/camels_Area50to200/Camels_BasinIDs_Area50to200.csv"
+      column_name   : "gage_ID"
+
+    use_gpkg :
+      use_gpkg  : FALSE
+      gpkg_dir  : "/home/shared/Model-structure/input_CAMELS/camels_Area50to200/gpkgs"
+      pattern   :  "gage_"
+
+
+forcings:
+  forcing_format     : ".csv"   #".nc"
+  forcing_venv_dir   : "/home/shared/Model-structure/sifan/.venv_forcing/" # provide only when using forcing data downloaders
+  #forcing_dir        : "/home/shared/Model-structure/input_CAMELS/noSnowAreaNOM_batch1/{*}/data/forcing/2013_to_2022/"
+  #forcing_dir        : "/home/shared/Model-structure/input_CAMELS/noSnowAreaNOM_batch2/{*}/data/forcing/2013_to_2022/"
+  #forcing_dir        : "/home/shared/Model-structure/input_CAMELS/noSnowArea_batch1/{*}/data/forcing/2013_to_2022/"
+  #forcing_dir        : "/home/shared/Model-structure/input_CAMELS/noSnowArea_batch2/{*}/data/forcing/2013_to_2022/"
+  #forcing_dir        : "/home/shared/Model-structure/input_CAMELS/input_ngiab/{*}/data/forcing/2013_to_2022/"
+  #forcing_dir        : "/home/shared/Model-structure/input_CAMELS/test_dem_nov24/{*}/data/forcing/2013_to_2022/"
+  forcing_dir        : "/home/shared/Model-structure/sim_CFE1_sak/test_dem_input/{*}/data/forcing/2013_to_2022/"
+  #forcing_dir        : "/home/shared/Model-structure/input_CAMELS/camels_less50Area/{*}/data/forcing/2013_to_2022/"
+  #forcing_dir        : "/home/shared/Model-structure/input_CAMELS/camels_Area50to200/{*}/data/forcing/2013_to_2022/"
+  #forcing_dir        : "/home/shared/Model-structure/input_CAMELS/camels_Area50to200_NOM/{*}/data/forcing/2013_to_2022/"
+  #forcing_dir        : "/home/shared/Model-structure/input_CAMELS/camels_less50Area_NOM/{*}/data/forcing/2013_to_2022/"
+  #forcing_dir        : "/home/shared/Model-structure/sim_CFE1_sak/test_validation/{*}/data/forcing/2013_to_2022/"
+  forcing_time       : '{"start_time" : "2013-01-01 00:00:00", "end_time" : "2021-12-31 23:00:00"}'
+  num_processors_forc : 1  
+
+formulation :
+  #ngen_dir           : "/home/malam24/NextGen/ngen"
+  ngen_dir           : "/home/sakoriche/NextGen/ngen_sifan/ngen/"
+  #ngen_dir           : "/home/sakoriche/NextGen/ngen_new/ngen"
+  #ngen_dir           : "/home/sakoriche/NextGen/ngen_T/ngen"
+
+  models                     : "NOM_CFE" # "PET_CFE"  # "NOM_CFE"
+  precip_partitioning_scheme : 'Schaake'
+  surface_runoff_scheme      : 'NASH_CASCADE' # 'GIUH' for cfe1.0
+  is_routing                 : True
+
+  clean                      : ['existing']
+  setup_simulation           : True
+  verbosity                  : 0
+
+  np_per_basin               : 1         # number of processors for basin partitioning
+  np_per_basin_adaptive      : False     # adaptive - set by the workflow
+  basins_in_par              : 1         # use for both config files and simulations
+
+  rename_existing_simulation : ""
+
+ngen_cal :
+  task_type        :  "calibvalid"  #calibration #, validation, restart, None
+  #calibration_time : '{"start_time" : "2010-10-01 00:00:00", "end_time" : "2010-10-30 23:00:00"}'
+  #calib_eval_time  : '{"start_time" : "2010-10-05 00:00:00", "end_time" : "2010-10-23 02:00:00"}'
+  #validation_time  : '{"start_time" : "2010-11-22 14:00:00", "end_time" : "2010-12-23 02:00:00"}'
+  #valid_eval_time  : '{"start_time" : "2010-11-23 14:00:00", "end_time" : "2010-12-23 02:00:00"}'
+  
+  #calibration_time : '{"start_time" : "2013-10-01 00:00:00", "end_time" : "2013-10-30 23:00:00"}'
+  #calib_eval_time  : '{"start_time" : "2013-10-05 00:00:00", "end_time" : "2013-10-23 02:00:00"}'
+  #validation_time  : '{"start_time" : "2013-11-22 14:00:00", "end_time" : "2013-12-23 02:00:00"}'
+  #valid_eval_time  : '{"start_time" : "2013-11-23 14:00:00", "end_time" : "2013-12-23 02:00:00"}'
+
+  calibration_time : '{"start_time" : "2016-10-01 00:00:00", "end_time" : "2021-10-31 00:00:00"}'
+  calib_eval_time  : '{"start_time" : "2017-10-01 00:00:00", "end_time" : "2021-10-31 00:00:00"}'
+  validation_time  : '{"start_time" : "2013-10-01 00:00:00", "end_time" : "2016-09-30 00:00:00"}'
+  valid_eval_time  : '{"start_time" : "2013-11-01 00:00:00", "end_time" : "2016-09-30 00:00:00"}'
+
+  restart_dir      : "/Users/ahmadjan/Core/SimulationsData/projects/test_basins/{*}/202410042024_ngen_qaiklwj0_worker/"

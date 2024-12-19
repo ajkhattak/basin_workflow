@@ -500,6 +500,7 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
     if ('lasam' in coupled_models):
         if ("LASAM" in lib_files.keys()):
             lasam_block = get_lasam_block(lib_files['LASAM'], config_dir, coupled_models)
+
         elif ("LGAR" in lib_files.keys()):
             lasam_block = get_lasam_block(lib_files['LGAR'], config_dir, coupled_models)
 
@@ -661,7 +662,6 @@ def write_realization_file(ngen_dir, forcing_dir, config_dir, realization_file,
     global_block["params"]["output_header_fields"] = output_header_fields
     global_block["params"]["modules"]              = modules
 
-    
     # replace formulations block
     root["global"]["formulations"] = [global_block]
     

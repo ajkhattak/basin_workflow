@@ -24,13 +24,14 @@ output_dir          = Path(d["output_dir"])
 
 dsim = d['formulation']
 verbosity           = dsim.get('verbosity', 0)
-num_processors_forcing  = dsim.get("num_processors", 1)
+#num_processors_forcing  = dsim.get("num_processors", 1)
 
 dforcing = d['forcings']
 forcing_dir      = dforcing.get("forcing_dir", "")
 forcing_time     = dforcing["forcing_time"]
 forcing_format   = dforcing.get('forcing_format', '.nc')
 forcing_venv_dir = dforcing.get('forcing_venv_dir', "~/venv_forcing")
+num_processors_forcing  = dforcing.get("num_processors_forc", 1)
 
 output_dir.mkdir(parents=True, exist_ok=True)
 

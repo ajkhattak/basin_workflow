@@ -190,6 +190,7 @@ def driver_basins(basins):
 def driver_ngen_with_calibration():
 
     infile = os.path.join(output_dir, "basins_passed.csv")
+
     indata = pd.read_csv(infile, dtype={'basin_id': str, 'n_cats': int})
     
     tuple_list = list(zip(indata["basin_id"], indata['n_cats']))
@@ -214,7 +215,7 @@ def load_balance(paired, num_proc):
     sorted_paired = sorted(paired, key=lambda x: x[1])
 
     basin_ids, num_cats = zip(*sorted_paired)
-    
+
     num_cats = list(num_cats)
     basin_ids = list(basin_ids)
     

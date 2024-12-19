@@ -40,12 +40,12 @@ def get_best_kge():
     basin_id = []
     lat = []
     lng = []
-    
+
     for file in infiles_calib:
 
         df_params = pd.read_csv(file, header = None)
         df_params.columns = ['value']
-    
+
         best_itr  = str(int(df_params['value'][1]))
 
         if (not pd.isna(df_params['value'][2]) and not math.isinf(df_params['value'][2])):
@@ -69,7 +69,7 @@ def get_best_kge():
     }
 
     df_calib = pd.DataFrame(data = df_calib)
-    
+
     # Validation KGE
     sim_kge = []
     basin_id = []
@@ -78,7 +78,7 @@ def get_best_kge():
 
         id = str(file.parent.parent.parent.stem)
         #print (id)
-        
+
         df = pd.read_csv(file, usecols=['time', 'sim_flow', 'obs_flow'])
         df.set_index('time', inplace=True)
         if (df.empty):
@@ -120,7 +120,7 @@ def get_kge_nwm():
     nwm_kge = []
     basin_id = []
     for file in infiles_calib:
-        
+
         simfile = glob.glob(str(file.parent / 'output_sim_obs/sim_obs_0.csv' ))[0]
 
         id = str(file.parent.parent.stem)
@@ -132,7 +132,7 @@ def get_kge_nwm():
             observed_data.set_index('time', inplace=True)
             start_time = observed_data.index[0]
             end_time = observed_data.index[-1]
-        
+
             observed_data = observed_data.loc[start_time:end_time]
             observed_data.index = pd.to_datetime(observed_data.index)
 
@@ -164,4 +164,3 @@ def get_kge_nwm():
     df_nwm.to_csv(outfile_nwm, index=True)
     
 #get_kge_nwm()
-
